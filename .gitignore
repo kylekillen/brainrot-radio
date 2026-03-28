@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Generated content
+output/
+.tmp/
+logs/
+
+# Local models
+musicgen_mlx/
+
+# Episode scripts and data (generated per-user)
+scripts/
+data/
+
+# Assets (music, artwork — too large for git)
+assets/music/
+assets/episode-artwork/
+
+# OS
+.DS_Store
+
+# Episode metadata (per-user)
+episode-metadata.json

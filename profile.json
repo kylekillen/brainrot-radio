@@ -1,0 +1,91 @@
+{
+  "name": "Kyle Killen",
+  "show_name": "Brainrot Radio",
+  "duration_minutes": 15,
+  "voice_style": "conversational",
+
+  "topics": {
+    "ai_and_tech": {
+      "weight": 2.0,
+      "description": "AI agents, LLMs, Claude/Anthropic, AI policy, developer tools, AI safety",
+      "x_signals": ["karpathy", "erikbryn", "emollick", "ESYudkowsky", "labenz", "TheZvi", "mckaywrigley", "Miles_Brundage", "deanwball", "gwern", "cocktailpeanut"],
+      "podcast_signals": ["The AI Daily Brief", "The Cognitive Revolution", "AI Summer", "AI and I", "Epoch After Hours", "The a16z Show", "Sharp Tech with Ben Thompson", "Cold Takes Audio"]
+    },
+    "prediction_markets": {
+      "weight": 1.8,
+      "description": "Kalshi, Polymarket, prediction markets, forecasting, event contracts",
+      "x_signals": ["HiveLiveHQ", "bernardbulletin", "checkprice", "0xTyrael", "Ianmakesmarkets", "K_NewEvents", "KalshiTrade", "PredMTrader", "GaetenD", "eli_lifland", "peterwildeford"],
+      "podcast_signals": ["Risky Business with Nate Silver", "Forward Guidance", "Manifold"]
+    },
+    "economics_and_policy": {
+      "weight": 1.5,
+      "description": "Economics, policy debates, housing, demographics, progress studies",
+      "x_signals": ["tylercowen", "mattyglesias", "Noahpinion", "ezraklein", "robinhanson", "bryan_caplan", "NateSilver538", "DKThomp", "JerusalemDemsas", "cremieuxrecueil", "larsiusprime", "elidourado", "MoreBirths"],
+      "podcast_signals": ["The Ezra Klein Show", "Odd Lots", "Freakonomics Radio", "The Marginal Revolution Podcast", "Econ 102", "The Riff", "Let's Appreciate", "Good on Paper", "Works in Progress"]
+    },
+    "nba": {
+      "weight": 1.5,
+      "description": "NBA news, trades, analysis, draft, The Ringer basketball",
+      "x_signals": ["ShamsCharania", "TheHoopCentral", "BleacherReport", "ZachLowe_NBA", "wojespn", "RobMahoney", "JakeLFischer", "TimBontemps", "KevinOConnor", "BigWos", "andrewsharp"],
+      "podcast_signals": ["The Ringer NBA Show", "The Zach Lowe Show", "The Lowe Post", "Brian Windhorst & The Hoop Collective", "The Woj Pod", "The Athletic NBA Daily", "The Kevin O'Connor Show", "Hoop Venue"]
+    },
+    "culture_and_ideas": {
+      "weight": 1.3,
+      "description": "Public intellectuals, rationalist community, culture wars, psychology, philosophy",
+      "x_signals": ["sullydish", "bariweiss", "JohnHMcWhorter", "coldxman", "DouthatNYT", "Yascha_Mounk", "tracewoodgrains", "JonHaidt", "sapinker", "charlesmurray", "slatestarcodex", "culturaltutor", "whyvert", "Quillette", "jessesingal"],
+      "podcast_signals": ["80,000 Hours", "Honestly with Bari Weiss", "Blocked and Reported", "Conversations with Coleman", "Hidden Brain", "Rationally Speaking", "Philosophize This!", "Just Asking Questions"]
+    },
+    "health_and_longevity": {
+      "weight": 1.2,
+      "description": "Longevity, health optimization, TRT, fitness, biohacking",
+      "x_signals": ["PeterAttiaMD", "LongevityTech"],
+      "podcast_signals": ["Huberman Lab", "The Peter Attia Drive", "FoundMyFitness", "LaBossiere Podcast"]
+    },
+    "entertainment_and_media": {
+      "weight": 1.0,
+      "description": "Screenwriting, TV, film, media industry, The Ringer",
+      "x_signals": ["avidseries", "BillSimmons", "SeanFennessey", "ChrisRyan77"],
+      "podcast_signals": ["The Bill Simmons Podcast", "The Town with Matthew Belloni", "The Prestige TV Podcast", "The Watch", "The Rewatchables", "Dissect"]
+    },
+    "finance_and_markets": {
+      "weight": 1.0,
+      "description": "Bloomberg, macro, financial markets, crypto",
+      "x_signals": ["matt_levine", "ByrneHobart"],
+      "podcast_signals": ["Odd Lots", "The Market Huddle", "Inflection Point", "Forward Guidance"]
+    },
+    "f1": {
+      "weight": 0.8,
+      "description": "Formula 1 racing",
+      "x_signals": [],
+      "podcast_signals": ["The Race F1 Podcast", "The Ringer F1 Show"]
+    }
+  },
+
+  "google_trends": {
+    "enabled": true,
+    "description": "Include 1-2 trending topics per show even if outside usual interests — awareness of what the world is talking about",
+    "segment": "rapid_fire"
+  },
+
+  "feed_strategy": {
+    "tier1_curated": [
+      "Techmeme RSS (human-curated tech news)",
+      "Hacker News front page",
+      "TechCrunch AI",
+      "Anthropic blog",
+      "Google News topic feeds per profile topic"
+    ],
+    "tier2_google_news_topics": [
+      "AI agents",
+      "prediction markets Kalshi",
+      "NBA trades",
+      "AI policy",
+      "longevity research"
+    ],
+    "tier3_drop": [
+      "GitHub release atom feeds (too low-volume for daily show)",
+      "Spotify Newsroom (niche)",
+      "Kalshi blog (niche)"
+    ]
+  }
+}

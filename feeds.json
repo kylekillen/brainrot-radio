@@ -1,0 +1,1000 @@
+{
+  "version": "2.0",
+  "updated": "2026-03-04",
+  "note": "Profile-driven feed list derived from Kyle's X following + Spotify podcasts",
+  "feeds": [
+    {
+      "id": "techmeme",
+      "name": "Techmeme",
+      "url": "https://www.techmeme.com/feed.xml",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "note": "Human-curated tech headlines. Top-tier signal."
+    },
+    {
+      "id": "anthropic_blog",
+      "name": "Anthropic Blog",
+      "url": "https://www.anthropic.com/rss.xml",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 2.5,
+      "note": "May 404 \u2014 check periodically"
+    },
+    {
+      "id": "hacker_news",
+      "name": "Hacker News",
+      "url": "https://hnrss.org/frontpage",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 1.5
+    },
+    {
+      "id": "techcrunch_ai",
+      "name": "TechCrunch AI",
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 1.5
+    },
+    {
+      "id": "ars_ai",
+      "name": "Ars Technica AI",
+      "url": "https://arstechnica.com/ai/feed/",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 1.3
+    },
+    {
+      "id": "verge_ai",
+      "name": "The Verge AI",
+      "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 1.3
+    },
+    {
+      "id": "mit_tech_review",
+      "name": "MIT Technology Review",
+      "url": "https://www.technologyreview.com/feed/",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 1.2
+    },
+    {
+      "id": "one_useful_thing",
+      "name": "One Useful Thing (Ethan Mollick)",
+      "url": "https://oneusefulthing.substack.com/feed",
+      "type": "substack",
+      "topic": "ai_and_tech",
+      "weight": 1.8
+    },
+    {
+      "id": "karpathy_blog",
+      "name": "Andrej Karpathy Blog",
+      "url": "https://karpathy.bearblog.dev/feed/",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "note": "Infrequent but very high value"
+    },
+    {
+      "id": "hyperdimensional",
+      "name": "Hyperdimensional (Dean W. Ball)",
+      "url": "https://hyperdimensional.substack.com/feed",
+      "type": "substack",
+      "topic": "ai_and_tech",
+      "weight": 1.5,
+      "note": "AI policy, also co-hosts AI Summer podcast"
+    },
+    {
+      "id": "ai_futures_notes",
+      "name": "AI Futures Research Notes (Eli Lifland)",
+      "url": "https://aifuturesnotes.substack.com/feed",
+      "type": "substack",
+      "topic": "ai_and_tech",
+      "weight": 1.3
+    },
+    {
+      "id": "claude_code_releases",
+      "name": "Claude Code Releases",
+      "url": "https://github.com/anthropics/claude-code/releases.atom",
+      "type": "atom",
+      "topic": "ai_and_tech",
+      "weight": 2.0
+    },
+    {
+      "id": "event_horizon",
+      "name": "Event Horizon (Dustin Gouker)",
+      "url": "https://nexteventhorizon.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 3.0,
+      "note": "BEST prediction market newsletter. Industry veteran."
+    },
+    {
+      "id": "bernard_bulletin",
+      "name": "Bernard Bulletin",
+      "url": "https://bernardbulletin.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 2.8,
+      "note": "Kalshi Mention Market, prediction market dictionary"
+    },
+    {
+      "id": "polymarket_blog",
+      "name": "Polymarket (The Oracle)",
+      "url": "https://polymarket.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 2.0
+    },
+    {
+      "id": "manifold_blog",
+      "name": "Manifold Markets (Above The Fold)",
+      "url": "https://manifoldmarkets.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 1.5
+    },
+    {
+      "id": "prediction_market_pulse",
+      "name": "Prediction Market Pulse",
+      "url": "https://predictionnews.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 2.0
+    },
+    {
+      "id": "prediction_markets_substack",
+      "name": "Prediction Markets (Will & Xavier)",
+      "url": "https://predictionmarkets.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 1.5
+    },
+    {
+      "id": "forecasting_newsletter",
+      "name": "Forecasting Newsletter (Nuno Sempere)",
+      "url": "https://forecasting.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 1.8,
+      "note": "Monthly roundup \u2014 Metaculus, Good Judgment, all platforms"
+    },
+    {
+      "id": "peter_wildeford",
+      "name": "The Power Law (Peter Wildeford)",
+      "url": "https://peterwildeford.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 1.5,
+      "note": "Top 20 global forecaster, board member Metaculus"
+    },
+    {
+      "id": "nate_silver",
+      "name": "Silver Bulletin (Nate Silver)",
+      "url": "https://natesilver.substack.com/feed",
+      "type": "substack",
+      "topic": "prediction_markets",
+      "weight": 2.0,
+      "note": "Partially paywalled"
+    },
+    {
+      "id": "star_spangled_gamblers",
+      "name": "Star Spangled Gamblers (RSS)",
+      "url": "https://starspangledgamblers.libsyn.com/rss",
+      "type": "rss",
+      "topic": "prediction_markets",
+      "weight": 1.5,
+      "note": "RSS feed for episode titles/descriptions. Full transcription via podcasts section."
+    },
+    {
+      "id": "marginal_revolution",
+      "name": "Marginal Revolution (Tyler Cowen)",
+      "url": "https://marginalrevolution.com/feed",
+      "type": "rss",
+      "topic": "economics_and_policy",
+      "weight": 1.5
+    },
+    {
+      "id": "slow_boring",
+      "name": "Slow Boring (Matt Yglesias)",
+      "url": "https://slowboring.substack.com/feed",
+      "type": "substack",
+      "topic": "economics_and_policy",
+      "weight": 1.3,
+      "note": "Partially paywalled"
+    },
+    {
+      "id": "noahpinion",
+      "name": "Noahpinion (Noah Smith)",
+      "url": "https://noahpinion.substack.com/feed",
+      "type": "substack",
+      "topic": "economics_and_policy",
+      "weight": 1.3
+    },
+    {
+      "id": "the_diff",
+      "name": "The Diff (Byrne Hobart)",
+      "url": "https://diff.substack.com/feed",
+      "type": "substack",
+      "topic": "economics_and_policy",
+      "weight": 1.5,
+      "note": "Finance/tech crossover. Partially paywalled."
+    },
+    {
+      "id": "bet_on_it",
+      "name": "Bet On It (Bryan Caplan)",
+      "url": "https://betonit.substack.com/feed",
+      "type": "substack",
+      "topic": "economics_and_policy",
+      "weight": 1.2
+    },
+    {
+      "id": "kyla_scanlon",
+      "name": "Let's Appreciate (Kyla Scanlon)",
+      "url": "https://kyla.substack.com/feed",
+      "type": "substack",
+      "topic": "economics_and_policy",
+      "weight": 1.2
+    },
+    {
+      "id": "cutting_room_floor",
+      "name": "The Cutting Room Floor (Jerusalem Demsas)",
+      "url": "https://demsas.substack.com/feed",
+      "type": "substack",
+      "topic": "economics_and_policy",
+      "weight": 1.0
+    },
+    {
+      "id": "astral_codex_ten",
+      "name": "Astral Codex Ten (Scott Alexander)",
+      "url": "https://astralcodexten.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.8
+    },
+    {
+      "id": "the_zvi",
+      "name": "Don't Worry About the Vase (Zvi)",
+      "url": "https://thezvi.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.5
+    },
+    {
+      "id": "overcoming_bias",
+      "name": "Overcoming Bias (Robin Hanson)",
+      "url": "https://overcomingbias.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.3
+    },
+    {
+      "id": "andrew_sullivan",
+      "name": "The Weekly Dish (Andrew Sullivan)",
+      "url": "https://andrewsullivan.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.2,
+      "note": "Partially paywalled"
+    },
+    {
+      "id": "the_free_press",
+      "name": "The Free Press (Bari Weiss)",
+      "url": "https://thefp.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.3
+    },
+    {
+      "id": "freddie_deboer",
+      "name": "Freddie deBoer",
+      "url": "https://freddiedeboer.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.2
+    },
+    {
+      "id": "gwern",
+      "name": "Gwern Newsletter",
+      "url": "https://gwern.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.5,
+      "note": "Infrequent but very high value"
+    },
+    {
+      "id": "lesswrong",
+      "name": "LessWrong (Community)",
+      "url": "https://www.lesswrong.com/feed.xml",
+      "type": "rss",
+      "topic": "culture_and_ideas",
+      "weight": 1.0
+    },
+    {
+      "id": "ringer_nba_rss",
+      "name": "The Ringer NBA Show (RSS)",
+      "url": "https://feeds.megaphone.fm/the-ringer-nba-show",
+      "type": "rss",
+      "topic": "nba",
+      "weight": 0.8,
+      "note": "RSS for episode titles. Full transcription via podcasts section."
+    },
+    {
+      "id": "lowe_post_rss",
+      "name": "The Lowe Post (RSS)",
+      "url": "https://feeds.megaphone.fm/ESP3625084333",
+      "type": "rss",
+      "topic": "nba",
+      "weight": 0.8,
+      "note": "RSS for episode titles. Full transcription via podcasts section."
+    },
+    {
+      "id": "hoopshype",
+      "name": "HoopsHype",
+      "url": "https://hoopshype.com/feed/",
+      "type": "rss",
+      "topic": "nba",
+      "weight": 1.0,
+      "note": "NBA rumors, trades, free agency"
+    },
+    {
+      "id": "espn_nba",
+      "name": "ESPN NBA",
+      "url": "https://www.espn.com/espn/rss/nba/news",
+      "type": "rss",
+      "topic": "nba",
+      "weight": 0.8
+    },
+    {
+      "id": "puck_hollywood",
+      "name": "Puck (Matthew Belloni)",
+      "url": "https://puck.news/feed/",
+      "type": "rss",
+      "topic": "entertainment_and_media",
+      "weight": 1.5,
+      "note": "Entertainment industry insider \u2014 Belloni's new home"
+    },
+    {
+      "id": "deadline",
+      "name": "Deadline Hollywood",
+      "url": "https://deadline.com/feed/",
+      "type": "rss",
+      "topic": "entertainment_and_media",
+      "weight": 1.0,
+      "note": "Industry trades \u2014 deals, greenlights, box office"
+    },
+    {
+      "id": "hollywood_reporter",
+      "name": "The Hollywood Reporter",
+      "url": "https://www.hollywoodreporter.com/feed/",
+      "type": "rss",
+      "topic": "entertainment_and_media",
+      "weight": 1.0
+    },
+    {
+      "id": "peter_attia_blog",
+      "name": "Peter Attia Blog",
+      "url": "https://peterattiamd.com/feed/",
+      "type": "rss",
+      "topic": "health_and_longevity",
+      "weight": 1.2
+    },
+    {
+      "id": "the_race_f1",
+      "name": "The Race",
+      "url": "https://the-race.com/feed/",
+      "type": "rss",
+      "topic": "f1",
+      "weight": 0.8
+    },
+    {
+      "id": "economist_intelligence",
+      "name": "The Economist",
+      "url": "https://www.economist.com/rss",
+      "type": "rss",
+      "topic": "general",
+      "weight": 1.0,
+      "note": "World awareness \u2014 may be paywalled"
+    },
+    {
+      "id": "innermost_loop",
+      "name": "The Innermost Loop",
+      "url": "https://theinnermostloop.substack.com/feed",
+      "type": "substack",
+      "topic": "ai_and_tech",
+      "weight": 1.5,
+      "note": "AI engineering and research deep dives"
+    },
+    {
+      "id": "postcards_from_barsoom",
+      "name": "Postcards from Barsoom",
+      "url": "https://barsoom.substack.com/feed",
+      "type": "substack",
+      "topic": "culture_and_ideas",
+      "weight": 1.0,
+      "note": "Right-of-center tech culture. Monitor for perspective diversity."
+    }
+  ],
+  "youtube_channels": [
+    {
+      "id": "predmtrader",
+      "name": "PredMTrader",
+      "channel": "@PredictionMarketTrader",
+      "channel_id": "UCKc7K9oeHlrYyrCi1TsyxBg",
+      "topic": "prediction_markets",
+      "weight": 3.0,
+      "transcript_pull": true,
+      "note": "TOP TIER. Daily Kalshi streams + clips. 156 videos."
+    },
+    {
+      "id": "karpathy_yt",
+      "name": "Andrej Karpathy",
+      "channel": "@AndrejKarpathy",
+      "channel_id": "UCXUPKJO5MZQN11PqgIvyuvQ",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "transcript_pull": true,
+      "note": "Infrequent but extremely high value"
+    },
+    {
+      "id": "dwarkesh_yt",
+      "name": "Dwarkesh Podcast",
+      "channel": "@DwarkeshPatel",
+      "channel_id": "UCXl4i9dYBrFOabk0xGmbkRA",
+      "topic": "ai_and_tech",
+      "weight": 1.8,
+      "transcript_pull": true
+    },
+    {
+      "id": "ai_explained_yt",
+      "name": "AI Explained",
+      "channel": "@aiexplained-official",
+      "channel_id": "UCNJ1Ymd5yFuUPtn21xtRbbw",
+      "topic": "ai_and_tech",
+      "weight": 1.5,
+      "transcript_pull": true
+    },
+    {
+      "id": "locksy_twitch",
+      "name": "Locksy (Twitch VODs)",
+      "channel": "@locksy",
+      "channel_id": "",
+      "platform": "twitch",
+      "topic": "prediction_markets",
+      "weight": 3.0,
+      "transcript_pull": false,
+      "note": "Twitch streamer \u2014 positions scraped separately via browser. No YT channel ID."
+    }
+  ],
+  "x_only_accounts": [
+    {
+      "id": "locksy",
+      "handle": "locksy",
+      "topic": "prediction_markets",
+      "weight": 3.0,
+      "note": "TOP TIER but X-only. Publishes positions + livestreams. No YouTube/blog found. Need alternative approach (manual input or X scraping)."
+    },
+    {
+      "id": "hive_live",
+      "handle": "HiveLiveHQ",
+      "topic": "prediction_markets",
+      "weight": 2.0,
+      "note": "X Spaces livestreams only. No external platform."
+    },
+    {
+      "id": "0xTyrael",
+      "handle": "0xTyrael",
+      "topic": "prediction_markets",
+      "weight": 1.5,
+      "note": "#1 Mentions Market trader. X-only."
+    },
+    {
+      "id": "gaetend",
+      "handle": "GaetenD",
+      "topic": "prediction_markets",
+      "weight": 1.5,
+      "note": "$530K+ on Kalshi culture markets. X-only."
+    },
+    {
+      "id": "shams",
+      "handle": "ShamsCharania",
+      "topic": "nba",
+      "weight": 0.8,
+      "note": "NBA breaking news. ESPN, no RSS."
+    }
+  ],
+  "podcasts": [
+    {
+      "id": "ringer_nba",
+      "name": "The Ringer NBA Show",
+      "url": "https://feeds.megaphone.fm/the-ringer-nba-show",
+      "topic": "nba",
+      "weight": 2.0,
+      "max_episodes": 3,
+      "max_audio_minutes": 30,
+      "note": "Group Chat, Real Ones \u2014 high-signal NBA discussion"
+    },
+    {
+      "id": "lowe_post",
+      "name": "The Lowe Post (Zach Lowe)",
+      "url": "https://feeds.megaphone.fm/ESP3625084333",
+      "topic": "nba",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30
+    },
+    {
+      "id": "kevin_oconnor",
+      "name": "The Kevin O'Connor Show",
+      "url": "https://feeds.simplecast.com/IFzdBR43",
+      "topic": "nba",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30
+    },
+    {
+      "id": "hoop_collective",
+      "name": "Brian Windhorst & The Hoop Collective",
+      "url": "https://feeds.megaphone.fm/ESP4033296397",
+      "topic": "nba",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 30
+    },
+    {
+      "id": "star_spangled",
+      "name": "Star Spangled Gamblers",
+      "url": "https://starspangledgamblers.libsyn.com/rss",
+      "topic": "prediction_markets",
+      "weight": 2.5,
+      "max_episodes": 3,
+      "max_audio_minutes": 30,
+      "note": "Political prediction market community hub"
+    },
+    {
+      "id": "bill_simmons",
+      "name": "The Bill Simmons Podcast",
+      "url": "https://feeds.megaphone.fm/the-bill-simmons-podcast",
+      "topic": "entertainment_and_media",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30
+    },
+    {
+      "id": "the_town",
+      "name": "The Town with Matthew Belloni",
+      "url": "https://feeds.megaphone.fm/the-town-with-matthew-belloni",
+      "topic": "entertainment_and_media",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 30
+    },
+    {
+      "id": "rewatchables",
+      "name": "The Rewatchables",
+      "url": "https://feeds.megaphone.fm/the-rewatchables",
+      "topic": "entertainment_and_media",
+      "weight": 1.0,
+      "max_episodes": 1,
+      "max_audio_minutes": 20,
+      "note": "Lower priority \u2014 movie discussion, not news"
+    },
+    {
+      "id": "ezra_klein",
+      "name": "The Ezra Klein Show",
+      "url": "https://feeds.simplecast.com/82FI35Px",
+      "topic": "economics_and_policy",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "NYT \u2014 geopolitics, policy, interviews. Core info diet."
+    },
+    {
+      "id": "plain_english",
+      "name": "Plain English with Derek Thompson",
+      "url": "https://feeds.megaphone.fm/plain-english",
+      "topic": "economics_and_policy",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Ringer \u2014 clear explainers on news, tech, economics"
+    },
+    {
+      "id": "economist_intelligence",
+      "name": "The Intelligence (The Economist)",
+      "url": "https://rss.acast.com/theintelligencepodcast",
+      "topic": "economics_and_policy",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Daily global news briefing from The Economist"
+    },
+    {
+      "id": "diamandis_moonshots",
+      "name": "Moonshots with Peter Diamandis",
+      "url": "https://feeds.megaphone.fm/DVVTS2890392624",
+      "topic": "ai_and_tech",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Abundance mindset, tech futures, longevity"
+    },
+    {
+      "id": "forward_guidance",
+      "name": "Forward Guidance (Jack Farley)",
+      "url": "https://feeds.megaphone.fm/forwardguidance",
+      "topic": "economics_and_policy",
+      "weight": 2.5,
+      "max_episodes": 3,
+      "max_audio_minutes": 40,
+      "note": "Blockworks \u2014 macro, rates, markets, crypto. High-signal financial interviews."
+    },
+    {
+      "id": "conversations_coleman",
+      "name": "Conversations with Coleman",
+      "url": "https://feeds.megaphone.fm/TIF2706263653",
+      "topic": "culture_and_ideas",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Coleman Hughes \u2014 rationalist-adjacent, culture, policy, longform interviews"
+    },
+    {
+      "id": "ai_and_i",
+      "name": "AI and I (Dan Shipper)",
+      "url": "https://feeds.transistor.fm/how-do-you-use-chatgpt",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Every.to \u2014 AI power users, how people actually use AI tools"
+    },
+    {
+      "id": "freakonomics",
+      "name": "Freakonomics Radio",
+      "url": "https://feeds.simplecast.com/Y8lFbOT4",
+      "topic": "economics_and_policy",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Dubner \u2014 economics, behavioral science, policy"
+    },
+    {
+      "id": "conversations_tyler",
+      "name": "Conversations with Tyler",
+      "url": "https://cowenconvos.libsyn.com/rss",
+      "topic": "economics_and_policy",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Tyler Cowen \u2014 economics, AI, culture, deep interviews"
+    },
+    {
+      "id": "no_priors",
+      "name": "No Priors (Sarah Guo & Elad Gil)",
+      "url": "https://feeds.megaphone.fm/nopriors",
+      "topic": "ai_and_tech",
+      "weight": 2.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "VC-backed AI podcast \u2014 funding, startups, market analysis"
+    },
+    {
+      "id": "scriptnotes",
+      "name": "Scriptnotes (John August & Craig Mazin)",
+      "url": "https://scriptnotes.libsyn.com/rss",
+      "topic": "entertainment_and_media",
+      "weight": 2.0,
+      "max_episodes": 1,
+      "max_audio_minutes": 30,
+      "note": "Screenwriting craft + industry. Kyle's professional community."
+    },
+    {
+      "id": "ai_daily_brief_pod",
+      "name": "AI Daily Brief (Nathaniel Whittemore)",
+      "url": "https://anchor.fm/s/f7cac464/podcast/rss",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "max_episodes": 3,
+      "max_audio_minutes": 20,
+      "note": "Daily AI news roundup \u2014 short episodes, high frequency"
+    },
+    {
+      "id": "80000_hours",
+      "name": "80,000 Hours Podcast",
+      "url": "https://feeds.transistor.fm/80000-hours-podcast",
+      "topic": "culture_and_ideas",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "EA/rationalist \u2014 AI safety, careers, longform"
+    },
+    {
+      "id": "ai_summer",
+      "name": "AI Summer",
+      "url": "https://api.substack.com/feed/podcast/3699040.rss",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Dean Ball + co \u2014 AI policy deep dives"
+    },
+    {
+      "id": "blocked_and_reported",
+      "name": "Blocked and Reported",
+      "url": "https://api.substack.com/feed/podcast/500230.rss",
+      "topic": "culture_and_ideas",
+      "weight": 1.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Culture wars, internet culture, media criticism"
+    },
+    {
+      "id": "econ_102",
+      "name": "\"Econ 102\" with Noah Smith and Erik Torenberg",
+      "url": "https://feeds.simplecast.com/dG9scp92",
+      "topic": "economics_and_policy",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Noah Smith + Erik Torenberg \u2014 economics, tech, policy"
+    },
+    {
+      "id": "epoch_after_hours",
+      "name": "Epoch After Hours",
+      "url": "https://feeds.transistor.fm/epoch-ai-after-hours",
+      "topic": "ai_and_tech",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Epoch AI \u2014 AI capabilities research, benchmarks"
+    },
+    {
+      "id": "foundmyfitness",
+      "name": "FoundMyFitness",
+      "url": "https://rss.libsyn.com/shows/51714/destinations/184296.xml",
+      "topic": "health_and_longevity",
+      "weight": 1.2,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Rhonda Patrick \u2014 longevity, nutrition science"
+    },
+    {
+      "id": "hidden_brain",
+      "name": "Hidden Brain",
+      "url": "https://feeds.simplecast.com/kwWc0lhf",
+      "topic": "culture_and_ideas",
+      "weight": 1.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Shankar Vedantam \u2014 behavioral science, psychology"
+    },
+    {
+      "id": "huberman_lab",
+      "name": "Huberman Lab",
+      "url": "https://feeds.megaphone.fm/hubermanlab",
+      "topic": "health_and_longevity",
+      "weight": 1.2,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Andrew Huberman \u2014 neuroscience, health protocols"
+    },
+    {
+      "id": "lets_appreciate",
+      "name": "Let's Appreciate",
+      "url": "https://feeds.transistor.fm/lets-appreciate",
+      "topic": "economics_and_policy",
+      "weight": 1.2,
+      "max_episodes": 2,
+      "max_audio_minutes": 20,
+      "note": "Kyla Scanlon \u2014 economics, markets, culture"
+    },
+    {
+      "id": "manifold",
+      "name": "Manifold",
+      "url": "https://feeds.transistor.fm/manifold-one",
+      "topic": "prediction_markets",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Manifold Markets podcast \u2014 forecasting, prediction markets"
+    },
+    {
+      "id": "modern_wisdom",
+      "name": "Modern Wisdom",
+      "url": "https://feeds.megaphone.fm/SIXMSB5088139739",
+      "topic": "culture_and_ideas",
+      "weight": 1.3,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Chris Williamson \u2014 interviews, psychology, culture"
+    },
+    {
+      "id": "odd_lots",
+      "name": "Odd Lots",
+      "url": "https://www.omnycontent.com/d/playlist/e73c998e-6e60-432f-8610-ae210140c5b1/8a94442e-5a74-4fa2-8b8d-ae27003a8d6b/982f5071-765c-403d-969d-ae27003a8d83/podcast.rss",
+      "topic": "economics_and_policy",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Bloomberg \u2014 markets, macro, finance deep dives"
+    },
+    {
+      "id": "philosophize_this",
+      "name": "Philosophize This!",
+      "url": "https://feeds.megaphone.fm/QCD6036500916",
+      "topic": "culture_and_ideas",
+      "weight": 1.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Philosophy explainers \u2014 lower priority"
+    },
+    {
+      "id": "risky_business_with_nate_silver",
+      "name": "Risky Business with Nate Silver and Maria Konnikova",
+      "url": "https://www.omnycontent.com/d/playlist/e73c998e-6e60-432f-8610-ae210140c5b1/951120d9-cf6e-4224-93d7-b15c014dcea5/eb5e885e-6644-4680-aec4-b15c0150ffc0/podcast.rss",
+      "topic": "prediction_markets",
+      "weight": 2.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Nate Silver + Maria Konnikova \u2014 poker, prediction, risk"
+    },
+    {
+      "id": "sharp_tech_with_ben_thompson",
+      "name": "Sharp Tech with Ben Thompson",
+      "url": "https://sharptech.fm/feed/podcast",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Stratechery \u2014 tech strategy, business models"
+    },
+    {
+      "id": "the_athletic_nba_daily",
+      "name": "The Athletic NBA Daily",
+      "url": "https://feeds.acast.com/public/shows/6818c192eb737caf8cadd833",
+      "topic": "nba",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 20,
+      "note": "Athletic \u2014 daily NBA news, transactions"
+    },
+    {
+      "id": "the_cognitive_revolution",
+      "name": "\"The Cognitive Revolution\" | AI Builders, Researchers, and Live Player Analysis",
+      "url": "https://feeds.megaphone.fm/RINTP3108857801",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Nathan Labenz \u2014 AI builders, researchers, analysis"
+    },
+    {
+      "id": "the_marginal_revolution_podcast",
+      "name": "The Marginal Revolution Podcast",
+      "url": "https://rss.libsyn.com/shows/548312/destinations/4729682.xml",
+      "topic": "economics_and_policy",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Tyler Cowen + Alex Tabarrok \u2014 economics deep dives"
+    },
+    {
+      "id": "the_market_huddle",
+      "name": "The Market Huddle",
+      "url": "https://markethuddle.com/feed/podcast/",
+      "topic": "economics_and_policy",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Trading, macro, markets discussion"
+    },
+    {
+      "id": "the_peter_attia_drive",
+      "name": "The Peter Attia Drive",
+      "url": "https://rss.libsyn.com/shows/121729/destinations/713489.xml",
+      "topic": "health_and_longevity",
+      "weight": 1.2,
+      "max_episodes": 2,
+      "max_audio_minutes": 40,
+      "note": "Peter Attia \u2014 longevity, medicine, health optimization"
+    },
+    {
+      "id": "the_prestige_tv_podcast",
+      "name": "The Prestige TV Podcast",
+      "url": "https://feeds.megaphone.fm/tvconcierge",
+      "topic": "entertainment_and_media",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 20,
+      "note": "Andy Greenwald + Chris Ryan \u2014 TV criticism"
+    },
+    {
+      "id": "the_race_f1_podcast",
+      "name": "The Race F1 Podcast",
+      "url": "https://feeds.acast.com/public/shows/6819ae2bf30c20bff775e8a1",
+      "topic": "f1",
+      "weight": 0.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 20,
+      "note": "F1 analysis and news"
+    },
+    {
+      "id": "the_ringer_f1_show",
+      "name": "The Ringer F1 Show",
+      "url": "https://feeds.megaphone.fm/paddock-pass",
+      "topic": "f1",
+      "weight": 0.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 20,
+      "note": "Ringer F1 coverage"
+    },
+    {
+      "id": "the_watch",
+      "name": "The Watch",
+      "url": "https://feeds.megaphone.fm/the-watch",
+      "topic": "entertainment_and_media",
+      "weight": 1.5,
+      "max_episodes": 2,
+      "max_audio_minutes": 20,
+      "note": "Andy Greenwald + Chris Ryan \u2014 TV/film criticism"
+    },
+    {
+      "id": "the_a16z_show",
+      "name": "The a16z Show",
+      "url": "https://feeds.simplecast.com/JGE3yC0V",
+      "topic": "ai_and_tech",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Andreessen Horowitz \u2014 tech, AI, startups"
+    },
+    {
+      "id": "works_in_progress",
+      "name": "Works in Progress Podcast",
+      "url": "https://feeds.transistor.fm/works-in-progress-podcast",
+      "topic": "culture_and_ideas",
+      "weight": 1.3,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Progress studies, science, innovation"
+    }
+  ],
+  "twitch_channels": [
+    {
+      "id": "locksy_twitch",
+      "name": "Locksy",
+      "channel": "locksy",
+      "topic": "prediction_markets",
+      "weight": 3.0,
+      "max_vods": 2,
+      "max_audio_minutes": 30,
+      "note": "Top Kalshi trader \u2014 positions and live market commentary"
+    },
+    {
+      "id": "pmtraders",
+      "name": "PredMTrader (Twitch)",
+      "channel": "pmtraders",
+      "topic": "prediction_markets",
+      "weight": 2.5,
+      "max_vods": 2,
+      "max_audio_minutes": 30,
+      "note": "Daily prediction market streams"
+    }
+  ],
+  "topic_weights": {
+    "prediction_markets": 2.5,
+    "ai_and_tech": 2.0,
+    "economics_and_policy": 1.5,
+    "culture_and_ideas": 1.3,
+    "health_and_longevity": 1.2,
+    "entertainment_and_media": 1.0,
+    "finance_and_markets": 1.0,
+    "f1": 0.8,
+    "nba": 0.8,
+    "general": 0.5
+  }
+}

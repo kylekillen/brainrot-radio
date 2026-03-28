@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "updated": "2026-03-02",
+  "note": "Beat reporter definitions for parallel agent show generation",
+
+  "beats": [
+    {
+      "id": "ai_tech",
+      "name": "AI & Technology",
+      "sources": [
+        "rss:techmeme", "rss:hacker_news", "rss:techcrunch_ai", "rss:ars_ai",
+        "rss:claude_code_releases", "rss:one_useful_thing", "rss:hyperdimensional",
+        "youtube:karpathy_yt", "youtube:dwarkesh_yt", "youtube:ai_explained_yt"
+      ],
+      "target_segments": 2,
+      "editorial_notes": "Feature high-signal essays and technical breakthroughs. Prioritize pieces getting discussion across rationalist/tech circles over generic news summaries."
+    },
+    {
+      "id": "prediction_markets",
+      "name": "Prediction Markets & Trading",
+      "sources": [
+        "rss:event_horizon", "rss:bernard_bulletin", "rss:nate_silver",
+        "rss:prediction_market_pulse", "rss:prediction_markets_substack",
+        "podcast:star_spangled", "podcast:risky_business",
+        "twitch:locksy_twitch", "twitch:pmtraders",
+        "positions:locksy", "positions:foster",
+        "x:HiveLiveHQ", "x:0xTyrael", "x:gaetend"
+      ],
+      "target_segments": 2,
+      "editorial_notes": "Focus on TRADING discussion — positions, strategies, specific markets, edge. Frame regulatory stories through the trader lens. Include specific quotes from podcast/stream transcripts."
+    },
+    {
+      "id": "nba_sports",
+      "name": "NBA & Sports",
+      "sources": [
+        "rss:espn_nba", "rss:hoopshype",
+        "podcast:ringer_nba", "podcast:lowe_post",
+        "podcast:kevin_oconnor", "podcast:hoop_collective"
+      ],
+      "target_segments": 2,
+      "editorial_notes": "Trades, transactions, notable storylines. Pull specific analyst quotes from podcast transcripts. Connect to prediction market angles where applicable."
+    },
+    {
+      "id": "entertainment",
+      "name": "Entertainment & Film/TV",
+      "sources": [
+        "rss:puck_hollywood", "rss:deadline", "rss:hollywood_reporter",
+        "podcast:bill_simmons", "podcast:the_town", "podcast:rewatchables"
+      ],
+      "target_segments": 1,
+      "editorial_notes": "Industry news, deals, greenlights, box office. Kyle is a screenwriter/producer — engage at that level. Matthew Belloni and Puck are highest signal."
+    }
+  ],
+
+  "show_structure": {
+    "intro": "Cold open with the biggest story, then show name + date",
+    "segments": "4-7 segments across beats, each with specific quotes from sources",
+    "quick_hits": "2-3 shorter items that didn't warrant full segments",
+    "outro": "Summary + tease for next episode",
+    "target_words": "3500-5000",
+    "target_minutes": "15-20"
+  }
+}
