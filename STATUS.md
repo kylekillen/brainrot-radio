@@ -1,5 +1,8 @@
 # Killen Time — Session Notes
 
+### 2026-06-09 — Reviewed PR #1: approved and merged
+Concurrency lock fix for double-episode problem. All three gates passed: lock logic correctly handles fresh/live/dead/stale-lock scenarios; step 4 direct python3 calls are coherent with the rest of the script; scope matches briefing. Pre-existing production drift committed alongside the fix (--model sonnet, retries, CODE_VOICE_MUTE=1, step 4 refactor) — author was transparent about this. Non-blocking note: artwork topics and publish description are now hardcoded strings rather than Claude-written; worth revisiting if episode art quality declines.
+
 ### 2026-06-08 05:29 — Two-pass episode writing leaves characteristic QC artifacts; add to checklist
 
 When an episode is written in two separate passes (first half: AI/tech + prediction markets; second half: NBA + entertainment + economics), expect: (1) duplicate show intro from the second-pass writer not knowing the first already opened the show, (2) duplicate story mentions as the second writer covers front-office items already handled, and (3) analytical/thematic segments from the second half landing in the wrong section because they were appended after quick-hits rather than inserted into their topic block. All three appeared in today's 2026-06-08 script and were fixed in QC. The QC agent prompt should explicitly name these patterns when the script was written in two passes.
