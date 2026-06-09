@@ -16,18 +16,16 @@
       "editorial_notes": "Feature high-signal essays and technical breakthroughs. Prioritize pieces getting discussion across rationalist/tech circles over generic news summaries."
     },
     {
-      "id": "prediction_markets",
-      "name": "Prediction Markets & Trading",
+      "id": "agentic_systems",
+      "name": "Agents & Building With AI",
       "sources": [
-        "rss:event_horizon", "rss:bernard_bulletin", "rss:nate_silver",
-        "rss:prediction_market_pulse", "rss:prediction_markets_substack",
-        "podcast:star_spangled", "podcast:risky_business",
-        "twitch:locksy_twitch", "twitch:pmtraders",
-        "positions:locksy", "positions:foster",
-        "x:HiveLiveHQ", "x:0xTyrael", "x:gaetend"
+        "rss:claude_code_releases", "rss:latent_space", "rss:simon_willison",
+        "rss:one_useful_thing",
+        "podcast:ai_and_i", "podcast:the_cognitive_revolution", "podcast:no_priors",
+        "podcast:the_a16z_show", "youtube:dwarkesh_yt", "youtube:karpathy_yt"
       ],
-      "target_segments": 2,
-      "editorial_notes": "Focus on TRADING discussion — positions, strategies, specific markets, edge. Frame regulatory stories through the trader lens. Include specific quotes from podcast/stream transcripts."
+      "target_segments": 3,
+      "editorial_notes": "FEATURED BEAT. How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, dev-loop optimization. Frame every story through 'what can WE steal for our own multi-agent setup' — Kyle is building a team of delegated AIs and wants to optimize that system. Practitioner-level and specific; quote the actual techniques."
     },
     {
       "id": "nba_sports",
@@ -49,6 +47,16 @@
       ],
       "target_segments": 1,
       "editorial_notes": "Industry news, deals, greenlights, box office. Kyle is a screenwriter/producer — engage at that level. Matthew Belloni and Puck are highest signal."
+    },
+    {
+      "id": "prediction_markets",
+      "name": "Prediction Markets (quick-hit, de-emphasized)",
+      "sources": [
+        "rss:event_horizon", "rss:nate_silver",
+        "podcast:star_spangled", "positions:locksy", "positions:foster"
+      ],
+      "target_segments": 0,
+      "editorial_notes": "DE-EMPHASIZED as of 2026-06-09 — Kyle's focus has moved off prediction markets. Include at most ONE short quick-hit, and only if there is genuinely notable movement (a big position change, a market resolving, a real edge). Otherwise skip entirely. No full trading block."
     }
   ],
 

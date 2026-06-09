@@ -13,12 +13,14 @@ Personalized news show generator — two AI hosts discuss the top stories from a
            ┌──────────┬───────┴────────┬──────────┐
            ▼          ▼                ▼          ▼
     ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐
-    │ AI/Tech    │ │ Pred Mkts  │ │ NBA/Sports │ │ Entertain. │
-    │ Beat Agent │ │ Beat Agent │ │ Beat Agent │ │ Beat Agent │
+    │ AI/Tech    │ │ Agents &   │ │ NBA/Sports │ │ Entertain. │
+    │ Beat Agent │ │ Building★  │ │ Beat Agent │ │ Beat Agent │
     └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └─────┬──────┘
           │              │              │              │
-    RSS + YouTube   Kalshi scrape  Podcast RSS    RSS + pods
-    + blog fetches  + Twitch VODs  + RSS + trades  + Twitch
+    RSS + YouTube   Claude Code +  Podcast RSS    RSS + pods
+    + blog fetches  builder pods   + RSS + trades  + Twitch
+                    + newsletters
+    (★ featured beat — prediction markets demoted to a quick-hit)
 ```
 
 **Cost per episode: $0.00** — script written in Claude Code session, TTS and mixing are free.
@@ -117,8 +119,9 @@ Do NOT render until QC passes clean.
 
 **Topic balance per episode — ENFORCE DIVERSITY:**
 - Every episode should touch at least 4 different topic areas
-- Prediction markets: Focus on TRADING discussion (positions, strategies, specific markets, edge, what to buy/sell). NOT meta-discussion about the state/regulation of prediction markets as an industry unless there's a direct trading implication. When covering regulatory threats, frame through the trader lens: "if you're holding X, here's what this means for your position."
-- AI/Tech: Feature high-signal essays (Dean Ball, Ethan Mollick, Zvi) that are getting discussion in circles Kyle follows. Prioritize these over generic news summaries.
+- **Agents & Building With AI (FEATURED BEAT — 2026-06-09):** This is now the headline beat, sharing the front half of the show with AI/Tech. Cover how people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, dev-loop optimization. Frame every story through "what can WE steal for our own multi-agent setup" — Kyle is building a team of delegated AIs and wants to optimize that system. Be practitioner-level and specific: quote the actual techniques and configs, not vibes. Sources: Claude Code releases, Latent Space, Simon Willison, One Useful Thing, AI and I, The Cognitive Revolution, No Priors, a16z, Dwarkesh, Karpathy.
+- **Prediction markets (DE-EMPHASIZED — 2026-06-09):** Kyle's focus has moved off prediction markets. Demote to at most ONE short quick-hit, and only when there's genuinely notable movement (a big position change, a market resolving, a real edge worth flagging). Otherwise skip the beat entirely. No full multi-segment trading block anymore. The detailed "prediction market editorial principles" below still apply *if* you do include a quick-hit, but the default is brevity or omission.
+- AI/Tech: Feature high-signal essays (Dean Ball, Ethan Mollick, Zvi) that are getting discussion in circles Kyle follows. Prioritize these over generic news summaries. Hand off agent-harness / how-to-build material to the Agents & Building beat above.
 - NBA: Should appear in most episodes. Trades, transactions, notable storylines. Downweight volume, not eliminate. **Pull specific quotes from Ringer NBA, Zach Lowe, KOC podcast transcripts.**
 - Entertainment/Film/TV: Kyle is a screenwriter/producer. Industry news, deals, greenlights, box office. Should appear regularly.
 - Economics/Culture: Include when there's something genuinely interesting from the rationalist/policy blogosphere.
@@ -132,7 +135,14 @@ Do NOT render until QC passes clean.
 
 **Signal detection:** When the same story appears across multiple high-weight feeds AND is getting discussion on X (visible in Techmeme cross-references or HN comment counts), that's a signal to FEATURE it, not just mention it. The Dean Ball essay pattern: high engagement across circles Kyle follows = lead segment material.
 
-**Prediction market editorial principles:**
+**Agents & Building editorial principles (FEATURED BEAT):**
+- The point of this beat is for Kyle AND the hosts to LEARN how to run a better multi-agent system. Treat every item as "is there a technique here we should adopt?"
+- Get concrete. "They use subagents" is useless; "they spawn one reviewer agent per PR with a three-gate rubric and never let it merge its own work" is the good version. Extract the actual mechanism — the prompt structure, the file layout, the orchestration pattern, the eval loop.
+- Topics that belong here: harness/CLAUDE.md design, context engineering, memory and state outside the context window, subagent and multi-agent orchestration, project organization for AI work, evals and quality gates, MCP/tooling, delegation patterns, what's new in Claude Code and rival agent frameworks.
+- When two sources describe the same practice, synthesize the strongest version and note who's doing it. Name names — listeners want to know whose setup to copy.
+- Connect to Kyle's own stack when it's genuine: the observer-system, the COS, the dispatcher/PR-reviewer loop, this very podcast pipeline. "Here's how we could apply this to our setup" is exactly the payoff.
+
+**Prediction market editorial principles** (DE-EMPHASIZED 2026-06-09 — these apply only on the rare day you include a prediction-markets quick-hit; the default is to skip the beat):
 - Kyle is a sophisticated prediction market trader. Don't reach for shallow takes.
 - Regulatory tail risk ≠ getting caught holding positions. Markets refund/adjust on regulatory change. The real risk is PLATFORMS shutting down entirely.
 - Prediction markets exist to surface crowd wisdom. The community has argued FOR insider trading (it improves information accuracy). Markets are considered dangerous to military operations because they incentivize premature information release. That's the INTERESTING discussion — not "it looks bad."
@@ -219,8 +229,8 @@ TTS engine: Kokoro (local MLX, `mlx-community/Kokoro-82M-bf16`). Fallback: Edge 
 
 - Recency: exponential decay, 6-hour half-life
 - Feed weights: per-feed in feeds.json (Event Horizon 3.0, Techmeme 2.0, etc.)
-- Topic weights: prediction_markets=2.5, ai_and_tech=2.0, economics=1.5, etc.
-- Keyword boosts: prediction market (1.8), Claude Code (2.0), etc.
+- Topic weights: agentic_systems=2.5, ai_and_tech=2.0, economics=1.5, …, prediction_markets=1.0 (demoted 2026-06-09)
+- Keyword boosts: Claude Code / agent harness / subagents / multi-agent / context engineering (~1.25-1.3); prediction-market terms dropped to 1.0 (no longer boosted)
 - Dedup: >40% title word overlap → merge (keep higher score)
 - Topic diversity: at least 1 story per active topic guaranteed in brief
 - **Age labels: today/yesterday/this week/older — articles >48h marked NOT BREAKING**

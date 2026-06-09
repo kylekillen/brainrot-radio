@@ -83,16 +83,20 @@ if [ -f "$BRAINROT_DIR/output/killen-time-${TODAY}.mp3" ]; then
     exit 0
 fi
 
-# ─── Concurrency gate: don't let a second scheduler double-publish ───────────
-# Two things kick off today's episode: the 4 AM launchd job (com.mojo.brainrot-
-# radio) and the ~5 AM "podcast" scheduled task (a backup, see
-# ~/.claude/scheduled-tasks/podcast/). The 4 AM run can still be rendering or
-# publishing when the 5 AM one starts, so the MP3-existence guard above isn't
-# enough on its own — without this lock both runs proceed and publish a second
-# episode (ep-...-02). This lock makes the later run stand down while an earlier
-# run for the same day is still alive, so the backup only does real work if the
-# primary actually died. A dead/stale (>3h) lock holder is taken over so a
-# crashed primary doesn't block recovery.
+# ─── Concurrency gate: don't let two runs double-publish ─────────────────────
+# The primary 4 AM launchd job (com.mojo.brainrot-radio) plus its recovery
+# checker (com.mojo.brainrot-check at 5:15/5:45 → check-episode.sh) can overlap:
+# if the 4 AM run is still rendering/publishing when the checker fires, the
+# MP3-existence guard above isn't enough on its own and both runs publish a
+# second episode (ep-...-02). This lock makes the later run stand down while an
+# earlier run for the same day is still alive, so recovery only does real work
+# if the primary actually died. A dead/stale (>3h) lock holder is taken over so
+# a crashed primary doesn't block recovery.
+#
+# NOTE (2026-06-09): a third trigger — a 5 AM Claude Desktop scheduled task
+# ("podcast") — used to run this script a second time each morning and was the
+# main duplicate source. That backup was REMOVED at Kyle's request; only the
+# 4 AM job + 5:15/5:45 recovery checker remain. The lock is kept as a safety net.
 LOCK="$BRAINROT_DIR/.tmp/generate-${TODAY}.lock"
 if [ -f "$LOCK" ]; then
     LOCK_PID=$(cat "$LOCK" 2>/dev/null || true)
@@ -134,7 +138,7 @@ fi
 
 SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 
-# ─── Step 2a: Pass 1 — Intro + AI/Tech + Prediction Markets ─────────────────
+# ─── Step 2a: Pass 1 — Intro + AI/Tech + Agents & Building ───────────────────
 cat > "$BRAINROT_DIR/.tmp/step2a-pass1.txt" <<PROMPT_EOF
 You are producing the FIRST HALF of a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
 
@@ -142,20 +146,20 @@ Read CLAUDE.md for full editorial guidelines, voice format, and content directio
 
 TIME OF DAY: ${GREETING_HINT}
 
-YOUR JOB: Write the INTRO and the first half of the episode covering AI/TECH and PREDICTION MARKETS beats. Write to: ${SCRIPT_FILE}
+YOUR JOB: Write the INTRO and the first half of the episode covering AI/TECH and the featured AGENTS & BUILDING WITH AI beat. Write to: ${SCRIPT_FILE}
 
-You are writing ONLY the first half. Another pass will write the second half (NBA, Entertainment, Economics/Culture, and the outro). Do NOT write an outro or sign-off — end your section with a [TRANSITION] tag.
+You are writing ONLY the first half. Another pass will write the second half (NBA, Entertainment, Economics/Culture, a brief prediction-markets quick-hit, and the outro). Do NOT write an outro or sign-off — end your section with a [TRANSITION] tag.
 
 Steps:
 1. Read .tmp/topic-brief.txt for today's ranked stories
-2. Read up to 3 podcast transcripts from .tmp/transcripts/ — pick the ones most relevant to AI/tech and prediction markets.
-3. Read Substack full articles in .tmp/articles/ — focus on AI/tech and prediction market articles.
+2. Read up to 3 podcast transcripts from .tmp/transcripts/ — pick the ones most relevant to AI/tech and to how people build with / run AI agents.
+3. Read Substack full articles in .tmp/articles/ — focus on AI/tech and agent-building/practitioner articles.
 4. Read ALL scripts/.covered-*.json files for dedup.
 5. Read recent episode scripts (see DEDUP CONTEXT below) for dedup.
 6. Write to ${SCRIPT_FILE}:
    - Show intro: cold open with the biggest story, show name + date
-   - AI & Technology segments (2-3 segments, ~3000-4000 words): Feature high-signal essays, technical breakthroughs, pieces getting discussion
-   - Prediction Markets & Trading segments (2-3 segments, ~3000-4000 words): Positions, strategies, specific markets, edge. Quote from podcasts/streams.
+   - AI & Technology segments (1-2 segments, ~2500-3500 words): Feature high-signal essays, technical breakthroughs, pieces getting discussion
+   - **Agents & Building With AI segments (2-3 segments, ~3500-4500 words) — THIS IS THE FEATURED BEAT OF THE SHOW.** How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, and dev-loop optimization. Pull concrete, stealable practices from Claude Code releases, Latent Space, Simon Willison, One Useful Thing, AI and I, The Cognitive Revolution, No Priors, a16z, Dwarkesh, Karpathy. Frame every story through "what can WE learn for our own multi-agent setup" — Kyle is building a team of delegated AIs and wants to optimize that system. Be specific and practitioner-level; quote the actual techniques, not vibes.
    - End with a [TRANSITION] tag — do NOT write an outro
    - Use BASIL/BROOKE/TRANSITION format (speaker tags in square brackets)
    - Include specific quotes from podcast transcripts and Substack articles
@@ -197,7 +201,7 @@ Read CLAUDE.md for full editorial guidelines, voice format, and content directio
 The first half of the episode has already been written to: ${SCRIPT_FILE}
 READ IT FIRST so you know what topics and stories have already been covered in this episode.
 
-YOUR JOB: APPEND the second half to the EXISTING script file. Cover NBA, Entertainment, Economics/Culture, and write the outro. Do NOT rewrite or duplicate anything from the first half.
+YOUR JOB: APPEND the second half to the EXISTING script file. Cover NBA, Entertainment, Economics/Culture, an optional brief prediction-markets quick-hit, and write the outro. Do NOT rewrite or duplicate anything from the first half.
 
 Steps:
 1. Read ${SCRIPT_FILE} — this is the first half you are continuing from. Note which stories were already covered.
@@ -209,6 +213,7 @@ Steps:
    - NBA & Sports segments (2-3 segments, ~2500-3500 words): Trades, transactions, storylines. Pull analyst quotes.
    - Entertainment & Film/TV segments (1-2 segments, ~2000-3000 words): Industry news, deals, box office. Engage at screenwriter/producer level.
    - Economics/Culture segment (1-2 segments, ~1500-2500 words): Best pieces from the rationalist/policy blogosphere
+   - Prediction Markets quick-hit (OPTIONAL, ~300-600 words, ONE short exchange max): Prediction markets are now a DE-EMPHASIZED beat. Include this only if there is genuinely notable movement today — a big position change, a market resolving, a real edge worth flagging. If nothing rises to that bar, SKIP it entirely. Do not pad. No full multi-segment trading block.
    - Quick Hits: 2-3 shorter items that didn't warrant full segments
    - Outro: Brief recap of the most interesting thread, short sign-off. Keep it tight.
    - Use BASIL/BROOKE/TRANSITION format (speaker tags in square brackets)
@@ -289,7 +294,7 @@ log "TTS render complete"
 log "Generating artwork..."
 # Extract title and topics from script (simple heuristic — first line and first 5 segment topics)
 TITLE="Killen Time — $(date '+%B %-d, %Y')"
-python3 artwork.py --title "$TITLE" --topics "AI, Prediction Markets, NBA, Entertainment, Economics" >> "$RESULT_LOG" 2>&1 || log "Artwork generation failed (non-fatal)"
+python3 artwork.py --title "$TITLE" --topics "AI, Agents & Building, NBA, Entertainment, Economics" >> "$RESULT_LOG" 2>&1 || log "Artwork generation failed (non-fatal)"
 
 log "Mixing audio..."
 MIX_ARGS=(--output "$OUTPUT_MP3")
