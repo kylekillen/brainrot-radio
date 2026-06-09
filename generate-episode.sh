@@ -16,6 +16,10 @@ RESULT_LOG="$BRAINROT_DIR/logs/generate-$RUN_ID.log"
 CLAUDE="/Users/kylekillen/.local/bin/claude"
 TODAY=$(date '+%Y-%m-%d')
 
+# Code Voice: mute phone read-aloud for this non-interactive pipeline so the
+# 5:30 AM podcast generation never narrates its turns to Kyle's phone.
+export CODE_VOICE_MUTE=1
+
 cd "$BRAINROT_DIR"
 source venv/bin/activate
 mkdir -p logs .tmp
@@ -46,7 +50,7 @@ run_claude_step() {
 
     log "Step [$step_name] starting (timeout=${timeout}s)..."
 
-    $CLAUDE --dangerously-skip-permissions -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
+    $CLAUDE --dangerously-skip-permissions --model sonnet -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
     local pid=$!
     local elapsed=0
 
@@ -72,6 +76,35 @@ run_claude_step() {
 }
 
 log "Episode generation starting (run=$RUN_ID)..."
+
+# ─── Guard: skip if today's episode already published ────────────────────────
+if [ -f "$BRAINROT_DIR/output/killen-time-${TODAY}.mp3" ]; then
+    log "Episode already published for $TODAY, skipping"
+    exit 0
+fi
+
+# ─── Concurrency gate: don't let a second scheduler double-publish ───────────
+# Two things kick off today's episode: the 4 AM launchd job (com.mojo.brainrot-
+# radio) and the ~5 AM "podcast" scheduled task (a backup, see
+# ~/.claude/scheduled-tasks/podcast/). The 4 AM run can still be rendering or
+# publishing when the 5 AM one starts, so the MP3-existence guard above isn't
+# enough on its own — without this lock both runs proceed and publish a second
+# episode (ep-...-02). This lock makes the later run stand down while an earlier
+# run for the same day is still alive, so the backup only does real work if the
+# primary actually died. A dead/stale (>3h) lock holder is taken over so a
+# crashed primary doesn't block recovery.
+LOCK="$BRAINROT_DIR/.tmp/generate-${TODAY}.lock"
+if [ -f "$LOCK" ]; then
+    LOCK_PID=$(cat "$LOCK" 2>/dev/null || true)
+    if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null \
+       && [ -z "$(find "$LOCK" -mmin +180 2>/dev/null)" ]; then
+        log "Another generation for $TODAY is already running (pid $LOCK_PID); standing down"
+        exit 0
+    fi
+    log "Stale lock for $TODAY (pid ${LOCK_PID:-none}); taking over"
+fi
+echo "$$" > "$LOCK"
+trap 'rm -f "$LOCK"' EXIT
 
 # ─── Step 1: Ingest ──────────────────────────────────────────────────────────
 log "Running ingest..."
@@ -137,9 +170,13 @@ ${DEDUP_CONTEXT}
 Begin by reading CLAUDE.md, then .tmp/topic-brief.txt, then the previous episode scripts.
 PROMPT_EOF
 
-if ! run_claude_step 2400 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1"; then
-    log "Pass 1 script writing failed, aborting"
-    exit 1
+if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1"; then
+    log "Pass 1 attempt 1 failed, retrying..."
+    sleep 15
+    if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1-retry"; then
+        log "Pass 1 retry also failed, aborting"
+        exit 1
+    fi
 fi
 
 # Verify pass 1 produced a script
@@ -194,9 +231,12 @@ ${DEDUP_CONTEXT}
 Begin by reading the existing ${SCRIPT_FILE}, then .tmp/topic-brief.txt for remaining stories.
 PROMPT_EOF
 
-if ! run_claude_step 2400 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2"; then
-    log "Pass 2 script writing failed, proceeding with pass 1 only"
-    # Don't abort — pass 1 alone may be enough to render
+if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2"; then
+    log "Pass 2 attempt 1 failed, retrying..."
+    sleep 15
+    if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2-retry"; then
+        log "Pass 2 retry also failed, proceeding with pass 1 only"
+    fi
 fi
 
 # Check combined word count
@@ -234,34 +274,44 @@ if ! run_claude_step 900 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review"; then
     log "QC review failed (non-fatal), proceeding to render"
 fi
 
-# ─── Step 4: Render + Artwork + Mix + Publish ────────────────────────────────
+# ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
 SCRIPT_BASENAME=$(basename "$NEW_SCRIPT" .txt)
 ARTWORK_PATH="assets/episode-artwork/artwork-${SCRIPT_BASENAME#killen-time-}.jpg"
+OUTPUT_MP3="output/${SCRIPT_BASENAME}.mp3"
 
-cat > "$BRAINROT_DIR/.tmp/step4-render-publish.txt" <<PROMPT_EOF
-You are completing a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
-
-The script is at: $NEW_SCRIPT
-
-Execute these steps IN ORDER:
-1. Render audio: python3 voice.py $NEW_SCRIPT
-2. Generate artwork: python3 artwork.py --title 'EPISODE TITLE' --topics 'COMMA-SEPARATED-TOPICS'
-   (Read the script to determine a good title and topic list)
-3. Song of the Day: python3 song_of_the_day.py
-   This is OPTIONAL — if ACE-Step is not running or it fails, skip it (not fatal).
-   If it succeeds, capture the output path printed as "OUTPUT: /path/to/song.mp3"
-4. Mix: python3 mixer.py --output output/${SCRIPT_BASENAME}.mp3 --artwork $ARTWORK_PATH
-   (Add --song-of-the-day /path/to/sotd.mp3 only if step 3 succeeded)
-5. Publish: python3 publish.py output/${SCRIPT_BASENAME}.mp3 --title 'Killen Time — ${TODAY}' --description 'Brief summary' --artwork $ARTWORK_PATH
-   (Read the script to write a proper brief description)
-
-If voice rendering fails, that is fatal — stop. If artwork or song-of-the-day fails, continue without them.
-PROMPT_EOF
-
-if ! run_claude_step 2700 "$BRAINROT_DIR/.tmp/step4-render-publish.txt" "render-publish"; then
-    log "Render/publish failed"
+log "Rendering TTS audio..."
+if ! python3 voice.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1; then
+    log "Voice render failed, aborting"
     exit 1
 fi
+log "TTS render complete"
+
+log "Generating artwork..."
+# Extract title and topics from script (simple heuristic — first line and first 5 segment topics)
+TITLE="Killen Time — $(date '+%B %-d, %Y')"
+python3 artwork.py --title "$TITLE" --topics "AI, Prediction Markets, NBA, Entertainment, Economics" >> "$RESULT_LOG" 2>&1 || log "Artwork generation failed (non-fatal)"
+
+log "Mixing audio..."
+MIX_ARGS=(--output "$OUTPUT_MP3")
+if [ -f "$ARTWORK_PATH" ]; then
+    MIX_ARGS+=(--artwork "$ARTWORK_PATH")
+fi
+if ! python3 mixer.py "${MIX_ARGS[@]}" >> "$RESULT_LOG" 2>&1; then
+    log "Mix failed, aborting"
+    exit 1
+fi
+log "Mix complete"
+
+log "Publishing..."
+PUB_ARGS=("$OUTPUT_MP3" --title "Killen Time — ${TODAY}" --description "Today's Killen Time Update.")
+if [ -f "$ARTWORK_PATH" ]; then
+    PUB_ARGS+=(--artwork "$ARTWORK_PATH")
+fi
+if ! python3 publish.py "${PUB_ARGS[@]}" >> "$RESULT_LOG" 2>&1; then
+    log "Publish failed"
+    exit 1
+fi
+log "Publish complete"
 
 # ─── Step 5: Archive sources (safety net) ────────────────────────────────────
 log "Archiving used sources (safety net)..."
