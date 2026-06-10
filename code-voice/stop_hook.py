@@ -22,8 +22,8 @@ a detached background thread so afplay/synth latency never delays the prompt.
 """
 import json
 import os
+import subprocess
 import sys
-import threading
 import time
 from pathlib import Path
 
@@ -130,24 +130,32 @@ def final_prose_text(transcript_path: str) -> str:
 
 
 def send_to_phone(text: str):
-    """Synthesize in Brooke's voice and deliver as a Telegram voice note."""
-    try:
-        from say_to_phone import synth_mp3, mp3_to_opus_ogg, send_voice, _creds
+    """Hand the text to a FULLY DETACHED helper that synthesizes + delivers it.
 
-        token, chat = _creds()
-        if not token or not chat:
-            return
-        ogg = mp3_to_opus_ogg(synth_mp3(text))
-        try:
-            send_voice(token, chat, ogg)
-        finally:
-            try:
-                import os
-                os.unlink(ogg)
-            except OSError:
-                pass
-    except Exception:  # noqa: BLE001 — never surface to the session
-        pass
+    CRITICAL: synthesis must outlive this hook. A long summary (2-3k chars)
+    takes 20-30s to synthesize on the warm Kokoro server. The old approach ran
+    synth in a daemon thread with join(timeout=15) — but daemon threads die the
+    instant the hook process exits at 15s, severing the HTTP socket mid-synth
+    (the server logs "[Errno 32] Broken pipe") so the mp3 was never returned and
+    NO voice note was sent. Short notes (<15s) slipped through; every long one
+    silently vanished. A detached subprocess (new session, no parent wait) has
+    no such cap: the hook returns in milliseconds and the child finishes on its
+    own clock. Text goes over stdin (handles arbitrary content, no argv limits).
+    """
+    helper = str(Path(__file__).resolve().parent / "say_to_phone.py")
+    try:
+        p = subprocess.Popen(
+            [sys.executable, helper],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,  # reparent so hook exit can't kill it
+        )
+        if p.stdin:
+            p.stdin.write(text.encode())
+            p.stdin.close()
+    except Exception as e:  # noqa: BLE001 — never surface to the session
+        _log(f"failed to spawn say_to_phone helper: {e}")
 
 
 def in_scope(payload) -> bool:
@@ -227,10 +235,8 @@ def main():
         f"speaking {len(spoken)} chars, {paras} paragraph(s) | "
         f"START {spoken[:90]!r} | END {spoken[-90:]!r}"
     )
-    # Detach so synth + send latency never delays the session returning.
-    t = threading.Thread(target=send_to_phone, args=(spoken,), daemon=True)
-    t.start()
-    t.join(timeout=15)
+    # Detached helper — returns immediately, synth/send finishes independently.
+    send_to_phone(spoken)
 
 
 if __name__ == "__main__":
