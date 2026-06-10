@@ -55,6 +55,17 @@ paragraph → Kokoro → Telegram voice note.
   phone. `final_prose_text()` already isolates the closing message; we now
   speak all of it. This is a read-aloud substitute, and the read-aloud button
   reads everything.
+- **Synthesis runs in a DETACHED helper, not a daemon thread.** A long summary
+  (2-3k chars) takes 20-40s to synthesize on the warm Kokoro server. An earlier
+  version ran synth in a daemon thread with `join(timeout=15)` — but daemon
+  threads die when the hook process exits at 15s, severing the HTTP socket
+  mid-request (server logs `[Errno 32] Broken pipe`) so the mp3 was never
+  returned and the note never sent. Short notes (<15s) slipped through; every
+  long one silently vanished — which looked like clipping but was total loss.
+  The hook now spawns `say_to_phone.py` as a fully detached subprocess
+  (`start_new_session=True`, text over stdin): it returns in ~0.4s and the child
+  finishes on its own clock with no time cap. If long notes stop arriving again,
+  check `server.log` for "Broken pipe" first — that's this failure mode.
 - **Reuses Kyle's existing Telegram bot.** Sending a voice note to your own
   chat needs no BotFather/group setup — only the inbound (ccgram) path would.
 
