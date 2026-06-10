@@ -222,7 +222,11 @@ def main():
     spoken = strip_markdown(text)
     if not spoken.strip():
         return
-    _log(f"speaking: {spoken[:160]!r}")
+    paras = spoken.count("\n\n") + 1
+    _log(
+        f"speaking {len(spoken)} chars, {paras} paragraph(s) | "
+        f"START {spoken[:90]!r} | END {spoken[-90:]!r}"
+    )
     # Detach so synth + send latency never delays the session returning.
     t = threading.Thread(target=send_to_phone, args=(spoken,), daemon=True)
     t.start()
