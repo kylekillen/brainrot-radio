@@ -19,7 +19,7 @@ A Claude Code session finishes a turn
        ├─ flag /tmp/claude-voice-enabled?   → on/off + optional scoping
        ├─ is this the COS? (identity)       → skip   (the one exclusion)
        ├─ wait for my FINAL prose message to settle on disk
-       ├─ take its last paragraph (my closing summary), strip markdown
+       ├─ take the WHOLE final message (my closing summary), strip markdown
        └─ say_to_phone.py:
             ├─ POST text → local Kokoro  /v1/audio/speech (:8765) → mp3
             ├─ ffmpeg mp3 → opus/ogg
@@ -48,6 +48,13 @@ paragraph → Kokoro → Telegram voice note.
 - **Verbatim, not summarized.** An earlier Ollama summarizer dropped critical
   detail (numbers, questions). Kyle's call: speak the closing summary I
   already write, verbatim. The summarizer is OUT of this path.
+- **Speak the WHOLE final message, not just its last paragraph.** An earlier
+  version clipped the closing summary to its final block to keep notes short,
+  but that dropped the substance above it (timelines, numbers, the actual
+  conclusion) and caused signal loss — only the last sentiment reached the
+  phone. `final_prose_text()` already isolates the closing message; we now
+  speak all of it. This is a read-aloud substitute, and the read-aloud button
+  reads everything.
 - **Reuses Kyle's existing Telegram bot.** Sending a voice note to your own
   chat needs no BotFather/group setup — only the inbound (ccgram) path would.
 

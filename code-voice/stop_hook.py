@@ -22,7 +22,6 @@ a detached background thread so afplay/synth latency never delays the prompt.
 """
 import json
 import os
-import re
 import sys
 import threading
 import time
@@ -44,8 +43,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 try:
     from text_clean import strip_markdown
 except Exception:  # noqa: BLE001 — never let an import failure break the session
-    def strip_markdown(t):
-        return t
+    def strip_markdown(text):
+        return text
 
 
 def _assistant_messages(transcript_path: str):
@@ -128,16 +127,6 @@ def final_prose_text(transcript_path: str) -> str:
         # First non-blank from the end: speak only if it's prose, no tool.
         return text if (text.strip() and not has_tool) else ""
     return ""
-
-
-def last_paragraph(text: str) -> str:
-    """My closing summary — the final non-empty block of the response.
-
-    This is the wrap-up-and-questions I naturally write at the end of a turn;
-    speaking just this (verbatim, no LLM) keeps the voice note phone-length.
-    """
-    blocks = [b.strip() for b in re.split(r"\n\s*\n", text) if b.strip()]
-    return blocks[-1] if blocks else ""
 
 
 def send_to_phone(text: str):
@@ -224,8 +213,13 @@ def main():
     if not text.strip():
         _log("no prose text found; nothing sent")
         return
-    # Speak only my closing summary (the last paragraph), verbatim — no LLM.
-    spoken = strip_markdown(last_paragraph(text))
+    # Speak my WHOLE closing message, verbatim — no LLM, no clipping.
+    # final_prose_text() already isolates the closing summary (the final
+    # pure-prose assistant message). Earlier we spoke only its last paragraph
+    # to keep notes short, but that dropped the substance above it (numbers,
+    # timelines, the actual conclusion) and caused signal loss. This is the
+    # substitute for the claude.ai read-aloud button, which reads everything.
+    spoken = strip_markdown(text)
     if not spoken.strip():
         return
     _log(f"speaking: {spoken[:160]!r}")
