@@ -66,6 +66,17 @@ paragraph → Kokoro → Telegram voice note.
   (`start_new_session=True`, text over stdin): it returns in ~0.4s and the child
   finishes on its own clock with no time cap. If long notes stop arriving again,
   check `server.log` for "Broken pipe" first — that's this failure mode.
+- **Synthesis is serialized server-side (mlx Kokoro isn't thread-safe).** The
+  server runs each HTTP request in its own thread, but concurrent
+  `model.generate()` calls CRASH the whole process — so when parallel sessions
+  end turns at the same time, all their notes vanished (request dies with
+  `RemoteDisconnected`; launchd silently restarts the server). A global
+  `_synth_lock` now serializes all synthesis: overlapping turns queue (~25s
+  each) instead of crashing. The client (`say_to_phone.synth_mp3`) also retries
+  with backoff. If notes go missing again, grep `server.log`: `RemoteDisconnected`
+  or an unexpected "server starting" line = a crash (concurrency); "Broken pipe"
+  = the older 15s-timeout bug. Ceiling: ~5+ simultaneous turns can still exceed
+  the 180s client timeout for the last in line — move to a bounded queue if so.
 - **Reuses Kyle's existing Telegram bot.** Sending a voice note to your own
   chat needs no BotFather/group setup — only the inbound (ccgram) path would.
 
