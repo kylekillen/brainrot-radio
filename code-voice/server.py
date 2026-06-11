@@ -118,17 +118,28 @@ def summarize(text: str) -> str:
 
 FFMPEG = "/opt/homebrew/bin/ffmpeg"
 
+# mlx Kokoro is NOT thread-safe. ThreadingHTTPServer handles each request in its
+# own thread, so when two turns end close together their /v1/audio/speech calls
+# hit model.generate() concurrently and CRASH THE WHOLE SERVER PROCESS (launchd
+# then restarts it, and every in-flight request dies with RemoteDisconnected /
+# "no response" — so no voice note for any of them). This was the dominant cause
+# of "long summaries never reach Telegram" once synthesis was detached: parallel
+# sessions (overseer + forecast) collide constantly. Serialize ALL synthesis
+# through one lock so overlapping turns queue (~25s each) instead of crashing.
+_synth_lock = threading.Lock()
+
 
 def synth_to_wav(text: str, voice: str = VOICE) -> str:
     import numpy as np
     import soundfile as sf
 
-    model = get_model()
-    chunks = []
-    sr = None
-    for r in model.generate(text, voice=voice, lang_code=LANG):
-        chunks.append(r.audio)
-        sr = r.sample_rate
+    with _synth_lock:
+        model = get_model()
+        chunks = []
+        sr = None
+        for r in model.generate(text, voice=voice, lang_code=LANG):
+            chunks.append(r.audio)
+            sr = r.sample_rate
     if not chunks:
         raise RuntimeError("no audio generated")
     audio = np.concatenate(chunks)
