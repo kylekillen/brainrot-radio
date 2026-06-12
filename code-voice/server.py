@@ -63,6 +63,10 @@ SUMMARY_SYSTEM = (
 _model = None
 _warm = False
 _jobs: "queue.Queue" = queue.Queue()
+# Loading the Kokoro model touches the GPU. If two threads call get_model()
+# concurrently (e.g. warmup racing the first request) they both run Metal work
+# at once and abort the process. Make the load atomic.
+_model_lock = threading.Lock()
 
 
 def log(msg: str):
@@ -79,10 +83,12 @@ def log(msg: str):
 def get_model():
     global _model
     if _model is None:
-        from mlx_audio.tts.utils import load_model
-        log(f"loading Kokoro model {KOKORO_MODEL} ...")
-        _model = load_model(KOKORO_MODEL)
-        log("Kokoro model loaded")
+        with _model_lock:
+            if _model is None:  # re-check under lock
+                from mlx_audio.tts.utils import load_model
+                log(f"loading Kokoro model {KOKORO_MODEL} ...")
+                _model = load_model(KOKORO_MODEL)
+                log("Kokoro model loaded")
     return _model
 
 
@@ -281,7 +287,16 @@ def main():
     LOG.parent.mkdir(parents=True, exist_ok=True)
     log(f"Code Voice server starting on {HOST}:{PORT}")
     threading.Thread(target=worker, daemon=True).start()
-    threading.Thread(target=warmup, daemon=True).start()
+    # Warm up the model BEFORE opening the HTTP port. mlx Kokoro is not
+    # thread-safe; if we accept requests while warmup is still loading the
+    # model on the GPU, the in-flight synthesis and the warmup load run two
+    # Metal command buffers at once and abort the whole process (launchd then
+    # restarts it and the same flood of retried requests crashes it again —
+    # the startup crash-loop). Loading synchronously means every request that
+    # gets through finds the model already resident and serializes cleanly on
+    # _synth_lock. Clients hitting the ~5s load window get connection-refused
+    # and retry, which is strictly better than a process abort.
+    warmup()
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     try:
         server.serve_forever()
