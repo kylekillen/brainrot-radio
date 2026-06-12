@@ -360,3 +360,6 @@ Scope: flag `/tmp/claude-voice-enabled` supports excludes — `!substring` (subs
 
 ### 2026-06-09 06:21 — Reviewed PR #1: approved-and-merged
 Concurrency lock fix for double-episode publishing; all three gates passed. Lock logic correctly handles all four scenarios (fresh/live/dead/stale-holder). Pre-existing production drift committed alongside the fix per PR description. No CI configured. Squash-merged.
+
+### 2026-06-12 21:37 — Reviewed PR #3: approved-and-merged
+fix(code-voice): MLX Metal crash-loop fix — synchronous warmup before ThreadingHTTPServer opens port, double-checked `_model_lock` in `get_model()`. All three gates passed; no CI configured.
