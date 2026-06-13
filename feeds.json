@@ -1,7 +1,7 @@
 {
-  "version": "2.0",
-  "updated": "2026-03-04",
-  "note": "Profile-driven feed list derived from Kyle's X following + Spotify podcasts",
+  "version": "2.1",
+  "updated": "2026-06-11",
+  "note": "Profile-driven feed list. 2026-06-11: prioritized AI Daily Brief + Moonshots as AI anchors; added Claude-technique YouTube channels (topic claude_lab) for the Build-Pitch Reporter; added NFL podcasts (Ringer Fantasy Football, Fantasy Footballers, Bill Barnwell) as NBA winds down.",
   "feeds": [
     {
       "id": "techmeme",
@@ -478,6 +478,66 @@
       "transcript_pull": true
     },
     {
+      "id": "indydevdan_yt",
+      "name": "IndyDevDan",
+      "channel": "@indydevdan",
+      "channel_id": "UC_x36zCEGilGpB1m-V4gmjg",
+      "topic": "claude_lab",
+      "weight": 3.0,
+      "transcript_pull": true,
+      "note": "CLAUDE LAB anchor. Deepest Claude Code / agentic-engineering channel — harnesses, subagents, context priming, agentic workflows. Primary feed for the Build-Pitch Reporter."
+    },
+    {
+      "id": "cole_medin_yt",
+      "name": "Cole Medin",
+      "channel": "@ColeMedin",
+      "channel_id": "UCMwVTLZIRRUyyVrkjDpn4pA",
+      "topic": "claude_lab",
+      "weight": 2.8,
+      "transcript_pull": true,
+      "note": "CLAUDE LAB. AI coding agents, RAG, agent architectures, MCP. Builds and benchmarks live."
+    },
+    {
+      "id": "ai_jason_yt",
+      "name": "AI Jason",
+      "channel": "@AIJasonz",
+      "channel_id": "UCrXSVX9a1mj8l0CMLwKgMVw",
+      "topic": "claude_lab",
+      "weight": 2.3,
+      "transcript_pull": true,
+      "note": "CLAUDE LAB. Proactive/self-improving agents, agent design patterns, hands-on builds."
+    },
+    {
+      "id": "gosucoder_yt",
+      "name": "GosuCoder",
+      "channel": "@GosuCoder",
+      "channel_id": "UCQd9wpBDkfQxqxGIBko2fKg",
+      "topic": "claude_lab",
+      "weight": 2.2,
+      "transcript_pull": true,
+      "note": "CLAUDE LAB. Coding-agent comparisons, model + harness optimization, dev-loop tuning."
+    },
+    {
+      "id": "matthew_berman_yt",
+      "name": "Matthew Berman",
+      "channel": "@matthew_berman",
+      "channel_id": "UCawZsQWqfGSbCI5yjkdVkTA",
+      "topic": "claude_lab",
+      "weight": 1.8,
+      "transcript_pull": true,
+      "note": "CLAUDE LAB (broad). High-volume AI news/tools — catches releases and upgrades fast; lower signal-per-video, so verify hard before pitching."
+    },
+    {
+      "id": "anthropic_yt",
+      "name": "Anthropic (official)",
+      "channel": "@anthropic-ai",
+      "channel_id": "UCrDwWp7EBBv4NwvScIpBDOA",
+      "topic": "claude_lab",
+      "weight": 2.5,
+      "transcript_pull": true,
+      "note": "CLAUDE LAB. Source of truth for Claude system upgrades, new model/feature launches, and official technique guidance."
+    },
+    {
       "id": "locksy_twitch",
       "name": "Locksy (Twitch VODs)",
       "channel": "@locksy",
@@ -637,10 +697,10 @@
       "name": "Moonshots with Peter Diamandis",
       "url": "https://feeds.megaphone.fm/DVVTS2890392624",
       "topic": "ai_and_tech",
-      "weight": 1.5,
-      "max_episodes": 2,
-      "max_audio_minutes": 30,
-      "note": "Abundance mindset, tech futures, longevity"
+      "weight": 2.8,
+      "max_episodes": 3,
+      "max_audio_minutes": 40,
+      "note": "PRIORITY AI ANCHOR (2026-06-11). Frontier AI, abundance, tech futures, longevity. One of the two high-signal AI shows that anchor the front half — give it airtime every episode it drops."
     },
     {
       "id": "forward_guidance",
@@ -717,10 +777,10 @@
       "name": "AI Daily Brief (Nathaniel Whittemore)",
       "url": "https://anchor.fm/s/f7cac464/podcast/rss",
       "topic": "ai_and_tech",
-      "weight": 2.0,
-      "max_episodes": 3,
-      "max_audio_minutes": 20,
-      "note": "Daily AI news roundup \u2014 short episodes, high frequency"
+      "weight": 3.0,
+      "max_episodes": 4,
+      "max_audio_minutes": 25,
+      "note": "PRIORITY AI ANCHOR (2026-06-11). Daily AI news roundup \u2014 short, high-frequency, high-signal. The other anchor AI show for the front half alongside Moonshots; lead the AI block with NLW's framing whenever a fresh episode exists."
     },
     {
       "id": "80000_hours",
@@ -883,6 +943,36 @@
       "note": "Athletic \u2014 daily NBA news, transactions"
     },
     {
+      "id": "ringer_fantasy_football",
+      "name": "The Ringer Fantasy Football Show",
+      "url": "https://feeds.megaphone.fm/ringer-fantasy-football-show",
+      "topic": "nfl",
+      "weight": 2.5,
+      "max_episodes": 3,
+      "max_audio_minutes": 30,
+      "note": "PRIMARY NFL SHOW (2026-06-11). Kyle's named anchor for football coverage. Rankings, values/busts, roster strategy. Ramp this beat up through the offseason into the season as NBA winds down."
+    },
+    {
+      "id": "fantasy_footballers",
+      "name": "Fantasy Footballers",
+      "url": "https://feeds.simplecast.com/sw7PGWfw",
+      "topic": "nfl",
+      "weight": 2.0,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "High-volume, high-signal fantasy football \u2014 rankings, sleepers, news reactions."
+    },
+    {
+      "id": "bill_barnwell",
+      "name": "The Bill Barnwell Show",
+      "url": "https://feeds.megaphone.fm/ESP4493005942",
+      "topic": "nfl",
+      "weight": 1.8,
+      "max_episodes": 2,
+      "max_audio_minutes": 30,
+      "note": "Analytical real-football NFL coverage (ESPN) \u2014 roster moves, schedule, league trends. Balances the fantasy shows with straight football analysis."
+    },
+    {
       "id": "the_cognitive_revolution",
       "name": "\"The Cognitive Revolution\" | AI Builders, Researchers, and Live Player Analysis",
       "url": "https://feeds.megaphone.fm/RINTP3108857801",
@@ -1006,16 +1096,18 @@
     }
   ],
   "topic_weights": {
+    "claude_lab": 2.6,
     "agentic_systems": 2.5,
     "ai_and_tech": 2.0,
     "economics_and_policy": 1.5,
     "culture_and_ideas": 1.3,
     "health_and_longevity": 1.2,
+    "nfl": 1.1,
     "prediction_markets": 1.0,
     "entertainment_and_media": 1.0,
     "finance_and_markets": 1.0,
     "f1": 0.8,
-    "nba": 0.8,
+    "nba": 0.7,
     "general": 0.5
   }
 }

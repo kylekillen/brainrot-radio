@@ -19,6 +19,8 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -48,11 +50,23 @@ def _creds():
 
 def synth_mp3(text: str) -> bytes:
     payload = json.dumps({"model": "kokoro", "voice": VOICE, "input": text}).encode()
-    req = urllib.request.Request(
-        TTS_ENDPOINT, data=payload, headers={"Content-Type": "application/json"}
-    )
-    with urllib.request.urlopen(req, timeout=120) as r:
-        return r.read()
+    # Retry on transient connection failures. The TTS server serializes synthesis
+    # behind a lock, but it can still be briefly unavailable (e.g. mid-restart, or
+    # a request that landed during a crash before the lock was added). A short
+    # backoff lets the note survive that window instead of vanishing silently.
+    last = None
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(
+                TTS_ENDPOINT, data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=180) as r:
+                return r.read()
+        except (urllib.error.URLError, ConnectionError, OSError) as e:
+            last = e
+            time.sleep(1.5 * (attempt + 1))  # 1.5s, 3s, 4.5s
+    raise last if last else RuntimeError("synth failed")
 
 
 def mp3_to_opus_ogg(mp3: bytes) -> str:

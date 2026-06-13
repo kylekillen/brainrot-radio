@@ -120,6 +120,53 @@ if [ ! -f ".tmp/topic-brief.txt" ]; then
 fi
 log "Ingest complete"
 
+# ─── Step 1.1: Scratch retention sweep ───────────────────────────────────────
+# Ingest just downloaded source MP3s into .tmp/podcasts/ (Whisper path) whose
+# transcripts are now cached in .tmp/transcripts/. Delete media scratch older
+# than the retention window so .tmp can't grow unbounded (it hit ~98GB and
+# filled the disk on 2026-06-13). mtime guard keeps today's files; non-fatal.
+log "Pruning old .tmp media scratch..."
+bash "$BRAINROT_DIR/cleanup-scratch.sh" >> "$RESULT_LOG" 2>&1 || log "Scratch sweep failed (non-fatal); continuing"
+
+# ─── Step 1.5: Build-Pitch Reporter (Claude Lab) ─────────────────────────────
+# A dedicated reporter that scans recent YouTube transcripts from Claude-technique
+# channels, RESEARCHES + VERIFIES anything interesting against other sources, and
+# writes verified upgrade pitches Kyle can greenlight off the show. Non-fatal: if
+# it fails, the episode still generates and the AI block just omits the segment.
+mkdir -p build-pitches
+PITCH_FILE="build-pitches/${TODAY}.md"
+PITCH_SUMMARY=".tmp/build-pitches.md"
+rm -f "$PITCH_SUMMARY"
+cat > "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" <<PROMPT_EOF
+You are the CLAUDE LAB Build-Pitch Reporter for the Killen Time podcast. Working directory: /Users/kylekillen/brainrot-radio.
+
+Read CLAUDE.md (the "Build-Pitch Reporter" section) and the "claude_lab" beat in beats.json for your full brief.
+
+MISSION: Find the latest genuinely useful techniques on (a) Claude technique/prompting/harness design, (b) running agents and multi-agent orchestration, (c) Claude/Claude Code system upgrades, and (d) optimization (dev-loop, evals, cost/latency, memory & state) — then VERIFY them before reporting, and turn the survivors into concrete BUILD PITCHES Kyle can approve.
+
+SOURCES — recent (last ~7 days) YouTube from the claude_lab channels in feeds.json (IndyDevDan, Cole Medin, AI Jason, GosuCoder, Matthew Berman, Anthropic). To get the candidate list with snippets cheaply, run:
+    python3 youtube.py --hours 168 --json
+and focus on items whose "_topic" is "claude_lab". You may also use the yt-search skill and targeted searches ("Claude Code subagents", "agent harness", "Claude Code optimization", "running AI agents", "Claude context engineering") to find more. For any candidate worth investigating, pull the FULL transcript (yt-search skill or: ./venv/bin/yt-dlp --write-auto-sub --sub-lang en --skip-download --sub-format vtt -o '.tmp/youtube/%(id)s' 'VIDEO_URL') — the youtube.py snippet is truncated to 2000 chars and is only a triage signal.
+
+DISCIPLINE — this is the whole point, do NOT skip it:
+1. For each interesting technique, RESEARCH it. Use WebSearch / WebFetch (and the other claude_lab sources: Claude Code releases, Simon Willison, Latent Space) to check whether other people are doing the same or similar thing, and whether there's real evidence it works — not just a slick demo or hype.
+2. VERIFY it's real, interesting, and meaningful. Discard anything vague, unverifiable, contradicted by other sources, or that Kyle already does (his stack: observer-system, the COS, the dispatcher / PR-reviewer loop, this podcast pipeline, a multi-agent delegation setup — read ~/.observer/wiki and ~/observer-system/CLAUDE.md if you need to check what's already in place).
+3. Keep only the 1-3 strongest survivors. Quality over quantity. A single well-verified pitch beats three thin ones. If NOTHING survives, that's a valid outcome — say so.
+
+OUTPUT — write BOTH files:
+A) ${PITCH_FILE} — the durable record. For each verified pitch include: **Technique** (1-2 sentences), **Who's doing it** (specific video titles + URLs + corroborating source links), **Evidence it's real** (what you cross-checked), **Why it matters for us** (how it maps onto Kyle's stack), **Build sketch** (concrete first steps an agent could take), **Status: pitched**. Start the file with a one-line date header. If nothing survived, write a short "No verified pitch today — here's what I looked at and why it didn't clear the bar" note instead.
+B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will fold into the show. Lead with the single best pitch: what it is, who's doing it, why it's verified/real, and the one-line "here's how it'd upgrade our setup." End with: "Logged in ${PITCH_FILE} for Kyle to greenlight." If there's no verified pitch, write exactly: "NO_VERIFIED_PITCH" on the first line, then a one-sentence reason.
+
+NEVER fabricate a pitch or overstate evidence. Honesty about a thin day is the correct behavior. STOP after writing both files.
+PROMPT_EOF
+
+if ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" "build-pitch-reporter"; then
+    log "Build-Pitch Reporter failed (non-fatal); AI block will omit the build-pitch segment"
+fi
+if [ -f "$BRAINROT_DIR/$PITCH_SUMMARY" ]; then
+    log "Build-Pitch Reporter wrote summary ($(wc -w < "$BRAINROT_DIR/$PITCH_SUMMARY" | tr -d ' ') words)"
+fi
+
 # ─── Build dedup context (shared by both passes) ─────────────────────────────
 LATEST_SCRIPTS=$(find "$BRAINROT_DIR"/scripts -name "killen-time-*.txt" -type f | sort | tail -3)
 DEDUP_CONTEXT=""
@@ -152,14 +199,16 @@ You are writing ONLY the first half. Another pass will write the second half (NB
 
 Steps:
 1. Read .tmp/topic-brief.txt for today's ranked stories
-2. Read up to 3 podcast transcripts from .tmp/transcripts/ — pick the ones most relevant to AI/tech and to how people build with / run AI agents.
+2. Read up to 3 podcast transcripts from .tmp/transcripts/ — PRIORITIZE the two anchor AI shows when fresh episodes exist: the AI Daily Brief (Nathaniel Whittemore) and Moonshots (Peter Diamandis). After those, pick what's most relevant to how people build with / run AI agents.
 3. Read Substack full articles in .tmp/articles/ — focus on AI/tech and agent-building/practitioner articles.
-4. Read ALL scripts/.covered-*.json files for dedup.
-5. Read recent episode scripts (see DEDUP CONTEXT below) for dedup.
-6. Write to ${SCRIPT_FILE}:
+4. Read .tmp/build-pitches.md if it exists — this is the verified output of the Claude Lab Build-Pitch Reporter (see step 6 for how to use it).
+5. Read ALL scripts/.covered-*.json files for dedup.
+6. Read recent episode scripts (see DEDUP CONTEXT below) for dedup.
+7. Write to ${SCRIPT_FILE}:
    - Show intro: cold open with the biggest story, show name + date
-   - AI & Technology segments (1-2 segments, ~2500-3500 words): Feature high-signal essays, technical breakthroughs, pieces getting discussion
+   - **AI & Technology segments (1-2 segments, ~2500-3500 words) — FOCUS ON HIGH-SIGNAL AI.** Anchor this block on the AI Daily Brief and Moonshots: lead with their framing and actual arguments/quotes whenever a fresh episode exists, and give each real airtime (not a passing mention). Use the RSS news headlines (Techmeme, TechCrunch, Ars) as context AROUND that podcast discussion, not as the spine. Then feature high-signal essays and technical breakthroughs getting discussion in circles Kyle follows. Skip generic news-summary filler.
    - **Agents & Building With AI segments (2-3 segments, ~3500-4500 words) — THIS IS THE FEATURED BEAT OF THE SHOW.** How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, and dev-loop optimization. Pull concrete, stealable practices from Claude Code releases, Latent Space, Simon Willison, One Useful Thing, AI and I, The Cognitive Revolution, No Priors, a16z, Dwarkesh, Karpathy. Frame every story through "what can WE learn for our own multi-agent setup" — Kyle is building a team of delegated AIs and wants to optimize that system. Be specific and practitioner-level; quote the actual techniques, not vibes.
+   - **BUILD PITCH OF THE DAY:** If .tmp/build-pitches.md exists AND its first line is not "NO_VERIFIED_PITCH", give the top verified pitch its own dedicated exchange inside the Agents & Building block (~400-700 words): what the technique is, who's doing it (name the source), the evidence it's real, and exactly how it would upgrade Kyle's own setup. Then have a host say plainly that it's logged in the build-pitches folder so Kyle can point an agent at it and greenlight the build if he likes it. If the file is missing or says NO_VERIFIED_PITCH, skip this — do NOT invent a pitch.
    - End with a [TRANSITION] tag — do NOT write an outro
    - Use BASIL/BROOKE/TRANSITION format (speaker tags in square brackets)
    - Include specific quotes from podcast transcripts and Substack articles
@@ -192,7 +241,7 @@ fi
 PASS1_WORDS=$(wc -w < "$BRAINROT_DIR/$SCRIPT_FILE" | tr -d ' ')
 log "Pass 1 complete: $PASS1_WORDS words in $SCRIPT_FILE"
 
-# ─── Step 2b: Pass 2 — NBA + Entertainment + Economics/Culture + Outro ───────
+# ─── Step 2b: Pass 2 — NFL/NBA + Entertainment + Economics/Culture + Outro ───
 cat > "$BRAINROT_DIR/.tmp/step2b-pass2.txt" <<PROMPT_EOF
 You are producing the SECOND HALF of a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
 
@@ -201,16 +250,16 @@ Read CLAUDE.md for full editorial guidelines, voice format, and content directio
 The first half of the episode has already been written to: ${SCRIPT_FILE}
 READ IT FIRST so you know what topics and stories have already been covered in this episode.
 
-YOUR JOB: APPEND the second half to the EXISTING script file. Cover NBA, Entertainment, Economics/Culture, an optional brief prediction-markets quick-hit, and write the outro. Do NOT rewrite or duplicate anything from the first half.
+YOUR JOB: APPEND the second half to the EXISTING script file. Cover SPORTS (NFL-led, NBA winding down), Entertainment, Economics/Culture, an optional brief prediction-markets quick-hit, and write the outro. Do NOT rewrite or duplicate anything from the first half.
 
 Steps:
 1. Read ${SCRIPT_FILE} — this is the first half you are continuing from. Note which stories were already covered.
 2. Read .tmp/topic-brief.txt for remaining stories not yet covered
-3. Read podcast transcripts from .tmp/transcripts/ — focus on NBA, entertainment, and economics podcasts
+3. Read podcast transcripts from .tmp/transcripts/ — focus on NFL/football, NBA, entertainment, and economics podcasts
 4. Read Substack articles in .tmp/articles/ — focus on economics, culture, and entertainment articles
 5. Read scripts/.covered-*.json files for dedup against previous episodes
 6. APPEND to ${SCRIPT_FILE} (do NOT overwrite — add to the end of the existing file):
-   - NBA & Sports segments (2-3 segments, ~2500-3500 words): Trades, transactions, storylines. Pull analyst quotes.
+   - **Sports segments (2-3 segments, ~2500-3500 words) — LEAD WITH NFL FOOTBALL; NBA is winding down.** NFL is the growing half of this beat as the NBA season ends. Lead with football: build around the Ringer Fantasy Football Show (Kyle's named anchor) plus Fantasy Footballers and Bill Barnwell — rankings, values/busts, roster strategy, real-football roster moves and league trends, with specific analyst quotes from the transcripts. Then cover NBA only for genuinely notable storylines (Finals, draft, major trades/free agency) and keep it tighter than before. Don't force a connection between the two — just move from football to basketball.
    - Entertainment & Film/TV segments (1-2 segments, ~2000-3000 words): Industry news, deals, box office. Engage at screenwriter/producer level.
    - Economics/Culture segment (1-2 segments, ~1500-2500 words): Best pieces from the rationalist/policy blogosphere
    - Prediction Markets quick-hit (OPTIONAL, ~300-600 words, ONE short exchange max): Prediction markets are now a DE-EMPHASIZED beat. Include this only if there is genuinely notable movement today — a big position change, a market resolving, a real edge worth flagging. If nothing rises to that bar, SKIP it entirely. Do not pad. No full multi-segment trading block.
@@ -257,7 +306,7 @@ Read CLAUDE.md for editorial guidelines.
 
 Read the script at: $NEW_SCRIPT
 
-This script was written in two passes (first half: AI/tech + prediction markets, second half: NBA + entertainment + economics). Check for:
+This script was written in two passes (first half: AI/tech + agents/building + build-pitch, second half: NFL/NBA sports + entertainment + economics). Check for:
 - Awkward transitions between the two halves (especially around the [TRANSITION] where they join)
 - Duplicated stories or talking points across the two halves
 - Orphaned/duplicated content
@@ -294,7 +343,7 @@ log "TTS render complete"
 log "Generating artwork..."
 # Extract title and topics from script (simple heuristic — first line and first 5 segment topics)
 TITLE="Killen Time — $(date '+%B %-d, %Y')"
-python3 artwork.py --title "$TITLE" --topics "AI, Agents & Building, NBA, Entertainment, Economics" >> "$RESULT_LOG" 2>&1 || log "Artwork generation failed (non-fatal)"
+python3 artwork.py --title "$TITLE" --topics "AI, Agents & Building, NFL, Entertainment, Economics" >> "$RESULT_LOG" 2>&1 || log "Artwork generation failed (non-fatal)"
 
 log "Mixing audio..."
 MIX_ARGS=(--output "$OUTPUT_MP3")

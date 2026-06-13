@@ -19,7 +19,7 @@ A Claude Code session finishes a turn
        ├─ flag /tmp/claude-voice-enabled?   → on/off + optional scoping
        ├─ is this the COS? (identity)       → skip   (the one exclusion)
        ├─ wait for my FINAL prose message to settle on disk
-       ├─ take its last paragraph (my closing summary), strip markdown
+       ├─ take the WHOLE final message (my closing summary), strip markdown
        └─ say_to_phone.py:
             ├─ POST text → local Kokoro  /v1/audio/speech (:8765) → mp3
             ├─ ffmpeg mp3 → opus/ogg
@@ -48,6 +48,35 @@ paragraph → Kokoro → Telegram voice note.
 - **Verbatim, not summarized.** An earlier Ollama summarizer dropped critical
   detail (numbers, questions). Kyle's call: speak the closing summary I
   already write, verbatim. The summarizer is OUT of this path.
+- **Speak the WHOLE final message, not just its last paragraph.** An earlier
+  version clipped the closing summary to its final block to keep notes short,
+  but that dropped the substance above it (timelines, numbers, the actual
+  conclusion) and caused signal loss — only the last sentiment reached the
+  phone. `final_prose_text()` already isolates the closing message; we now
+  speak all of it. This is a read-aloud substitute, and the read-aloud button
+  reads everything.
+- **Synthesis runs in a DETACHED helper, not a daemon thread.** A long summary
+  (2-3k chars) takes 20-40s to synthesize on the warm Kokoro server. An earlier
+  version ran synth in a daemon thread with `join(timeout=15)` — but daemon
+  threads die when the hook process exits at 15s, severing the HTTP socket
+  mid-request (server logs `[Errno 32] Broken pipe`) so the mp3 was never
+  returned and the note never sent. Short notes (<15s) slipped through; every
+  long one silently vanished — which looked like clipping but was total loss.
+  The hook now spawns `say_to_phone.py` as a fully detached subprocess
+  (`start_new_session=True`, text over stdin): it returns in ~0.4s and the child
+  finishes on its own clock with no time cap. If long notes stop arriving again,
+  check `server.log` for "Broken pipe" first — that's this failure mode.
+- **Synthesis is serialized server-side (mlx Kokoro isn't thread-safe).** The
+  server runs each HTTP request in its own thread, but concurrent
+  `model.generate()` calls CRASH the whole process — so when parallel sessions
+  end turns at the same time, all their notes vanished (request dies with
+  `RemoteDisconnected`; launchd silently restarts the server). A global
+  `_synth_lock` now serializes all synthesis: overlapping turns queue (~25s
+  each) instead of crashing. The client (`say_to_phone.synth_mp3`) also retries
+  with backoff. If notes go missing again, grep `server.log`: `RemoteDisconnected`
+  or an unexpected "server starting" line = a crash (concurrency); "Broken pipe"
+  = the older 15s-timeout bug. Ceiling: ~5+ simultaneous turns can still exceed
+  the 180s client timeout for the last in line — move to a bounded queue if so.
 - **Reuses Kyle's existing Telegram bot.** Sending a voice note to your own
   chat needs no BotFather/group setup — only the inbound (ccgram) path would.
 

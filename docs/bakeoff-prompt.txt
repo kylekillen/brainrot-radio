@@ -1,0 +1,257 @@
+You are writing a script for a daily news podcast called "Killen Time." Two hosts — BASIL (anchor, confident) and BROOKE (commentator, analytical) — discuss the day's top stories.
+
+TIME OF DAY: This is a morning episode (produced around 6:00 AM Mountain Time, March 6, 2026). Use morning greetings.
+
+FORMAT RULES:
+- Use [BASIL], [BROOKE], and [TRANSITION] tags for speaker changes
+- Alternate speakers — never two consecutive same-speaker blocks
+- Include at least one direct quote per segment from the source material
+- Be opinionated but grounded in the source material
+- Connect stories when the connection is genuine, but don't force connections between unrelated stories
+- The outro can briefly recap but keep it short — don't force all stories into a single thesis
+
+TARGET: Write a 3,000-word episode script covering the stories below. This is a SHORTER test episode (normally 14,000 words).
+
+EDITORIAL VOICE: The audience is sophisticated — a screenwriter/producer who trades prediction markets, follows AI deeply, and reads the rationalist blogosphere. Don't dumb it down. Be informed, be opinionated, engage at expert level.
+
+TOPIC PRIORITY: Lead with podcast and Substack material. Build segments around podcast discussions and Substack essays, using news headlines as context.
+
+=== TOP STORIES ===
+
+# Brainrot Radio — Topic Brief
+# Generated: 2026-03-06 13:01
+# Top 40 stories — sorted by RECENCY FIRST, then weighted score as tiebreaker
+
+# Topic mix: ai_and_tech=32, culture_and_ideas=3, economics_and_policy=2, prediction_markets=1, nba=1, f1=1
+
+## 1. 🔮 Doomberg: The Strait is Already Closed
+Source: Polymarket (The Oracle) | Topic: prediction_markets | Age: today | Score: 5.655
+Weights: feed=2.0 × topic=2.5 × recency=0.791 × keyword=1.1
+Type: substack (full text (2766 words))
+Full article: /Users/kylekillen/brainrot-radio/.tmp/articles/polymarket_blog_doomberg-the-strait-is-already-closed.txt
+Link: https://news.polymarket.com/p/doomberg-the-strait-is-already-closed
+
+[
+
+](https://substackcdn.com/image/fetch/$s_!UDtZ!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1d796bfc-689c-4b50-828b-487b10d4e87a_940x650.jpeg)
+ is a pseudonymous team of former commodities executives publishing one of the top Substacks on energy, finance, and geopolitics under the iconic green chicken avatar.
+The Oracle caught up with Doom on March 4, as the Iran-Israel war entered its fifth day, to discuss missile attrition, laser beams, what the Brent-WTI spread is telling us, and which Gulf Arab state he’s watching most closely.
+This interview has been edited for length. All answers are Doomberg’s own.
+[Subscribe now](https://news.polymarket.com/subscribe?)
+
+### The last time we spoke, we talked about your thesis that World War Three was a monetary struggle for the future of the US trading and energy system. Are we moving to the hot phase now?
+
+In our view [World War III started](https://news.polymarket.com/p/we-are-already-in-world-war-iii-internet) in 2014, when Putin sold his US Treasuries and placed the proceeds in gold. The war in Ukraine, which started in 2022, is the biggest hot battle before this one. And the Iran war is the latest battle in that same conflict. The economic trade war between China and the US is another battle. Iran is a BRICS state, a key supplier of crude to China, and an on-again, off-again ally of Russia.
+There’s only really one battle left after this: US versus China over Taiwan. The world is in a very precarious place right now.
+### Your WWIII thesis suggests that Trump initiated this to knock out China’s energy suppliers, Venezuela and now Iran. But I’m hearing other arguments that Israel was dragging in the US. Where do you come down?
+
+Look, Donald Trump’s the President of the United States. The buck stops with him. He’s the person that the US public has elected, and his party will stand for election in the 2026 midterms, and whoever wins the Republican nomination will be held to account and/or rewarded for whatever happens in the weeks ahead. Every country in the world is trying to influence the President of the United States for obvious reasons. Even if that’s true, it doesn’t matter to us.
+
+One of the hallmarks of a lateral thinker is an ability to separate an emotional attachment to the correctness of an axiom from whether or not it is currently working to explain events. And I would argue that the energy axiom: that the US is in the middle of World War Three, and energy is at the core of all wars, and China gets its energy from Venezuela and Iran and Russia, and the US just happens to be in various stages of war with Russia, Venezuela, and Iran, I just find it very difficult or implausible to believe that this is all some Israeli-driven set of coincidences. And so yeah, we firmly are in that second camp.
+### What are the four or five most salient sources you’re looking at on a daily basis to understand what’s going on?
+
+The primary things I’m looking at, because there’s just such a thicket of propaganda out there, are market indicators, things like Polymarket, but also the energy market. The [energy markets ](https://poly.market/GmpnIx5)are incredibly sophisticated. There’s billions of dollars on the line to getting these things right.
+Over the weekend, I decided to try an experiment. I personally bought a new clean iPad and created some new login credentials and a fresh email and downloaded the Twitter app. And I spent an hour training the algorithm that I was pro-Iranian, anti-American. I wanted to see what that side of the world was telling itself. And two amazing things already a few days in: it’s a wholly different universe. Shockingly so. The standard Doomberg Twitter for-you feed versus that feed might as well be on different planets. The parallel universe theory of physics is alive and well on Twitter today.
+Then yesterday, something significant happened and that feed was basically turned off. You can no longer
+
+---
+
+## 2. An interview with Pentagon AI head Emil Michael about Anthropic leaking to the media to win anti-Trump users, dealing with Amodei and his "politburo", and more (Pirate Wires)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 4.469
+Weights: feed=2.0 × topic=2.0 × recency=0.971 × keyword=1.15
+Link: http://www.techmeme.com/260306/p19#a260306p19
+
+Pirate Wires : An interview with Pentagon AI head Emil Michael about Anthropic leaking to the media to win anti-Trump users, dealing with Amodei and his “politburo”, and more — despite anthropic frustrating the admin with its blogging and very slow ‘politburo’ of ethicists, emil michael …
+
+---
+
+## 3. [Podcast] Atlassian CEO on the SaaS Apocalypse, AI Agents & What Comes Next
+Source: The a16z Show | Topic: ai_and_tech | Age: today | Score: 4.089
+Weights: feed=1.8 × topic=2.0 × recency=0.658 × keyword=1.15
+Type: podcast (transcript available)
+Link: https://a16z.simplecast.com/episodes/atlassian-ceo-on-the-saas-apocalypse-ai-agents-what-comes-next-h71NBdHW
+
+Give people a chat box that can do unlimited power and they're like, tell me a dad joke. In the technology world, their underutilized capabilities are so big. It's almost trite now to say the models are far ahead of the value they're delivering. The whole history of software from 1960 until 2022 was you would take a filing cabinet and you'd turn it into a database. The cool thing about everything that's happening in AI land is that the filing cabinet can do work. The idea I would vibe code my own workday and then run it is terrifying. However, there is a great gain we are seeing internally in extensibility of software using things like vibe code. Not everyone has been talking about the SaaS apocalypse. Some people call it the catastrophe. Why is there too much fear about this? As I've said, not every SaaS company is going to thrive through the next decade. We're not here to defend all of software, obviously. Perseed pricing built software fortunes for two decades. It felt fair. More users, more money. But beneath the logic were very different kinds of businesses. Some seats were tied to work that AI can now do instead. Others were just a pricing proxy for headcount. And those companies may actually benefit from AI. The public markets, so far, haven't reliably told them apart. When the SaaS sell-off hit, valuations dropped across the board, regardless of whether a company looked more like Zendesk or Workday. That's the gap worth understanding. Companies that survive the transition face a harder job than adding an AI feature. They have to redesign how humans and software work together. Where loops belong, when to interrupt, and how much trust an agent has to earn before it acts. Alex Rampell and I speak with Mike Cannon-Brooks, co-founder and CEO of Atlassian. The whole history of software from 1960 until 2022 was you would take a filing cabinet and you'd turn it into a database. So the first example of this is a company called Saber Systems, which was started in 1960 by IBM and American Airlines because it took the reservation system, which literally was stored in like vaults of filing cabinets, manned or womaned by lots and lots of secretaries in like the 1950s and 1940s. Airlines had been around for a long time. And then it put them in an early database, back when 10 megabit hard drive probably cost $100 million. And then that's what happened with electronic health records. And the first one was called MOPS. It was built by Mass General Hospital, where the first Siebel systems predating Salesforce, or actually the first CRM was called Axe Systems in 1987. So basically every single filing cabinet became a database. And there were benefits to that, but it didn't actually make the world that much more efficient. Because whereas before you would have a human go fetch you the HR file for Eric, oh, go to the HR filing cabinet, get me that file. Now it's in Workday. But now you have to have a CISO to make sure that your Workday doesn't get hacked. You need to have IT people to provision accounts in your SSO to Workday. So did the world get that much more efficient? And it did if you have multiple offices. Now people can collaborate. You could do complex joins in a database. It's much, much harder to do that on pieces of paper. But that was kind of software from 1960 to 2022 because the filing cabinet couldn't think for itself. And now this is the cool thing about everything that's happening in AI land is that the filing cabinet can do work. Like QuickBooks can actually accomplish a task by itself versus just relying on a human to retrieve the file from QuickBooks in the same way that the human in 1500 would retrieve a file from Yield filing cabinet from the Yield accounting department. So it's interesting. It's actually a great segue into, of course, what is everyone talking about? The SaaSpocalypse. Some people call it the catastrophe. Obviously, what's happening in the public markets. And a lot of people have different perspective
+
+---
+
+## 4. Google and Amazon join Microsoft in saying they will keep working with Anthropic on non-defense projects after DOD designated Anthropic a supply chain risk (Jennifer Elias/CNBC)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.981
+Weights: feed=2.0 × topic=2.0 × recency=0.865 × keyword=1.15
+Link: http://www.techmeme.com/260306/p17#a260306p17
+
+Jennifer Elias / CNBC : Google and Amazon join Microsoft in saying they will keep working with Anthropic on non-defense projects after DOD designated Anthropic a supply chain risk — Google said it will continue offering Anthropic's artificial intelligence technology for clients, excluding for defense work …
+
+---
+
+## 5. OpenAI rolls out Codex Security, an AI agent that evolved from its research project Aardvark to automate vulnerability discovery, validation, and remediation (Sam Sabin/Axios)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.845
+Weights: feed=2.0 × topic=2.0 × recency=0.874 × keyword=1.1
+Link: http://www.techmeme.com/260306/p18#a260306p18
+
+Sam Sabin / Axios : OpenAI rolls out Codex Security, an AI agent that evolved from its research project Aardvark to automate vulnerability discovery, validation, and remediation — OpenAI is rolling out Codex Security, an AI-powered application security agent that finds, validates and proposes fixes for vulnerabilities.
+
+---
+
+## 6. How prediction markets Kalshi and Polymarket are aggressively targeting college students through fraternity partnerships and student influencers (Wall Street Journal)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.657
+Weights: feed=2.0 × topic=2.0 × recency=0.795 × keyword=1.15
+Link: http://www.techmeme.com/260306/p15#a260306p15
+
+Wall Street Journal : How prediction markets Kalshi and Polymarket are aggressively targeting college students through fraternity partnerships and student influencers — Kalshi and Polymarket pour money into deals with social-media influencers and students, who try to parlay rumors, insider information into cash; 'We know this shouldn't be allowed'
+
+---
+
+## 7. Microsoft, Google, Amazon say Anthropic Claude remains available to non-defense customers
+Source: TechCrunch AI | Topic: ai_and_tech | Age: today | Score: 3.383
+Weights: feed=1.5 × topic=2.0 × recency=0.981 × keyword=1.15
+Link: https://techcrunch.com/2026/03/06/microsoft-anthropic-claude-remains-available-to-customers-except-the-defense-department/
+
+Trump's Department of War feud with Anthropic won't impact other companies that are using Claude via Microsoft and Google products.
+
+---
+
+## 8. Marvell stock jumps 20%+ after the chip company reported Q4 revenue up 22% YoY to $2.2B and issued strong guidance citing growing AI demand (Lola Murti/CNBC)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.331
+Weights: feed=2.0 × topic=2.0 × recency=0.833 × keyword=1.0
+Link: http://www.techmeme.com/260306/p16#a260306p16
+
+Lola Murti / CNBC : Marvell stock jumps 20%+ after the chip company reported Q4 revenue up 22% YoY to $2.2B and issued strong guidance citing growing AI demand — Marvell shares ripped 20% higher on Friday as the company posted an earnings beat and issued strong guidance, expecting robust artificial intelligence demand to continue.
+
+---
+
+## 9. OpenAI says it is delaying the launch of ChatGPT Adult Mode, originally planned for Q1, to focus on higher priorities, like gains in intelligence (Alex Heath/Sources)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.233
+Weights: feed=2.0 × topic=2.0 × recency=0.735 × keyword=1.1
+Link: http://www.techmeme.com/260306/p12#a260306p12
+
+Alex Heath / Sources : OpenAI says it is delaying the launch of ChatGPT Adult Mode, originally planned for Q1, to focus on higher priorities, like gains in intelligence — “People's habits are not solidified” Liz Reid has one of the hardest jobs in tech. She runs Google Search, arguably the best business ever built …
+
+---
+
+## 10. Pentagon names ex-DOGE employee Gavin Kliger as Chief Data Officer to lead its AI efforts; Kliger previously reposted white supremacist Nick Fuentes' content (Alexandra Alper/Reuters)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.144
+Weights: feed=2.0 × topic=2.0 × recency=0.786 × keyword=1.0
+Link: http://www.techmeme.com/260306/p14#a260306p14
+
+Alexandra Alper / Reuters : Pentagon names ex-DOGE employee Gavin Kliger as Chief Data Officer to lead its AI efforts; Kliger previously reposted white supremacist Nick Fuentes' content — The Pentagon on Friday named as Chief Data Officer a computer scientist who aided billionaire Elon Musk's efforts to overhaul …
+
+---
+
+=== FULL ARTICLE: Zvi on Anthropic Supply Chain Risk ===
+
+# Anthropic Officially, Arbitrarily and Capriciously Designated a Supply Chain Risk
+Source: the_zvi | Published: 2026-03-06T18:01:56+00:00
+Link: https://thezvi.substack.com/p/anthropic-officially-arbitrarily
+Words: 5643
+---
+
+Make no mistake about what is happening.
+The Department of War (DoW) demanded Anthropic bend the knee, and give them ‘unfettered access’ to Claude, without understanding what that even meant. If they didn’t get what they want, they threatened to both use the Defense Production Act (DPA) to make Anthropic give the military this vital product, and also designate the company a supply chain risk (SCR). 
+Hegseth sent out an absurdly broad SCR announcement on Twitter that had absolutely no legal basis, that if implemented as written would have been corporate murder. [They have now issued an official notification](https://www.bloomberg.com/news/articles/2026-03-05/openai-releases-new-financial-services-tools-rivaling-anthropic), which is still illegal, arbitrary and capricious, [but is scoped narrowly and won’t be too disruptive](https://www.anthropic.com/news/where-stand-department-war).
+Nominally the SCR designation is because we cannot rely on that same product when the company has not bent the knee and might object to some uses of its private property that it never agreed to allow. 
+No one actually believes this. No one is pretending others should believe this. If they have real concerns, there are numerous less restrictive and less disruptive tools available to the Department of War. Many have the bonus of being legal.
+In actuality, this is a massive escalation, purely as punishment. 
+DoW is saying that if you claim the right to choose when and how others use your private property, and offer to sign some contracts but not sign others, that this means you are trying to ‘usurp power’ and dictate government decisions. 
+It is saying that if you do not bend the knee, if your business does not do what we want, then we cannot abide this. We will illegally retaliate and end your business. 
+That is not how the law works. That is not how a Republic works. 
+This was completely unnecessary. Talks were ongoing. The two sides were close. The deal DoW signed with OpenAI, the same night as the original SCR designation, violates exactly the red line principles and demands the DoW says abide no compromises. 
+The good news is that there are those who managed to limit this to a narrowly tailored SCR, that only applies to direct provision of government contracts. Otherwise, this does not apply to you. Even if that gets tied up in court indefinitely, this will not inflict too much damage on either Anthropic or national security. 
+The question is how much jawboning or further steps come after this, but for now we have dodged the even worse outcomes keeping us up at night. 
+You might be tempted to think of or present this as the DoW backing down. [Don’t](https://x.com/deanwball/status/2029731558739828770).
+Why not? Two good reasons.
+
+It isn’t true. 
+
+This uses USC 3252 because they’d have been laughed out of court if they’d tried to match the no-legal-basis word salad from Friday 5:14pm.
+
+Given the use of USC 3252 this is maximally broad.
+
+The fact that they toyed with doing something even worse does not make this not an arbitrary, capricious and dramatic escalation purely as punishment. 
+
+The DoW cannot see itself as backing down, or it will do even worse things. 
+[Dean W. Ball](https://x.com/deanwball/status/2029731558739828770): No one should frame the DoW’s supply chain risk designation as the government “backing down.” If that becomes “the narrative,” it could encourage further action to avoid the appearance of weakness. 
+It is also not true that it is backing down; the government really is exercising its supply chain risk designation authority under 10 USC 3252 to the fullest extent (and this is assuming it’s even legitimate to use it on an American firm, which is deeply questionable.
+
+Hegseth’s threat was far broader than his power, which is the only reason this seems deescalatory. If you had asked me for a worst case scenario before Hegseth’s tweet last Friday, I would have told you precisely what has unfolded. This could mean that any vendor of widely used enterprise software (Microsoft, Apple, Salesforce, etc.) could be barred from using Anthropic in the maintenance of any codebases offered to DoW as part of a military contract, for example. Any startup who views DoW as a potential customer for their products will preemptively have to avoid Claude. This is still a massive punishment from USG.
+
+You might also ask: if I knew Hegseth’s power was more limited than he threatened, why did I take his threat at face value? The answer is that we have so clearly moved past the realm of reason here that, well, to a first approximation, I take the guy who runs the biggest military on Earth at his word when he issues threats.
+[Sometimes some people should talk in carefully chosen Washington language](https://ari.us/pentagon-designates-anthropic-a-supply-chain-risk/), as ARI does here. Sometimes I even do it. This is not one of those times.
+#### Table of Contents
+
+[Post Overview.](https://thezvi.substack.com/i/190093107/post-overview)
+
+[Anthropic’s Statement on the SCR.](https://thezvi.substack.com/i/190093107/anthropic-s-statement-on-the-scr)
+
+[What The Actual SCR Designation Says.](https://thezvi.substack.com/i/190093107/what-the-actual-scr-designation-says)
+
+[Enemies of The Republic.](https://thezvi.substack.com/i/190093107/enemies-of-the-republic)
+
+[Regulation Need Not Seize The Means Of Production.](https://thezvi.substack.com/i/190093107/regulation-need-not-seize-the-means-of-production)
+
+[Microsoft Stands Firm.](https://thezvi.substack.com/i/190093107/microsoft-stands-firm)
+
+[Calling This What It Is.](https://thezvi.substack.com/i/190093107/calling-this-what-it-is)
+
+[What To Expect Next.](https://thezvi.substack.com/i/190093107/what-to-expect-next)
+#### Post Overview
+
+This post is an update on events since the publication of the weekly, and an attempt to reiterate key events and considerations to put everything into context. 
+For details and analysis of previous events, see my previous posts:
+
+[Anthropic and The Department of War, from February 25.](https://thezvi.substack.com/p/anthropic-and-the-department-of-war)
+
+[Anthropic and the DoW: Anthropic Responds, from February 27](https://thezvi.substack.com/p/anthropic-and-the-dow-anthropic-responds?r=67wny). 
+
+[A Tale of Three Contracts, From March 3.](https://thezvi.substack.com/p/a-tale-of-three-contracts?r=67wny)
+
+[AI #158: The Department of War, from March 5](https://thezvi.substack.com/p/ai-158-the-department-of-war?r=67wny).
+For those following along these are the key events since last time:
+
+Wednesday morning: Talks between Anthropic and the DoW have resumed, in line with FT reporting, and progress on concrete proposals is being made. 
+
+Wednesday afternoon: An internal Anthropic memo from Friday evening [uncharacteristically](https://x.com/uncatherio/status/2029838114722828404) leaks, most of which was correct technical explanations of the situation, and also containing some reasonable suppositions as of time of writing, but that also included some statements that were ill-considered and caused fallout. Negotiations were disrupted.
+
+Thursday morning: All quiet as everyone dealt with fallout from the leaked internal Anthropic memo. Scrambling to keep things contained continues.
+
+Thursday, 1pm: [Katrina Manson reports that the Pentagon has sent a formal SCR to Anthropic](https://www.bloomberg.com/news/articles/2026-03-05/openai-releases-new-financial-services-tools-rivaling-anthropic), but the report has no details.
+
+Thursday afternoon: [Reporting comes out that](https://x.com/DeItaone/status/2029611701352419601) ‘Trump plans U.S. control over global AI chip sales’ and it remains unclear what this means [but Commerce has been very clear they’re not bringing back diffusion rules](https://x.com/comm
+
+=== FULL ARTICLE: Doomberg Interview on Iran/Energy ===
+
+# 🔮 Doomberg: The Strait is Already Closed
+Source: polymarket_blog | Published: 2026-03-06T17:59:19+00:00
+Link: https://news.polymarket.com/p/doomberg-the-strait-is-already-closed
+Words: 2766
+---
+
+[
+
+](https://substackcdn.com/image/fetch/$s_!UDtZ!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1d796bfc-689c-4b50-828b-487b10d4e87a_940x650.jpeg)
+ is a pseudonymous team of former commodities executives publishing one of the top Substacks on energy, finance, and geopolitics under the iconic green chicken avatar.
+The Oracle caught up with Doom on March 4, as the Iran-Israel war entered its fifth day, to discuss missile attrition, laser beams, what the Brent-WTI spread is telling us, and which Gulf Arab state he’s watching most closely.
+This interview has been edited for length. All answers are Doomberg’s own.
+[Subscribe now](https://news.polymarket.com/subscribe?)
+
+### The last time we spoke, we talked about your thesis that World War Three was a monetary struggle for the future of the US trading and energy system. Are we moving to the hot phase now?
+
+In our view [World War III started](https://news.polymarket.com/p/we-are-already-in-world-war-iii-internet) in 2014, when Putin sold his US Treasuries and placed the proceeds in gold. The war in Ukraine, which started in 2022, is the biggest hot battle before this one. And the Iran war is the latest battle in that same conflict. The economic trade war between China and the US is another battle. Iran is a BRICS state, a key supplier of crude to China, and an on-again, off-again ally of Russia.
+There’s only really one battle left after this: US versus China over Taiwan. The world is in a very precarious place right now.
+### Your WWIII thesis suggests that Trump initiated this to knock out China’s energy suppliers, Venezuela and now Iran. But I’m hearing other arguments that Israel was dragging in the US. Where do you come down?
+
+Look, Donald Trump’s the President of the United States. The buck stops with him. He’s the person that the US public has elected, and his party will stand for election in the 2026 midterms, and whoever wins the Republican nomination will be held to account and/or rewarded for whatever happens in the weeks ahead. Every country in the world is trying to influence the President of the United States for obvious reasons. Even if that’s true, it doesn’t matter to us.
+
+One of the hallmarks of a lateral thinker is an ability to separate an emotional attachment to the correctness of an axiom from whether or not it is currently working to explain events. And I would argue that the energy axiom: that the US is in the middle of World War Three, and energy is at the core of all wars, and China gets its energy from Venezuela and Iran and Russia, and the US just happens to be in various stages of war with Russia, Venezuela, and Iran, I just find it very difficult or implausible to believe that this is all some Israeli-driven set of coincidences. And so yeah, we firmly are in that second camp.
+### What are the four or five most salient sources you’re looking at on a daily basis to understand what’s going on?
+
+The primary things I’m looking at, because there’s just such a thicket of propaganda out there, are market indicators, things like Polymarket, but also the energy market. The [energy markets ](https://poly.market/GmpnIx5)are incredibly sophisticated. There’s billions of dollars on the line to getting these things right.
+Over the weekend, I decided to try an experiment. I personally bought a new clean iPad and created some new login credentials and a fresh email and downloaded the Twitter app. And I spent an hour training the algorithm that I was pro-Iranian, anti-American. I wanted to see what that side of the world was telling itself. And two amazing things already a few days in: it’s a wholly different universe. Shockingly so. The standard Doomberg Twitter for-you feed versus that feed might as well be on di
+
+=== PODCAST TRANSCRIPT: a16z Show — Atlassian CEO on SaaS Apocalypse ===
+
+Give people a chat box that can do unlimited power and they're like, tell me a dad joke. In the technology world, their underutilized capabilities are so big. It's almost trite now to say the models are far ahead of the value they're delivering. The whole history of software from 1960 until 2022 was you would take a filing cabinet and you'd turn it into a database. The cool thing about everything that's happening in AI land is that the filing cabinet can do work. The idea I would vibe code my own workday and then run it is terrifying. However, there is a great gain we are seeing internally in extensibility of software using things like vibe code. Not everyone has been talking about the SaaS apocalypse. Some people call it the catastrophe. Why is there too much fear about this? As I've said, not every SaaS company is going to thrive through the next decade. We're not here to defend all of software, obviously. Perseed pricing built software fortunes for two decades. It felt fair. More users, more money. But beneath the logic were very different kinds of businesses. Some seats were tied to work that AI can now do instead. Others were just a pricing proxy for headcount. And those companies may actually benefit from AI. The public markets, so far, haven't reliably told them apart. When the SaaS sell-off hit, valuations dropped across the board, regardless of whether a company looked more like Zendesk or Workday. That's the gap worth understanding. Companies that survive the transition face a harder job than adding an AI feature. They have to redesign how humans and software work together. Where loops belong, when to interrupt, and how much trust an agent has to earn before it acts. Alex Rampell and I speak with Mike Cannon-Brooks, co-founder and CEO of Atlassian. The whole history of software from 1960 until 2022 was you would take a filing cabinet and you'd turn it into a database. So the first example of this is a company called Saber Systems, which was started in 1960 by IBM and American Airlines because it took the reservation system, which literally was stored in like vaults of filing cabinets, manned or womaned by lots and lots of secretaries in like the 1950s and 1940s. Airlines had been around for a long time. And then it put them in an early database, back when 10 megabit hard drive probably cost $100 million. And then that's what happened with electronic health records. And the first one was called MOPS. It was built by Mass General Hospital, where the first Siebel systems predating Salesforce, or actually the first CRM was called Axe Systems in 1987. So basically every single filing cabinet became a database. And there were benefits to that, but it didn't actually make the world that much more efficient. Because whereas before you would have a human go fetch you the HR file for Eric, oh, go to the HR filing cabinet, get me that file. Now it's in Workday. But now you have to have a CISO to make sure that your Workday doesn't get hacked. You need to have IT people to provision accounts in your SSO to Workday. So did the world get that much more efficient? And it did if you have multiple offices. Now people can collaborate. You could do complex joins in a database. It's much, much harder to do that on pieces of paper. But that was kind of software from 1960 to 2022 because the filing cabinet couldn't think for itself. And now this is the cool thing about everything that's happening in AI land is that the filing cabinet can do work. Like QuickBooks can actually accomplish a task by itself versus just relying on a human to retrieve the file from QuickBooks in the same way that the human in 1500 would retrieve a file from Yield filing cabinet from the Yield accounting department. So it's interesting. It's actually a great segue into, of course, what is everyone talking about? The SaaSpocalypse. Some people call it the catastrophe. Obviously, what's happening in the public markets. And a lot of people have different perspectives of how significant it is, what it means. I want you from both of you, how you interpret what's been going on and more importantly, what it means or how we should make sense of it. Why is there too much fear about this or how should we make sense of it? Look, I think the world is trying to work out how to rate or value software businesses in a highly disruptive stage, right? And everyone has hot takes about what the future is going to look like, right? And depending on the takes, you get a version of the future that's either really good or really bad for all of software, certain companies, certain categories in software. It's a really interesting thing. There's no doubt in my mind that the risk level has gone up. So if you think about from an investor mindset, you're like, this used to be a very stable category. Now it's a more risky category. Hence, I'm going to step away and watch. And as I always say, investors are trying to work out not necessarily the DCF cashflow model of a company for all profits of history. They're really trying to work out what are other investors going to do? And they're actually betting on what other people think that other people think they're going to do. And right now that it sort of logically makes sense. You have a interesting world where everyone has a version of what future is likely to look like. And it seems likely to them. It's pretty disconnected from the reality on the ground. But the answer is always, what if AI can do that in two years or three years? What does that mean? And I think it comes from a very static viewpoint, right? Like that people won't adapt, the world won't change. It's like one thing is going to change and everything else is going to remain static. So you have this interesting world at the moment where businesses like ours are doing very well, right? We've had three great quarters in a row and everybody says so. And then you're like, wait, that used to equate to some value. And it's our job to prove that that's not the case for our business, right? We're not here to defend all of software, obviously. But for our business, we feel very good about the opportunities we have, the data we keep showing, the results we keep showing. And I always say this as well, it doesn't mean that we don't have to adapt. It's this weird world that like, we are changing how we work radically and quickly, as we always have, as we've been doing for a number of years. Some part of that, I think, assumes that we won't be able to change, right? There are strategic vectors for sure. And look, the reality is, as I've said, not every SaaS company is going to thrive through the next decade, right? Just like a bunch didn't make it to the cloud, a bunch didn't make it from, I don't know, Windows to the internet era. Whichever era you want to say, no one is going to say, I think that 100 out of 100 SaaS companies are going to make it through and be thriving and growing on the other side. Also, we have this version that software kind of dies. A lot of it just ends up as a cash revenue stream. I can speak for us. This is the best thing that's happened to our business, right? We're in a knowledge world. We have tools to play with that knowledge, to act on that knowledge, to do all sorts of other things, to solve the jobs our customers have always hired us for. This logically is very good, but it's up to us to execute that through that transition, right? Which I think we're doing really well, but again, we have to prove that to people over time, that the patience part is hard for markets. Alex, how about you? How do you react to what's been happening? How do you make sense of what's going on? Well, I hope I'm right in the long run, which is all this stuff is crazy. I think I tweeted about this a few weeks ago where my kind of cursory glance is that there are three different types of SaaS companies and the public markets couldn't tell the difference between the three. And one is where seats are tied to ou
+
+=== END SOURCE MATERIAL ===
+
+Now write the episode script. Use [BASIL], [BROOKE], and [TRANSITION] tags. Target 3,000 words. Be specific — cite quotes, names, numbers from the sources. Start with a cold open on the biggest story.
