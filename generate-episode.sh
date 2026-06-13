@@ -120,6 +120,14 @@ if [ ! -f ".tmp/topic-brief.txt" ]; then
 fi
 log "Ingest complete"
 
+# ─── Step 1.1: Scratch retention sweep ───────────────────────────────────────
+# Ingest just downloaded source MP3s into .tmp/podcasts/ (Whisper path) whose
+# transcripts are now cached in .tmp/transcripts/. Delete media scratch older
+# than the retention window so .tmp can't grow unbounded (it hit ~98GB and
+# filled the disk on 2026-06-13). mtime guard keeps today's files; non-fatal.
+log "Pruning old .tmp media scratch..."
+bash "$BRAINROT_DIR/cleanup-scratch.sh" >> "$RESULT_LOG" 2>&1 || log "Scratch sweep failed (non-fatal); continuing"
+
 # ─── Step 1.5: Build-Pitch Reporter (Claude Lab) ─────────────────────────────
 # A dedicated reporter that scans recent YouTube transcripts from Claude-technique
 # channels, RESEARCHES + VERIFIES anything interesting against other sources, and
