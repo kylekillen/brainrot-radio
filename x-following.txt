@@ -1,0 +1,125 @@
+# Kyle's X Following List (@KyleKillen4) — 107 accounts
+# Extracted 2026-03-02
+# Format: handle | bio snippet
+
+# ── AI / Tech / Futurism ──────────────────────────────────────────
+karpathy | Previously Director of AI @ Tesla, founding team @ OpenAI, PhD @ Stanford
+erikbryn | Director @DigEconLab Co-founder @Workhelix @StanfordHAI @SIEPR @Stanford
+Miles_Brundage | AI policy researcher
+emollick | Wharton professor, AI in education/business
+ESYudkowsky | AI alignment researcher, MFIRI
+labenz | Cognitive Revolution podcast, AI analysis
+TheZvi | Rationalist blogger, AI commentary
+mckaywrigley | AI developer tools
+gwern | Researcher/writer on AI, statistics, psychology
+cocktailpeanut | AI tools builder
+boltdotnew | AI coding tools
+tszzl | Tech/AI commentary
+
+# ── Prediction Markets / Trading ──────────────────────────────────
+HiveLiveHQ | The Home of Real Prediction Market Media
+bernardbulletin | Writing about politics and prediction markets, Kalshi Mention Market
+checkprice | Prediction market tracking
+0xTyrael | Prediction markets
+Ianmakesmarkets | Market maker
+K_NewEvents | Kalshi new events tracker
+KalshiTrade | Kalshi official
+PredMTrader | Prediction market trader
+GaetenD | Prediction markets
+eli_lifland | Forecasting
+peterwildeford | Forecasting, EA
+
+# ── NBA / Sports ──────────────────────────────────────────────────
+ShamsCharania | ESPN Senior NBA Insider
+TheHoopCentral | NBA highlights/news
+BleacherReport | Sports media
+hoopvenue_ | NBA content
+purehoop | NBA content
+ringernba | The Ringer NBA
+ZachLowe_NBA | NBA analyst
+wojespn | NBA insider
+RobMahoney | NBA writer
+JustinVerrier | NBA/sports writer
+BigWos | NBA content
+JakeLFischer | NBA reporter
+TimBontemps | NBA reporter
+WorldWideWob | NBA highlights
+KevinOConnor | NBA analyst
+TheDunkCentral | NBA highlights
+DannyBKelly | Senior Staff Writer @Ringer, fantasy football
+Danny_Heifetz | The Ringer
+andrewsharp | Podcasts @stratechery, co-host @goatnbapod
+BillSimmons | The Ringer founder
+SeanFennessey | The Ringer
+ChrisRyan77 | The Ringer
+ArtButSports | Art + Sports mashups
+
+# ── Public Intellectuals / Culture / Policy ───────────────────────
+tylercowen | Marginal Revolution, economist
+mattyglesias | Slow Boring, policy writer
+Noahpinion | Economics/policy blogger
+ezraklein | NYT columnist, podcast host
+sullydish | Andrew Sullivan, The Dish
+bariweiss | Editor-in-Chief @thefp, CBS News
+JohnHMcWhorter | Columbia linguist, NYT
+robinhanson | Economist, prediction markets, Age of Em
+coldxman | Coleman Hughes, Conversations podcast
+DouthatNYT | Ross Douthat, NYT columnist
+Yascha_Mounk | Political scientist, Persuasion
+tracewoodgrains | Writer on education/institutions
+JonHaidt | Social psychologist, The Righteous Mind
+bryan_caplan | Economist, GMU
+JerusalemDemsas | The Atlantic editor
+janecoaston | Crooked Media, What A Day
+charlesmurray | Political scientist
+sapinker | Steven Pinker, cognitive scientist
+NateSilver538 | Nate Silver, forecasting/data analysis
+culturaltutor | Cultural history threads
+slatestarcodex | Scott Alexander, rationalist blogger
+cremieuxrecueil | Genetics, demographics, data
+StatisticUrban | Data scientist, econ
+quantian1 | Statistics/data
+SwannMarcus89 | Commentary
+larsiusprime | Game dev, Georgism, land use
+DKThomp | Derek Thompson, economics/culture writer
+WilliamAEden | Writer
+MoreBirths | Pronatalist movement
+
+# ── Media / Journalism ────────────────────────────────────────────
+TrungTPhan | Business writing @workweekinc, building @bearlyai
+matt_levine | Bloomberg columnist (finance)
+ByrneHobart | The Diff newsletter
+dwarkesh_sp | Dwarkesh Patel, podcast interviews
+avidseries | TV/entertainment
+ringer | The Ringer
+jessesingal | Blocked and Reported podcast
+Quillette | Ideas magazine
+jsingalfeed | Jesse Singal feed
+MargRev | Marginal Revolution
+deanwball | AI policy writing
+whyvert | Commentary
+iowireservice | Reposts interesting stuff
+
+# ── Health / Longevity ────────────────────────────────────────────
+PeterAttiaMD | Longevity-focused physician
+LongevityTech | Longevity technology
+
+# ── Energy / Industry ─────────────────────────────────────────────
+Vernon3Austin | Making ultra cheap thermal energy storage
+elidourado | Progress studies, tech policy
+CaitlinPacific | Commentary
+
+# ── Humor / Misc ──────────────────────────────────────────────────
+waitbutwhy | Tim Urban, long-form explainers
+concretemilk | Unpopular opinions
+iomusicandfilm | Music and film
+SLCScanner | Salt Lake City scanner/local
+Kuwalla_T | Brand
+locksy | ?
+Netwrix | Cybersecurity
+ElGee35 | ?
+mold_time | ?
+growing_daniel | ?
+literalbanana | ?
+daniel_271828 | ?
+craighorlbeck | ?

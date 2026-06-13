@@ -1,0 +1,101 @@
+# Kyle's Spotify Podcast Subscriptions (killen8)
+# Extracted 2026-03-02
+# Currently listening: Modern Wisdom - Dr Kathryn Paige Harden - The Genetics of Evil
+
+# ── AI / Tech ─────────────────────────────────────────────────────
+The AI Daily Brief | Nathaniel Whittemore
+The Cognitive Revolution | Erik Torenberg, Nathan Labenz
+AI Summer | Timothy B. Lee, Dean W. Ball
+AI and I | Dan Shipper
+Epoch After Hours | Epoch AI
+The a16z Show | Andreessen Horowitz
+Sharp Tech with Ben Thompson | Andrew Sharp, Ben Thompson
+Stranded Technologies Podcast | Infinita City
+Cold Takes Audio | coldtakes
+
+# ── Rationalist / Ideas / Science ─────────────────────────────────
+Modern Wisdom | Chris Williamson
+80,000 Hours Podcast | Rob, Luisa, and the 80000 Hours team
+Clearer Thinking with Spencer Greenberg | Spencer Greenberg
+LessWrong posts by zvi | zvi
+Astral Codex Ten Podcast | Jeremiah (Scott Alexander)
+Rationally Speaking | NYC Skeptics
+Philosophize This! | Stephen West
+Hidden Brain | Shankar Vedantam
+Fall of Civilizations Podcast | Fall of Civilizations
+Hard Drugs | Saloni Dattani, Jacob Trefethen
+Minds Almost Meeting | ?
+
+# ── Economics / Markets / Finance ─────────────────────────────────
+Forward Guidance | Blockworks
+The Market Huddle | Patrick Ceresna, Kevin Muir
+Odd Lots | Bloomberg
+Freakonomics Radio | Freakonomics Radio + Stitcher
+Inflection Point | Blockworks
+The Marginal Revolution Podcast | Mercatus Center at George Mason
+Econ 102 with Noah Smith and... | Turpentine
+The Riff with Byrne Hobart and... | Byrne Hobart
+Let's Appreciate | Kyla Scanlon
+Risky Business with Nate Silver | Pushkin Industries
+
+# ── Politics / Culture / Public Intellectuals ─────────────────────
+The Ezra Klein Show | NYT Opinion
+The Daily | NYT
+Honestly with Bari Weiss | The Free Press
+The Free Press Investigates | The Free Press
+The Filter Podcast with Matt A... | The Filter
+Good on Paper | The Atlantic
+Blocked and Reported | Katie Herzog, Jesse Singal
+Pod Save America | Pod Save America
+Just Asking Questions | Reason
+Conversations with Coleman | The Free Press
+Bad Takes | Grid
+Narratives w/Will Jarvis | Will Jarvis
+Works in Progress Podcast | Works in Progress
+
+# ── NBA / Sports ──────────────────────────────────────────────────
+The Ringer NBA Show | The Ringer
+The Zach Lowe Show | The Ringer
+The Lowe Post | ESPN, Zach Lowe
+Brian Windhorst & The Hoop Collective | ESPN
+The Woj Pod | ESPN, Wojnarowski
+The Athletic NBA Daily | The Athletic
+The Kevin O'Connor Show | Yahoo Sports
+Yahoo Sports NBA | Yahoo Sports
+Game Over with Max Kellerman | The Ringer
+Hoop Venue | Hoop Venue
+The Ryen Russillo Podcast | The Ringer
+
+# ── Entertainment / Media ─────────────────────────────────────────
+The Bill Simmons Podcast | The Ringer
+The Rewatchables | The Ringer
+The Town with Matthew Belloni | The Ringer
+The Prestige TV Podcast | The Ringer
+The Watch | The Ringer
+Dissect | Spotify Studios
+The Sketch Factor | Spotify Studios
+Reply All | Gimlet
+Talk '90s to me | Podmasters
+Dannibal's Morty Time | Mars villain
+The Ringer NFL Draft Show | The Ringer
+DannyBKelly (Ringer Fantasy Football) | The Ringer
+
+# ── F1 / Motorsport ───────────────────────────────────────────────
+The Race F1 Podcast | The Race Media
+The Ringer F1 Show | The Ringer
+
+# ── Health / Longevity ────────────────────────────────────────────
+Huberman Lab | Scicomm Media
+The Peter Attia Drive | Peter Attia, MD
+FoundMyFitness | Rhonda Patrick, Ph.D.
+LaBossiere Podcast | Alex LaBossiere
+
+# ── Other ─────────────────────────────────────────────────────────
+The Intelligence from The Economist | The Economist
+Dwarkesh Podcast | Dwarkesh Patel
+How I Write | David Perell
+Manifold | Steve Hsu
+Dingo And The Baby | Climate Kid
+What the Football with Suzy S... | ESPN
+Killen Time Podcast | Kyle Killen (yours!)
+culturaltutor (implied from X) | Cultural history
