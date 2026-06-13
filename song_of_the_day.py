@@ -55,7 +55,7 @@ def pick_genre(show_date: str) -> tuple[str, str]:
 def check_api() -> bool:
     """Check if ACE-Step API is reachable."""
     try:
-        req = urllib.request.Request(f"{ACESTEP_API}/v1/models", method="GET")
+        req = urllib.request.Request(f"{ACESTEP_API}/health", method="GET")
         with urllib.request.urlopen(req, timeout=5) as resp:
             return resp.status == 200
     except (urllib.error.URLError, OSError):

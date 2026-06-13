@@ -197,11 +197,13 @@ def mix_segments(segment_files, output_path, show_date=None, artwork_path=None, 
     build_concat_list(segment_files, concat_file, show_date)
 
     # Step 1: Concatenate speech + transitions
+    # Resample to 24kHz mono to handle mixed sample rates (speech=24k, music=32k/48k)
     print("  Concatenating segments...", file=sys.stderr)
     result = subprocess.run(
         [
             FFMPEG, "-y", "-f", "concat", "-safe", "0",
             "-i", str(concat_file),
+            "-af", "aresample=24000,aformat=channel_layouts=mono",
             "-c:a", "libmp3lame", "-b:a", "128k",
             str(raw_concat),
         ],
