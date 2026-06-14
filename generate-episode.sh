@@ -298,33 +298,30 @@ NEW_SCRIPT="$BRAINROT_DIR/$SCRIPT_FILE"
 TOTAL_WORDS=$(wc -w < "$NEW_SCRIPT" | tr -d ' ')
 log "Combined script: $TOTAL_WORDS words"
 
-# ─── Step 3: QC Review ───────────────────────────────────────────────────────
+# ─── Step 3: QC Review (adversarial 3-skeptic + synthesizer) ─────────────────
+# Delegates to the .claude/commands/qc-episode.md command — the single source of
+# truth for QC, shared with the interactive `/qc-episode` path. That command
+# launches 3 independent adversarial agents (Freshness/Dedup, Coherence,
+# Sourcing) each told to REFUTE the script from one angle, then a synthesizer
+# keeps only issues ≥2 agents agree on (MUST-FIX) vs single-agent ADVISORY, fixes
+# the MUST-FIX items, and prints `QC VERDICT: PASS`/`FAIL`. We read+follow the
+# file rather than rely on slash-command expansion so the daily run is robust.
 cat > "$BRAINROT_DIR/.tmp/step3-qc.txt" <<PROMPT_EOF
-You are a QC reviewer for a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
+Read the file .claude/commands/qc-episode.md and follow its instructions exactly.
+Your working directory is /Users/kylekillen/brainrot-radio.
+The script to QC (the "\$1" argument the command refers to) is: $NEW_SCRIPT
 
-Read CLAUDE.md for editorial guidelines.
+This episode was written in two passes (front half: AI/tech + agents/building +
+build-pitch; back half: NFL/NBA + entertainment + economics), so pay particular
+attention to the half-join: a BASIL/BASIL collision and back-to-back [TRANSITION]
+tags are the recurring two-pass defects.
 
-Read the script at: $NEW_SCRIPT
-
-This script was written in two passes (first half: AI/tech + agents/building + build-pitch, second half: NFL/NBA sports + entertainment + economics). Check for:
-- Awkward transitions between the two halves (especially around the [TRANSITION] where they join)
-- Duplicated stories or talking points across the two halves
-- Orphaned/duplicated content
-- Segments out of logical order
-- Repeated signoffs or intro phrases
-- Segments that reference stories not introduced yet
-- Incorrect day of week (verify with Python: from datetime import date; date.today().strftime('%A'))
-- Missing topic coverage promised in the intro
-- Stories presented as "breaking" that are >48h old
-- Missing source quotes — each segment should cite at least one source
-- Speaker tag errors (must be [BASIL], [BROOKE], or [TRANSITION])
-- Two consecutive same-speaker blocks
-- Any redundant [TRANSITION] tags where the halves join (clean up to one)
-
-If issues are found, fix them directly in the script file. If the script is clean, just confirm it passes QC.
+Launch the three skeptics in parallel as the command directs, synthesize, fix all
+MUST-FIX issues directly in the script file, and end with the QC VERDICT line.
 PROMPT_EOF
 
-if ! run_claude_step 900 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review"; then
+# 3 parallel agents + synthesis + fixes takes longer than the old single checker.
+if ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review"; then
     log "QC review failed (non-fatal), proceeding to render"
 fi
 
