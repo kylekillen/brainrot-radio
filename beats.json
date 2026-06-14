@@ -1,80 +1,133 @@
 {
-  "version": "1.1",
-  "updated": "2026-06-11",
-  "note": "Beat reporter definitions for parallel agent show generation. 2026-06-11: AI block anchored on AI Daily Brief + Moonshots; added the claude_lab Build-Pitch Reporter; broadened sports to ramp NFL as NBA winds down.",
-
+  "version": "1.2",
+  "updated": "2026-06-13",
+  "note": "Beat reporter definitions for parallel agent show generation. 2026-06-13: added context_file per beat (1:1 map to .claude/context/beats/*.md, the on-demand editorial guidance loaded by /run-beat-reporters) and an economics_culture beat. 2026-06-11: AI block anchored on AI Daily Brief + Moonshots; added the claude_lab Build-Pitch Reporter; broadened sports to ramp NFL as NBA winds down.",
   "beats": [
     {
       "id": "ai_tech",
       "name": "AI & Technology",
       "sources": [
-        "podcast:ai_daily_brief_pod", "podcast:diamandis_moonshots",
-        "rss:techmeme", "rss:hacker_news", "rss:techcrunch_ai", "rss:ars_ai",
-        "rss:claude_code_releases", "rss:one_useful_thing", "rss:hyperdimensional",
-        "podcast:sharp_tech_with_ben_thompson", "podcast:ai_summer", "podcast:epoch_after_hours",
-        "youtube:karpathy_yt", "youtube:dwarkesh_yt", "youtube:ai_explained_yt"
+        "podcast:ai_daily_brief_pod",
+        "podcast:diamandis_moonshots",
+        "rss:techmeme",
+        "rss:hacker_news",
+        "rss:techcrunch_ai",
+        "rss:ars_ai",
+        "rss:claude_code_releases",
+        "rss:one_useful_thing",
+        "rss:hyperdimensional",
+        "podcast:sharp_tech_with_ben_thompson",
+        "podcast:ai_summer",
+        "podcast:epoch_after_hours",
+        "youtube:karpathy_yt",
+        "youtube:dwarkesh_yt",
+        "youtube:ai_explained_yt"
       ],
       "target_segments": 2,
-      "editorial_notes": "FOCUS ON HIGH-SIGNAL AI (2026-06-11). The two anchor sources are the AI Daily Brief (Nathaniel Whittemore) and Moonshots (Peter Diamandis) — lead the AI block with their framing whenever a fresh episode exists, and give each real airtime, not a passing mention. Build around their actual arguments and quotes; use the RSS news feeds (Techmeme, TechCrunch, Ars) only as context/headlines around the podcast discussion. Then feature high-signal essays and technical breakthroughs getting discussion across rationalist/tech circles. Skip generic news summaries. Hand off agent-harness / how-to-build material to the Agents & Building beat and Claude-technique findings to the Build-Pitch Reporter (claude_lab)."
+      "editorial_notes": "FOCUS ON HIGH-SIGNAL AI (2026-06-11). The two anchor sources are the AI Daily Brief (Nathaniel Whittemore) and Moonshots (Peter Diamandis) — lead the AI block with their framing whenever a fresh episode exists, and give each real airtime, not a passing mention. Build around their actual arguments and quotes; use the RSS news feeds (Techmeme, TechCrunch, Ars) only as context/headlines around the podcast discussion. Then feature high-signal essays and technical breakthroughs getting discussion across rationalist/tech circles. Skip generic news summaries. Hand off agent-harness / how-to-build material to the Agents & Building beat and Claude-technique findings to the Build-Pitch Reporter (claude_lab).",
+      "context_file": ".claude/context/beats/ai-tech.md"
     },
     {
       "id": "agentic_systems",
       "name": "Agents & Building With AI",
       "sources": [
-        "rss:claude_code_releases", "rss:latent_space", "rss:simon_willison",
+        "rss:claude_code_releases",
+        "rss:latent_space",
+        "rss:simon_willison",
         "rss:one_useful_thing",
-        "podcast:ai_and_i", "podcast:the_cognitive_revolution", "podcast:no_priors",
-        "podcast:the_a16z_show", "youtube:dwarkesh_yt", "youtube:karpathy_yt",
+        "podcast:ai_and_i",
+        "podcast:the_cognitive_revolution",
+        "podcast:no_priors",
+        "podcast:the_a16z_show",
+        "youtube:dwarkesh_yt",
+        "youtube:karpathy_yt",
         "report:build_pitches"
       ],
       "target_segments": 3,
-      "editorial_notes": "FEATURED BEAT. How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, dev-loop optimization. Frame every story through 'what can WE steal for our own multi-agent setup' — Kyle is building a team of delegated AIs and wants to optimize that system. Practitioner-level and specific; quote the actual techniques. INCLUDES the Build-Pitch of the Day: read .tmp/build-pitches.md (output of the claude_lab reporter) and, if a verified pitch exists, give it a dedicated sub-segment — what the technique is, who's doing it, the evidence it's real, and how it'd upgrade Kyle's stack — and say on-air that it's logged in build-pitches/ for Kyle to greenlight."
+      "editorial_notes": "FEATURED BEAT. How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, dev-loop optimization. Frame every story through 'what can WE steal for our own multi-agent setup' — Kyle is building a team of delegated AIs and wants to optimize that system. Practitioner-level and specific; quote the actual techniques. INCLUDES the Build-Pitch of the Day: read .tmp/build-pitches.md (output of the claude_lab reporter) and, if a verified pitch exists, give it a dedicated sub-segment — what the technique is, who's doing it, the evidence it's real, and how it'd upgrade Kyle's stack — and say on-air that it's logged in build-pitches/ for Kyle to greenlight.",
+      "context_file": ".claude/context/beats/agents-building.md"
     },
     {
       "id": "claude_lab",
       "name": "Claude Lab — Build-Pitch Reporter",
       "sources": [
-        "youtube:indydevdan_yt", "youtube:cole_medin_yt", "youtube:ai_jason_yt",
-        "youtube:gosucoder_yt", "youtube:matthew_berman_yt", "youtube:anthropic_yt",
-        "rss:claude_code_releases", "rss:simon_willison", "rss:latent_space"
+        "youtube:indydevdan_yt",
+        "youtube:cole_medin_yt",
+        "youtube:ai_jason_yt",
+        "youtube:gosucoder_yt",
+        "youtube:matthew_berman_yt",
+        "youtube:anthropic_yt",
+        "rss:claude_code_releases",
+        "rss:simon_willison",
+        "rss:latent_space"
       ],
       "target_segments": 1,
-      "editorial_notes": "DEDICATED REPORTER (2026-06-11). This beat does NOT just summarize videos. Its job: scan recent (last ~5-7 days) YouTube transcripts from the claude_lab channels (plus keyword searches like 'Claude Code subagents', 'agent harness', 'Claude Code optimization', 'running AI agents') for concrete techniques on Claude technique, running agents, system upgrades, and optimization. For each candidate it must RESEARCH and VERIFY before reporting: cross-check against other sources doing the same or similar thing, confirm there's real evidence it works (not a demo or hype), and judge whether it's genuinely novel/meaningful vs. something Kyle already does. Discard anything vague, unverifiable, or already-known. Survivors become BUILD PITCHES: a clear statement of the technique, who's doing it (with the specific video + corroborating sources), the evidence, how it maps onto Kyle's stack (observer-system, COS, dispatcher/PR-reviewer loop, this podcast pipeline, the multi-agent setup), and a concrete sketch of what building it would take. The reporter writes a durable record to build-pitches/YYYY-MM-DD.md and a short summary to .tmp/build-pitches.md for the episode writer. The goal: Kyle hears a verified pitch on the show, and if he likes it he points an agent at the episode / the build-pitches file and says 'build this.' NEVER fabricate a pitch — if nothing survives verification, report that honestly and write a 'no verified pitch today' marker."
+      "editorial_notes": "DEDICATED REPORTER (2026-06-11). This beat does NOT just summarize videos. Its job: scan recent (last ~5-7 days) YouTube transcripts from the claude_lab channels (plus keyword searches like 'Claude Code subagents', 'agent harness', 'Claude Code optimization', 'running AI agents') for concrete techniques on Claude technique, running agents, system upgrades, and optimization. For each candidate it must RESEARCH and VERIFY before reporting: cross-check against other sources doing the same or similar thing, confirm there's real evidence it works (not a demo or hype), and judge whether it's genuinely novel/meaningful vs. something Kyle already does. Discard anything vague, unverifiable, or already-known. Survivors become BUILD PITCHES: a clear statement of the technique, who's doing it (with the specific video + corroborating sources), the evidence, how it maps onto Kyle's stack (observer-system, COS, dispatcher/PR-reviewer loop, this podcast pipeline, the multi-agent setup), and a concrete sketch of what building it would take. The reporter writes a durable record to build-pitches/YYYY-MM-DD.md and a short summary to .tmp/build-pitches.md for the episode writer. The goal: Kyle hears a verified pitch on the show, and if he likes it he points an agent at the episode / the build-pitches file and says 'build this.' NEVER fabricate a pitch — if nothing survives verification, report that honestly and write a 'no verified pitch today' marker.",
+      "context_file": ".claude/context/beats/claude-lab.md"
     },
     {
       "id": "nba_sports",
       "name": "Sports — NFL (ramping) & NBA (winding down)",
       "sources": [
-        "podcast:ringer_fantasy_football", "podcast:fantasy_footballers", "podcast:bill_barnwell",
-        "rss:espn_nba", "rss:hoopshype",
-        "podcast:ringer_nba", "podcast:lowe_post",
-        "podcast:kevin_oconnor", "podcast:hoop_collective"
+        "podcast:ringer_fantasy_football",
+        "podcast:fantasy_footballers",
+        "podcast:bill_barnwell",
+        "rss:espn_nba",
+        "rss:hoopshype",
+        "podcast:ringer_nba",
+        "podcast:lowe_post",
+        "podcast:kevin_oconnor",
+        "podcast:hoop_collective"
       ],
       "target_segments": 2,
-      "editorial_notes": "RAMP NFL UP AS NBA WINDS DOWN (2026-06-11). NFL football is now the growing half of this beat — lead with it. The Ringer Fantasy Football Show is Kyle's named anchor; also pull Fantasy Footballers and Bill Barnwell. Cover rankings, values/busts, roster strategy, real-football roster moves and league trends, and pull specific analyst quotes from the transcripts. NBA is winding down (Finals/offseason) — keep it to genuinely notable storylines (Finals, draft, major trades/free agency) and downweight volume, don't eliminate. As the calendar moves toward NFL training camp and the season, keep shifting weight from NBA to NFL."
+      "editorial_notes": "RAMP NFL UP AS NBA WINDS DOWN (2026-06-11). NFL football is now the growing half of this beat — lead with it. The Ringer Fantasy Football Show is Kyle's named anchor; also pull Fantasy Footballers and Bill Barnwell. Cover rankings, values/busts, roster strategy, real-football roster moves and league trends, and pull specific analyst quotes from the transcripts. NBA is winding down (Finals/offseason) — keep it to genuinely notable storylines (Finals, draft, major trades/free agency) and downweight volume, don't eliminate. As the calendar moves toward NFL training camp and the season, keep shifting weight from NBA to NFL.",
+      "context_file": ".claude/context/beats/sports.md"
     },
     {
       "id": "entertainment",
       "name": "Entertainment & Film/TV",
       "sources": [
-        "rss:puck_hollywood", "rss:deadline", "rss:hollywood_reporter",
-        "podcast:bill_simmons", "podcast:the_town", "podcast:rewatchables"
+        "rss:puck_hollywood",
+        "rss:deadline",
+        "rss:hollywood_reporter",
+        "podcast:bill_simmons",
+        "podcast:the_town",
+        "podcast:rewatchables"
       ],
       "target_segments": 1,
-      "editorial_notes": "Industry news, deals, greenlights, box office. Kyle is a screenwriter/producer — engage at that level. Matthew Belloni and Puck are highest signal."
+      "editorial_notes": "Industry news, deals, greenlights, box office. Kyle is a screenwriter/producer — engage at that level. Matthew Belloni and Puck are highest signal.",
+      "context_file": ".claude/context/beats/entertainment.md"
+    },
+    {
+      "id": "economics_culture",
+      "name": "Economics & Culture",
+      "context_file": ".claude/context/beats/economics-culture.md",
+      "sources": [
+        "rss:noahpinion",
+        "rss:slow_boring",
+        "rss:astral_codex_ten",
+        "rss:marginal_revolution",
+        "rss:the_zvi",
+        "rss:econ_102"
+      ],
+      "target_segments": 1,
+      "editorial_notes": "Best pieces from the rationalist/policy/econ blogosphere. Substack essays are the richest material here (Noah Smith on economics, Scott Alexander, Zvi, Dean Ball on policy). When an article shows Type: substack (full text) in the brief, read the full article from .tmp/articles/ and integrate the key arguments and quotes so listeners get the takeaways without reading a 10,000-word post. Include only when there is something genuinely interesting; this is a back-half beat, not a guaranteed segment."
     },
     {
       "id": "prediction_markets",
       "name": "Prediction Markets (quick-hit, de-emphasized)",
       "sources": [
-        "rss:event_horizon", "rss:nate_silver",
-        "podcast:star_spangled", "positions:locksy", "positions:foster"
+        "rss:event_horizon",
+        "rss:nate_silver",
+        "podcast:star_spangled",
+        "positions:locksy",
+        "positions:foster"
       ],
       "target_segments": 0,
-      "editorial_notes": "DE-EMPHASIZED as of 2026-06-09 — Kyle's focus has moved off prediction markets. Include at most ONE short quick-hit, and only if there is genuinely notable movement (a big position change, a market resolving, a real edge). Otherwise skip entirely. No full trading block."
+      "editorial_notes": "DE-EMPHASIZED as of 2026-06-09 — Kyle's focus has moved off prediction markets. Include at most ONE short quick-hit, and only if there is genuinely notable movement (a big position change, a market resolving, a real edge). Otherwise skip entirely. No full trading block.",
+      "context_file": ".claude/context/beats/prediction-markets.md"
     }
   ],
-
   "show_structure": {
     "intro": "Cold open with the biggest story, then show name + date",
     "segments": "4-7 segments across beats, each with specific quotes from sources",

@@ -12,11 +12,11 @@ Launch parallel `general-purpose` agents (Agent/Task tool) — one per active be
 in `beats.json`. Run them concurrently (multiple Agent calls in one message).
 
 ## Each beat agent receives
-1. Its beat's editorial guidelines — the matching file in
-   `.claude/context/beats/` (e.g. `ai-tech.md`, `agents-building.md`,
-   `sports.md`, `entertainment.md`, `economics-culture.md`,
-   `prediction-markets.md`). Give the agent ONLY its own beat file plus the
-   shared `.claude/context/editorial-voice.md` — do not dump every beat.
+1. Its beat's editorial guidelines — the file named in that beat's `context_file`
+   field in `beats.json` (the source-of-truth map, e.g. `agentic_systems` →
+   `.claude/context/beats/agents-building.md`). Give the agent ONLY its own beat
+   file plus the shared `.claude/context/editorial-voice.md` — do not dump every
+   beat.
 2. Its beat's stories from `.tmp/topic-brief.txt` (filtered by beat).
 3. Full transcripts for its podcast/Twitch items from `.tmp/transcripts/` and
    Substack full text from `.tmp/articles/`.
