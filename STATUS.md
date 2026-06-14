@@ -1,5 +1,47 @@
 # Killen Time — Session Notes
 
+### 2026-06-13 18:30 — ROLLBACK RECIPE for the AI-Layer change (PITCH 1 + PITCH 2)
+The `.claude/` AI-Layer restructure + adversarial 3-agent QC were committed
+directly to `main` (commits `db92260` → `e8f8504`, on top of merge `13e0bad`).
+A pre-change anchor tag exists: `pre-ai-layer-2026-06-13`. To undo it all in one
+line (keeps history, safest):
+`git revert --no-commit 13e0bad..HEAD && git commit -m "revert AI-Layer" && git push`
+Or hard-reset back to the tagged anchor (destructive, only if nothing newer
+matters): `git reset --hard pre-ai-layer-2026-06-13 && git push --force-with-lease origin main`.
+Note the tag points at the OLD long CLAUDE.md + single-agent QC, BEFORE the
+STEP-0 branch reconciliation — so a hard reset also unwinds the chore-branch
+merge. Prefer the `git revert` range, which undoes only the AI-Layer commits.
+
+### 2026-06-13 18:30 — STEP 0: reconciled the lingering `chore/tmp-scratch-retention` branch into main
+HEAD was on `chore/tmp-scratch-retention` (not a forgotten dead branch — it had
+11 real commits origin/main lacked: all the Code Voice crash-fix work + the 98GB
+disk-fill scratch sweep) and origin/main had DIVERGED (it carried the PR #2
+squash of "shift emphasis" + a PR #3 review log the branch lacked). Uncommitted
+edits were legit bugfixes (mixer.py 24kHz-mono resample; song_of_the_day.py
+`/health` endpoint), not scratch. Resolution: committed the working tree in two
+chunks, merged the branch into a refreshed main (4 config/code conflicts → took
+the strictly-newer branch version; STATUS.md → unioned), verified main is a true
+superset of all three lingering branches, deleted them local+remote. PR #4 (the
+chore branch) auto-marked MERGED by GitHub once its commits reached main. Nothing
+discarded. Clean main, tag `pre-ai-layer-2026-06-13` pushed as the anchor.
+
+### 2026-06-13 18:30 — AI-Layer: CLAUDE.md 294→104 lines; QC is now adversarial 3-skeptic
+Split CLAUDE.md into ~100 lines of true globals + `.claude/commands/` (5 pipeline
+commands) + `.claude/context/` (per-beat guidance loaded on demand). The daily
+`generate-episode.sh` keeps its proven 2-pass writer untouched; ONLY its QC step
+(Step 3) was rewired to read+follow `.claude/commands/qc-episode.md` (the new
+adversarial QC), so QC logic is shared with the interactive `/qc-episode` path.
+Non-obvious: the generator delegates by instructing the agent to READ the command
+file rather than relying on `/qc-episode` slash-expansion in headless `claude -p`
+mode — more robust for launchd. Cold-start validation (a fresh agent) passed all
+4 checks and incidentally caught a real `[OUTRO]` tag in today's script (an
+illegal speaker tag voice.py would speak aloud) — evidence the QC spec works.
+beats.json got a `context_file` field per beat so it is a true 1:1 source-of-truth
+map to the context docs.
+
+### 2026-06-13 — Reviewed PR #4: changes-requested (smallness gate)
+Correctness and coherence both pass — cleanup-scratch.sh, code-voice thread-safety, Build-Pitch Reporter wiring, mixer.py resample fix, and song_of_the_day.py endpoint fix are all correct and coherent. Blocking on smallness: the PR bundles ~10 independent concerns under a title that describes only cleanup-scratch.sh. Fix: update PR title and body to describe all the changes included; no need to split.
+
 ### 2026-06-13 07:38 — Second episode rewrote killen-time-2026-06-13.txt; new lead is Amazon researcher attribution
 The 4:42 AM first episode fully covered the Fable 5 shutdown. The 7:16 AM second run's new lead was the WSJ story (Amrith Ramkumar) naming Amazon researchers as the source of the jailbreak report, plus Luta Security CEO calling the restrictions a "complete overreaction" — genuinely new developments not in the first episode. The build pitch used Cole Medin's AI Layer (context rot → structured .claude/commands/ + on-demand context files), verified from build-pitches/2026-06-13.md written by the prior reporter session. Second half still needed from the pipeline's Pass 2 agent.
 
