@@ -144,7 +144,15 @@ def synth_to_wav(text: str, voice: str = VOICE) -> str:
         chunks = []
         sr = None
         for r in model.generate(text, voice=voice, lang_code=LANG):
-            chunks.append(r.audio)
+            # r.audio is a LAZY mlx array — the GPU work is deferred until
+            # something reads its buffer. np.asarray() forces that eval NOW,
+            # while we still hold _synth_lock. If we defer it to the
+            # np.concatenate() below (outside the lock), two concurrent
+            # requests run Metal command buffers at once and abort the whole
+            # process (Gather::eval_gpu Metal-encoder assertion). The lock
+            # only protected model.generate(); the eval leaked past it. Pull
+            # the eval inside the lock so ALL GPU work is serialized.
+            chunks.append(np.asarray(r.audio))
             sr = r.sample_rate
     if not chunks:
         raise RuntimeError("no audio generated")
