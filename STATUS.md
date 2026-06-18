@@ -482,3 +482,5 @@ When the first half ends on BASIL (which it usually will, since BASIL typically 
 
 ### 2026-06-13 — QC pattern: two-pass episodes reliably generate 3 cross-section speaker conflicts
 When the script is written in two passes (first half + second half by separate agents), BASIL consistently ends each major section with a "closing principle" line and also opens the next section — producing consecutive BASIL blocks across every [TRANSITION] in the second half (Agents→Sports, Sports→Entertainment, Economics→QuickHits). Fixed each time by flipping the Sports section and splitting the Economics close into BROOKE. Worth building this check into the QC prompt explicitly, or having Pass 2 agents open their first section with BROOKE by convention.
+### 2026-06-18 — Reviewed PR #5: approved and merged (QC gate enforce verdict)
+Fixed silent FAIL publish bug — QC step only checked exit code, now reads and retries on the emitted verdict. All three gates passed; no CI configured on this repo.
