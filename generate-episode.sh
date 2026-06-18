@@ -320,9 +320,43 @@ Launch the three skeptics in parallel as the command directs, synthesize, fix al
 MUST-FIX issues directly in the script file, and end with the QC VERDICT line.
 PROMPT_EOF
 
-# 3 parallel agents + synthesis + fixes takes longer than the old single checker.
-if ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review"; then
-    log "QC review failed (non-fatal), proceeding to render"
+# QC GATE. The QC command emits a literal `QC VERDICT: PASS`/`FAIL` (see
+# .claude/commands/qc-episode.md). Previously this step only checked the claude
+# call's EXIT code and rendered regardless — so an episode that ran QC, found
+# MUST-FIX issues it couldn't fully fix, and printed `QC VERDICT: FAIL` still
+# shipped silently. Now we read the verdict and re-run QC until it PASSes (each
+# pass fixes more), bounded by QC_MAX_ATTEMPTS. If it never passes we FAIL LOUDLY
+# (flag file + prominent log) instead of publishing a known-bad episode silently.
+# QC_FAIL_ACTION decides the fallback: `publish` (default — a visible-but-flagged
+# episode beats a silent missing one, and it's no longer silent) or `abort`.
+# NB: this is the deterministic, headless-safe analog of Claude Code's interactive
+# `/goal` ("work until the condition holds") — a cron pipeline wants a fixed,
+# greppable verdict loop with no judge-model dependency or extra pool burn.
+QC_MAX_ATTEMPTS=${QC_MAX_ATTEMPTS:-3}
+QC_FAIL_ACTION=${QC_FAIL_ACTION:-publish}   # publish | abort
+QC_VERDICT="none"
+for attempt in $(seq 1 "$QC_MAX_ATTEMPTS"); do
+    log "QC review attempt $attempt/$QC_MAX_ATTEMPTS (3 skeptics + synthesis + fixes)..."
+    before=$(wc -l < "$RESULT_LOG")
+    run_claude_step 1500 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review-$attempt" \
+        || log "QC review step errored on attempt $attempt (continuing to verdict check)"
+    # Scope the verdict to THIS attempt's NEW log lines so a timed-out attempt that
+    # emits nothing can't inherit a prior attempt's stale PASS/FAIL.
+    QC_VERDICT=$(tail -n +$((before + 1)) "$RESULT_LOG" \
+        | grep -aoE "QC VERDICT: (PASS|FAIL)" | tail -1 | awk '{print $3}')
+    QC_VERDICT=${QC_VERDICT:-none}
+    log "QC verdict (attempt $attempt): $QC_VERDICT"
+    [ "$QC_VERDICT" = "PASS" ] && break
+done
+if [ "$QC_VERDICT" != "PASS" ]; then
+    QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
+    echo "QC did not reach PASS after $QC_MAX_ATTEMPTS attempts (last verdict: $QC_VERDICT) — script: $NEW_SCRIPT" > "$QC_FLAG"
+    log "⚠️  QC GATE FAILED after $QC_MAX_ATTEMPTS attempts (last verdict: $QC_VERDICT). Flag: $QC_FLAG"
+    if [ "$QC_FAIL_ACTION" = "abort" ]; then
+        log "QC_FAIL_ACTION=abort → NOT publishing today's episode. Investigate $NEW_SCRIPT."
+        exit 1
+    fi
+    log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
 fi
 
 # ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
