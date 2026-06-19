@@ -20,41 +20,63 @@ import sys
 import urllib.request
 from pathlib import Path
 
-ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+# Provider config (precedence: env vars → ~/.config/personal-os/offload.env →
+# legacy OpenRouter fallback). Repoint to whichever PAYG provider Kyle's card/
+# PayPal works with — DeepSeek (api.deepseek.com/v1), Hugging Face
+# (router.huggingface.co/v1), Together, DeepInfra, OpenRouter — by editing ONE
+# file, no code change. All are OpenAI-compatible /chat/completions.
+#   offload.env:  OFFLOAD_BASE_URL=...  OFFLOAD_API_KEY=...  OFFLOAD_MODEL=...
+DEFAULT_BASE = "https://openrouter.ai/api/v1"
+OFFLOAD_ENV = Path.home() / ".config" / "personal-os" / "offload.env"
+LEGACY_OR_ENV = Path.home() / ".config" / "personal-os" / "openrouter.env"
 
 
-def _key() -> str:
-    k = os.getenv("OPENROUTER_API_KEY", "")
-    if k:
-        return k
-    f = Path.home() / ".config" / "personal-os" / "openrouter.env"
+def _read_env_file(path: Path) -> dict:
+    out: dict = {}
     try:
-        for line in f.read_text().splitlines():
-            if line.startswith("OPENROUTER_API_KEY="):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                out[k.strip()] = v.strip().strip('"').strip("'")
     except OSError:
         pass
-    return ""
+    return out
 
 
-def complete(prompt: str, model: str, system: str = "", max_tokens: int = 8000,
+def _config() -> tuple[str, str, str]:
+    """(base_url, api_key, default_model). env > offload.env > legacy OpenRouter."""
+    f = _read_env_file(OFFLOAD_ENV)
+    leg = _read_env_file(LEGACY_OR_ENV)
+    base = os.getenv("OFFLOAD_BASE_URL") or f.get("OFFLOAD_BASE_URL") or DEFAULT_BASE
+    key = (os.getenv("OFFLOAD_API_KEY") or f.get("OFFLOAD_API_KEY")
+           or os.getenv("OPENROUTER_API_KEY") or leg.get("OPENROUTER_API_KEY") or "")
+    model = os.getenv("OFFLOAD_MODEL") or f.get("OFFLOAD_MODEL") or ""
+    return base.rstrip("/"), key, model
+
+
+def complete(prompt: str, model: str = "", system: str = "", max_tokens: int = 8000,
              timeout: int = 600) -> str:
-    key = _key()
+    base, key, default_model = _config()
+    model = model or default_model
     if not key:
-        raise RuntimeError("no OPENROUTER_API_KEY (env or ~/.config/personal-os/openrouter.env)")
+        raise RuntimeError("no offload API key (set ~/.config/personal-os/offload.env "
+                           "OFFLOAD_API_KEY, or legacy openrouter.env)")
+    if not model:
+        raise RuntimeError("no model (pass model= or set OFFLOAD_MODEL)")
     msgs = ([{"role": "system", "content": system}] if system else []) + \
            [{"role": "user", "content": prompt}]
     body = json.dumps({"model": model, "messages": msgs,
                        "max_tokens": max_tokens}).encode()
     req = urllib.request.Request(
-        ENDPOINT, data=body,
+        base + "/chat/completions", data=body,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
                  "HTTP-Referer": "https://github.com/kylekillen/brainrot-radio",
                  "X-Title": "Killen Time fleet offload"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         data = json.load(r)
     if "choices" not in data:
-        raise RuntimeError(f"OpenRouter error: {json.dumps(data)[:400]}")
+        raise RuntimeError(f"provider error: {json.dumps(data)[:400]}")
     ch = data["choices"][0]
     content = (ch.get("message") or {}).get("content")
     if not content:
@@ -68,7 +90,7 @@ def complete(prompt: str, model: str, system: str = "", max_tokens: int = 8000,
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", required=True, help="e.g. z-ai/glm-4.6, moonshotai/kimi-k2-0905, deepseek/deepseek-chat")
+    ap.add_argument("--model", default="", help="override OFFLOAD_MODEL, e.g. deepseek-chat, moonshotai/Kimi-K2.6, z-ai/glm-4.6")
     ap.add_argument("--prompt", help="prompt text (else read stdin)")
     ap.add_argument("--system", default="")
     ap.add_argument("--max-tokens", type=int, default=8000)
