@@ -1,3 +1,6 @@
+### 2026-06-19 — Reviewed PR #13: approved and merged
+Turned thinking off for Gemini Flash content gen via OFFLOAD_REASONING_EFFORT; correct opt-in guard, coherent with existing OFFLOAD_* pattern, minimal diff. No CI configured (pre-existing).
+
 ### 2026-06-19 — Reviewed PR #9: approved and merged
 Approved: OpenRouter completion helper (or_complete.py). Clean stdlib-only implementation, correct key fallback, solid empty-content guard for reasoning models. Fits podcast offload mission. No CI configured (pre-existing).
 
