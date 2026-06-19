@@ -75,6 +75,23 @@ run_claude_step() {
     return 0
 }
 
+# OpenRouter (Kimi) FALLBACK writer — used ONLY when a Claude write pass has
+# already failed (its own retry included), or when PODCAST_FORCE_OPENROUTER=1
+# forces it for a manual quality test. The daily default path is 100% Claude
+# (flat-rate Max pool, $0 marginal) and makes ZERO OpenRouter calls. or_writer.py
+# gathers the same inputs the Claude pass would have read and writes/appends the
+# script identically, so QC + dedup downstream are unchanged. Args: pass_no (1|2)
+run_kimi_pass() {
+    local pass_no=$1
+    log "⚠️  FALLBACK: routing write-pass $pass_no to OpenRouter (Kimi). This episode is being written on a PAID model because the Claude pass failed (or was force-overridden). Normal days run on Claude only."
+    if python3 or_writer.py --pass "$pass_no" --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
+        log "FALLBACK pass $pass_no via OpenRouter (Kimi) complete"
+        return 0
+    fi
+    log "FALLBACK pass $pass_no via OpenRouter (Kimi) FAILED"
+    return 1
+}
+
 log "Episode generation starting (run=$RUN_ID)..."
 
 # ─── Guard: skip if today's episode already published ────────────────────────
@@ -241,12 +258,22 @@ ${DEDUP_CONTEXT}
 Begin by reading CLAUDE.md, then .tmp/topic-brief.txt, then the previous episode scripts.
 PROMPT_EOF
 
-if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1"; then
+if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
+    # Manual escape hatch / quality test ONLY. Never set in the launchd default.
+    log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 1 and writing via OpenRouter (Kimi) directly."
+    if ! run_kimi_pass 1; then
+        log "Forced OpenRouter pass 1 failed, aborting"
+        exit 1
+    fi
+elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1"; then
     log "Pass 1 attempt 1 failed, retrying..."
     sleep 15
     if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1-retry"; then
-        log "Pass 1 retry also failed, aborting"
-        exit 1
+        log "Pass 1 Claude retry also failed — falling back to OpenRouter (Kimi) so the episode still ships."
+        if ! run_kimi_pass 1; then
+            log "Pass 1 OpenRouter fallback also failed, aborting"
+            exit 1
+        fi
     fi
 fi
 
@@ -303,11 +330,16 @@ ${DEDUP_CONTEXT}
 Begin by reading the existing ${SCRIPT_FILE}, then .tmp/topic-brief.txt for remaining stories.
 PROMPT_EOF
 
-if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2"; then
+if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
+    # Manual escape hatch / quality test ONLY. Never set in the launchd default.
+    log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 2 and writing via OpenRouter (Kimi) directly."
+    run_kimi_pass 2 || log "Forced OpenRouter pass 2 failed, proceeding with pass 1 only"
+elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2"; then
     log "Pass 2 attempt 1 failed, retrying..."
     sleep 15
     if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2-retry"; then
-        log "Pass 2 retry also failed, proceeding with pass 1 only"
+        log "Pass 2 Claude retry also failed — falling back to OpenRouter (Kimi) so the back half still gets written."
+        run_kimi_pass 2 || log "Pass 2 OpenRouter fallback also failed, proceeding with pass 1 only"
     fi
 fi
 
