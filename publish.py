@@ -315,6 +315,43 @@ def update_covered_stories(script_path: str):
     print(f"  Updated covered stories: {len(slugs)} new slugs, {len(all_stories)} total")
 
 
+def _notify_published(title: str, mp3_url: str = ""):
+    """Ping Kyle's Telegram that something landed in the podcast feed. Covers
+    BOTH daily episodes and Fleet Optimizer briefs (everything routes through
+    publish()). Non-fatal — never breaks a publish. Suppress with
+    PUBLISH_NO_TELEGRAM=1. Creds: ~/.config/personal-os/telegram.env (same file
+    the alarm responder uses): TELEGRAM_BOT_TOKEN + TELEGRAM_USER_ID."""
+    if os.getenv("PUBLISH_NO_TELEGRAM") == "1":
+        return
+    env_file = os.path.expanduser("~/.config/personal-os/telegram.env")
+    token = chat = ""
+    try:
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("TELEGRAM_BOT_TOKEN="):
+                    token = line.split("=", 1)[1].strip().strip('"').strip("'")
+                elif line.startswith("TELEGRAM_USER_ID="):
+                    chat = line.split("=", 1)[1].strip().strip('"').strip("'")
+    except OSError:
+        return
+    if not token or not chat:
+        return
+    text = f"📻 Published to your podcast feed:\n{title}"
+    if mp3_url:
+        text += f"\n{mp3_url}"
+    try:
+        subprocess.run(
+            ["curl", "-s", "-m", "15",
+             f"https://api.telegram.org/bot{token}/sendMessage",
+             "--data-urlencode", f"chat_id={chat}",
+             "--data-urlencode", f"text={text}"],
+            capture_output=True, timeout=20,
+        )
+    except Exception:
+        pass
+
+
 def publish(mp3_path: str, title: str = None, description: str = None, artwork_path: str = None):
     """Full publish pipeline: upload MP3 + artwork → update RSS feed → push."""
     mp3_path = os.path.abspath(mp3_path)
@@ -390,6 +427,9 @@ def publish(mp3_path: str, title: str = None, description: str = None, artwork_p
     print(f"Done! Episode published.")
     print(f"  Feed: {FEED_URL}")
     print(f"  MP3:  {urls['mp3']}")
+
+    # Tell Kyle it landed in the feed (episodes + Fleet briefs both reach here).
+    _notify_published(title, urls.get("mp3", ""))
 
 
 if __name__ == "__main__":
