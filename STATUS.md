@@ -1,3 +1,6 @@
+### 2026-06-19 12:39 — Reviewed PR #8: approved and merged
+Approved: Telegram notification on publish. Non-fatal, suppressible, uses existing creds file, single call-site at the right chokepoint. No CI configured on repo (pre-existing).
+
 # Killen Time — Session Notes
 
 ### 2026-06-18 11:48 — Speaker alternation violations cascade; fix by flipping parity in bulk, not one at a time
