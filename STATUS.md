@@ -580,3 +580,8 @@ Budget guard script (budget-guard.sh) passed all three gates — correctness, co
 ### 2026-06-19 — Reviewed PR #10: approved and merged
 
 Provider-agnostic offload config (or_complete.py) passed all three gates. _read_env_file helper correct; _config() fallback chain (env vars → offload.env → legacy openrouter.env) sound; complete() model param now optional with clear RuntimeError if unset. No CI configured for repo.
+
+
+### 2026-06-19 — Reviewed PR #11: approved and merged
+
+OpenRouter (Kimi) fallback for write passes passed all three gates. Shell elif logic correctly preserves 100%-Claude default path; fallback only fires on Claude double-failure or explicit PODCAST_FORCE_OPENROUTER. or_writer.py handles max-tokens ladder for credit-constrained accounts, transition-join dedup, covered-stories roundtrip, and 500-word sanity gate. Kimi hallucination risk documented in PR body and known from 2026-06-18 STATUS entry; QC Step 3 is the catch. No CI configured for repo.
