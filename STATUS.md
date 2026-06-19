@@ -1,5 +1,57 @@
 # Killen Time — Session Notes
 
+### 2026-06-18 11:48 — Speaker alternation violations cascade; fix by flipping parity in bulk, not one at a time
+
+When a speaker tag is doubled in the script (two consecutive [BASIL] or [BROOKE] blocks), fixing the single violation creates a new one with the block that follows — and it cascades all the way to the next natural parity flip. The correct fix is to identify the section where the parity is inverted (everything between the first violation and the next same-type violation), then flip every tag in that section at once. Today: two inverted sections (lines 48–69 and 167–185), fixed with a single python pass that swapped BASIL↔BROOKE on all 15 affected lines simultaneously.
+
+### 2026-06-18 — Observer-wiki is passive compilation; agent loops don't write signals for each other
+
+Today's build pitch (compound loop signals) revealed a specific gap: Kyle's loops (podcast pipeline, COS, PR sweeper, dispatcher) are siloed — they don't proactively write structured discoveries for each other to read. The observer-system wiki compiles past events passively from the watcher, but no loop writes a signal saying "I just covered these topics" or "I found this gap" that another loop picks up on its next run. That's the missing connective tissue, and it's a low-cost add (plain markdown signals/ folder, 5-field schema, small hook additions). Build-pitches/2026-06-18.md has the full sketch.
+
+### 2026-06-15 — Empty .tmp/articles/ is a hallucination multiplier; three segments were unsourced today
+
+When article files don't make it to disk (today `.tmp/articles/` was completely empty — only podcast transcripts survived), the two-pass writer fills gaps with plausible but unverifiable content. Today's QC found three segments with zero source in the pipeline: a police officer/PoliceAI advisory center story, a Rio de Janeiro/Qwen fine-tuning story, and a Shane Legg four-paths-to-ASI paper — all cut. It also caught a fabricated prior-episode history ("we mentioned Headroom on June 13th") and a confirmed factual error where the transcript said "ten to fifteen percent" but the script said "eight percent." The fix: ensure article fetch (substack.py / ingest fetched URLs) actually writes to `.tmp/articles/` before the writer runs; if the directory is empty, the writer should be blocked or warned.
+
+### 2026-06-17 — QC caught two covered-story violations the two-pass writer missed; half-join defects confirmed
+
+The adversarial dedup skeptic caught that the McConkie/zero-RB Fantasy Footballers block (covered .covered-2026-06-15.json) and the India Telegram quick hit (covered .covered-2026-06-16.json) both slipped through the writer undetected — together ~15 lines of duplicate-covered content. The two-pass half-join produced exactly the two anticipated structural defects: a duplicate BASIL "pitch is logged" paragraph and a BASIL/BASIL collision across the Sports [TRANSITION]; both fixed by merging orphaned paragraphs into the preceding BROOKE block rather than flipping speaker tags. The dedup check is the most likely QC gate to catch real violations; the sourcing skeptic's MUST-FIX flags on Iran military figures and the Cherny quote primary source are the recurring attribution patterns to address in the writer prompt.
+
+### 2026-06-17 — Context-compacted session continuation works for second-half writes; dedup nav on repeated topics
+
+Writing the second half from a session-summary (after context compaction) worked without needing to re-read transcripts — the summary captured enough source detail (specific quotes, stats, segment angles) to produce ~8,100 words of fresh content. Key dedup nav this session: June 16 had covered Fox/Roku deal mechanics and Toy Story vs. Minions framing; today's second half covered the content-vs-platform philosophical angle (La Brea thesis, library-as-comfort-food, Netflix/Lionsgate data advantage) and Toy Story 5 specific tracking numbers — genuinely new angles on the same surface topics, so both aired without violation.
+
+### 2026-06-17 04:29 — First half of June 17 episode written; GLM-5.2 is effectively the #1 open coding model with Fable banned
+
+scripts/killen-time-2026-06-17.txt is complete through [TRANSITION] — 7,062 words covering AI/Tech (GLM-5.2, SpaceX/$60B Cursor acquisition, Databricks margin squeeze, token price index) and Agents (Whittemore training argument, Claude Code economics research, Zvi model welfare on Fable, goal-loop build pitch). Second half still needed: NBA, Entertainment, Economics/Culture, prediction markets quick-hit, outro. GLM-5.2 from Z.ai is MIT-licensed, 744B MoE, beats all Opuses on frontend coding — with Fable offline it's the practical top coding model available to practitioners right now.
+
+### 2026-06-17 04:16 — Pipeline gap: generate-episode.sh has no QC-fail retry loop; QC verdict is a dead end
+
+When QC returns FAIL the pipeline stops or continues to a weak episode — there's no mechanism to go back to the specific failing beat and retry it with fresh sources. The QC output already names the problem section; the missing piece is a loop wrapper in generate-episode.sh that re-runs only that beat, reassembles, and re-QCs. Pitched as today's build pitch (build-pitches/2026-06-17.md), anchored by Boris Cherny's "I write loops, not prompts" and Matthew Berman's June 12 Cursor demo.
+
+### 2026-06-16 04:31 — Speaker alternation: merge adjacent same-speaker blocks rather than swapping tags
+
+When fixing consecutive same-speaker violations in a long script, swapping a tag creates a new violation elsewhere because the surrounding blocks aren't balanced. The reliable fix is to merge the two adjacent same-speaker blocks into one (remove the duplicate tag, run the text together) rather than keep reassigning. This converges immediately; tag-swapping loops indefinitely.
+
+### 2026-06-16 04:10 — Claude Code v2.1.178 adds `Tool(param:value)` permission syntax for model-tier cost routing
+
+`Agent(model:opus)` as a deny rule in `.claude/settings.json` blocks Opus-tier subagent spawns project-wide — new as of June 15. IndyDevDan's same-day benchmark (15 app builds, $55 Sonnet vs $91 Opus) shows Sonnet matches Opus on 80% of tasks, making per-step tier enforcement worth wiring in. Beat reporters are the obvious first target. Build pitch in build-pitches/2026-06-16.md.
+
+### 2026-06-15 — Ringer Fantasy Football Show transcript is stored as a single long line; offset reads fail silently
+
+Podcast transcript files are sometimes stored with all content on one line — `wc -l` returns 1 and any offset > 0 fails with "file shorter than offset." The Ringer FF Show (podcast_7c8729f0-63cc-11f1-a99f-577680afcf05.txt) hit this today; the NFL segment was written from general knowledge rather than direct transcript quotes. When a transcript file reads as 1 line, read without an offset (the full line is there) or grep for keywords directly via Bash rather than using offset-based Read.
+
+### 2026-06-14 05:06 — QC found two recurring two-pass footguns: section headers without TRANSITION, and quote-source drift across NBA show transcripts
+Section header bracket tags (e.g. `[AI & TECHNOLOGY]`) placed directly after a speaker block — with no `[TRANSITION]` before them — get absorbed into that speaker's speech segment by the parser and will be read aloud; all section headers must either come after `[TRANSITION]` or be deleted entirely. Separately, the NBA Daily and Kevin O'Connor Show share some panel guests, causing quote-to-host attribution drift between shows ("Brunson burner" ended up attributed to Haberstroh from KO Show when it was DeFore from NBA Daily; LeBron/Spurs comp ended up on Simmons when it was the Hoop Collective floor); the fix is to attribute to show name, not host name, when the transcript has no clear speaker label.
+
+### 2026-06-14 — NFL transcripts not cached; NFL segment must be written analytically or sourced differently
+The Ringer Fantasy Football Show, Fantasy Footballers, and Bill Barnwell podcasts were not in `.tmp/transcripts/` today — only NBA, entertainment, and AI Daily Brief transcripts were available. The NFL segment was written from general mid-June offseason knowledge without direct quotes. If NFL pod coverage matters for the beat (it's the designated anchor), check `feeds.json` to confirm those feeds are configured and that the ingest pipeline is pulling them. This was the only structural gap in today's second-half production.
+
+### 2026-06-14 04:30 — Agent Skills Progressive Disclosure is a greenlight-ready build (build-pitches/2026-06-14.md)
+Anthropic's own platform spec for 3-level lazy-loading of skill context — metadata always in context (~100 tokens), skill body loads when Claude determines relevance, bundled scripts on explicit call. Verified: Simon Willison called it "maybe a bigger deal than MCP" at launch; OpenAI/Google/GitHub/Cursor all adopted the open standard within weeks of December launch. The build is: add YAML frontmatter to the existing .claude/context/beats/ files to convert them into Agent Skills, drop in skills directory, loading becomes automatic. Longer unlock is the skill creator pattern — Claude proposes skill updates during sessions, Kyle approves, skills improve from usage.
+
+### 2026-06-14 04:09 — youtube.py --json misses URLs for claude_lab items; use yt-search directly
+The youtube.py triage pass returned 14 claude_lab items with titles only — no URLs, no snippets, no published dates. The workaround that worked: search yt-search.py directly by title to recover URLs, then pull transcripts. Worth fixing upstream in youtube.py if the claude_lab beat keeps running.
+
 ### 2026-06-13 18:30 — ROLLBACK RECIPE for the AI-Layer change (PITCH 1 + PITCH 2)
 The `.claude/` AI-Layer restructure + adversarial 3-agent QC were committed
 directly to `main` (commits `db92260` → `e8f8504`, on top of merge `13e0bad`).
@@ -484,3 +536,35 @@ When the first half ends on BASIL (which it usually will, since BASIL typically 
 When the script is written in two passes (first half + second half by separate agents), BASIL consistently ends each major section with a "closing principle" line and also opens the next section — producing consecutive BASIL blocks across every [TRANSITION] in the second half (Agents→Sports, Sports→Entertainment, Economics→QuickHits). Fixed each time by flipping the Sports section and splitting the Economics close into BROOKE. Worth building this check into the QC prompt explicitly, or having Pass 2 agents open their first section with BROOKE by convention.
 ### 2026-06-18 — Reviewed PR #5: approved and merged (QC gate enforce verdict)
 Fixed silent FAIL publish bug — QC step only checked exit code, now reads and retries on the emitted verdict. All three gates passed; no CI configured on this repo.
+
+### 2026-06-18 — Reviewed PR #6: approved and merged (Build-Pitch lens reframe)
+Prompt/brief-only change across three files; bash -n clean, beats.json valid, all three gates passed. No CI configured on this repo.
+
+### 2026-06-15 — Headroom: verified context compression for Claude Code (pitched today)
+Headroom (github.com/chopratejas/headroom, Apache 2.0, 23K+ stars) wraps Claude Code and compresses all agent inputs — JSON feeds, transcripts, tool outputs — 60-92% before they reach the LLM, with zero accuracy loss on published benchmarks. One command: `headroom wrap claude`. The `headroom learn` feature mines failed sessions and produces CLAUDE.md improvement suggestions; Matthew Berman's demo showed it surfacing "load deferred tool schemas at session start — saves 8,000 tokens per session," which is directly applicable to Kyle's ToolSearch-deferred setup. Most relevant pipeline steps: `/generate-brief` and `/run-beat-reporters` (heavy transcript/JSON reads). Full pitch in build-pitches/2026-06-15.md.
+
+### 2026-06-15 — Claude Code v2.1.172 nested sub-agents: watch item, not yet pitched
+Claude Code now supports sub-agents spawning their own sub-agents up to 5 levels deep (released June 10, 2026). Directly relevant to the COS → dispatcher → beat reporter chain but the changelog doesn't yet have enough implementation guidance to make a concrete build sketch. Worth revisiting when IndyDevDan or Cole Medin publishes a deep-dive.
+
+### 2026-06-15 04:34 — First half written; AI Daily Brief/Moonshots absent from today's transcripts; covered-*.json not yet saved
+The four fresh June-15 transcripts were Coleman Hughes, Ringer Fantasy Football, Odd Lots GPU compute (useful), and Huberman Lab — no AI Daily Brief or Moonshots. The AI/Tech beat was built from RSS + topic brief + Innermost Loop article + Odd Lots transcript. `scripts/killen-time-2026-06-15.txt` is written (7,023 words, ends with [TRANSITION]); the second-pass writer handles NBA/Entertainment/Economics/outro. Covered stories must NOT be saved until after both passes are complete — `.covered-2026-06-15.json` does not exist yet and should be created only after the full episode is assembled.
+
+### 2026-06-16 04:50 — "Distribution layer" frame as emergent editorial spine
+
+Writing the second-half outro, a genuine connective thread appeared across all beats that wasn't planned: Fox/Roku, Fable/Anthropic export controls, Yglesias immigration, Economist deglobalization, and Cowen's educational arbitrage all reduce to the same question — who owns the distribution layer when bundles come apart. That frame made the closing commentary substantive rather than generic. Worth watching as a recurring structural move: when beats share a hidden structural argument, the outro can name it instead of just listing the day's stories.
+
+### 2026-06-16 04:58 — Dedup agent false-positive: same-day covered JSON is written by this script, not a prior episode
+
+The freshness/dedup skeptic flagged nearly every back-half story as "already covered today," citing `.covered-2026-06-16.json`. That file is populated during generation (segment-by-segment as the episode is written), not after publishing — so it records this script's own stories, not a prior episode's. A QC agent must not treat same-day covered JSON as evidence of prior coverage unless a `-02` (or later) suffixed script for that date also exists on disk.
+
+### 2026-06-16 04:50 — No Ringer Fantasy Football / Fantasy Footballers transcripts in pipeline
+
+The NFL beat is anchored in CLAUDE.md to the Ringer Fantasy Football Show and Fantasy Footballers as named sources. Neither appeared in .tmp/transcripts/ today. The NFL section was built from Bill Simmons podcast context and general OTA knowledge — solid but not source-attributed in the way the editorial guidelines intend. If this persists, check feeds.json to confirm those podcasts are configured and that ingest.py is actually fetching and transcribing them. Fabricating analyst quotes from those shows is worse than omitting them; today's approach (general market analysis without attributing specific quotes) is the right fallback.
+
+### 2026-06-18 12:05 — NBA Finals retrospective cycle is saturating; pivot to draft/offseason in future segments
+
+By June 18, the Knicks championship analysis had been covered across three prior episodes (June 15: Nate Silver analytics; June 16: Bill Simmons top-50, Doc Rivers game 5; June 17: Doc Rivers closer philosophy, Giannis trade). The June 18 NBA segment had to rely almost entirely on the Ringer NBA Show's Raja Bell retrospective for fresh angles — small-guard recipe, Brunson career-low Finals stats, Wimby villain arc, payroll rank. Future NBA segments should pivot toward draft (June 26) and free agency rather than replaying finals analysis.
+
+### 2026-06-18 12:19 — Sports content is hallucination-prone; the two-pass writer invents proper nouns inside direct quotes
+
+The June 18 QC sourcing agent caught "Tyler Shuck" — a completely fabricated NFL quarterback name — embedded inside what the script presented as a direct Jason Moore (Fantasy Footballers) quote. This isn't a paraphrase drift; it's a made-up player name passed off as a sourced quote. The same episode had a Starlink subscriber count off by 3 orders of magnitude ("ten billion" vs tens of millions). Sports is higher risk than other beats for this pattern because proper nouns (player names, draft positions, team records) are dense, verifiable, and embarrassing when wrong. The sourcing skeptic in the QC panel catches these; running QC without it would not. Do not skip QC on episodes with heavy NFL/NBA content.
