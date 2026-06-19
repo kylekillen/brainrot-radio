@@ -568,3 +568,6 @@ By June 18, the Knicks championship analysis had been covered across three prior
 ### 2026-06-18 12:19 — Sports content is hallucination-prone; the two-pass writer invents proper nouns inside direct quotes
 
 The June 18 QC sourcing agent caught "Tyler Shuck" — a completely fabricated NFL quarterback name — embedded inside what the script presented as a direct Jason Moore (Fantasy Footballers) quote. This isn't a paraphrase drift; it's a made-up player name passed off as a sourced quote. The same episode had a Starlink subscriber count off by 3 orders of magnitude ("ten billion" vs tens of millions). Sports is higher risk than other beats for this pattern because proper nouns (player names, draft positions, team records) are dense, verifiable, and embarrassing when wrong. The sourcing skeptic in the QC panel catches these; running QC without it would not. Do not skip QC on episodes with heavy NFL/NBA content.
+### 2026-06-18 — Reviewed PR #7: approved and merged
+
+Budget guard script (budget-guard.sh) passed all three gates — correctness, coherence, smallness. No CI configured for repo. Change is an interim stopgap to pause podcast generation under cap-pressure to preserve trading pool headroom, pending durable per-workload key tiering.
