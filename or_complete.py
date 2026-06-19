@@ -44,20 +44,24 @@ def _read_env_file(path: Path) -> dict:
     return out
 
 
-def _config() -> tuple[str, str, str]:
-    """(base_url, api_key, default_model). env > offload.env > legacy OpenRouter."""
+def _config() -> tuple[str, str, str, str]:
+    """(base_url, api_key, default_model, reasoning_effort). env > offload.env > legacy."""
     f = _read_env_file(OFFLOAD_ENV)
     leg = _read_env_file(LEGACY_OR_ENV)
     base = os.getenv("OFFLOAD_BASE_URL") or f.get("OFFLOAD_BASE_URL") or DEFAULT_BASE
     key = (os.getenv("OFFLOAD_API_KEY") or f.get("OFFLOAD_API_KEY")
            or os.getenv("OPENROUTER_API_KEY") or leg.get("OPENROUTER_API_KEY") or "")
     model = os.getenv("OFFLOAD_MODEL") or f.get("OFFLOAD_MODEL") or ""
-    return base.rstrip("/"), key, model
+    # reasoning_effort: for thinking models (Gemini Flash, o-series) "none" turns
+    # thinking OFF so the whole token budget goes to OUTPUT — critical for long-form
+    # content gen, where reasoning tokens would otherwise truncate the episode.
+    effort = os.getenv("OFFLOAD_REASONING_EFFORT") or f.get("OFFLOAD_REASONING_EFFORT") or ""
+    return base.rstrip("/"), key, model, effort
 
 
 def complete(prompt: str, model: str = "", system: str = "", max_tokens: int = 8000,
              timeout: int = 600) -> str:
-    base, key, default_model = _config()
+    base, key, default_model, effort = _config()
     model = model or default_model
     if not key:
         raise RuntimeError("no offload API key (set ~/.config/personal-os/offload.env "
@@ -66,8 +70,10 @@ def complete(prompt: str, model: str = "", system: str = "", max_tokens: int = 8
         raise RuntimeError("no model (pass model= or set OFFLOAD_MODEL)")
     msgs = ([{"role": "system", "content": system}] if system else []) + \
            [{"role": "user", "content": prompt}]
-    body = json.dumps({"model": model, "messages": msgs,
-                       "max_tokens": max_tokens}).encode()
+    payload = {"model": model, "messages": msgs, "max_tokens": max_tokens}
+    if effort:
+        payload["reasoning_effort"] = effort  # only sent when configured
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(
         base + "/chat/completions", data=body,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
