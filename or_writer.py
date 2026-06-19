@@ -37,7 +37,11 @@ ROOT = Path(__file__).resolve().parent
 TMP = ROOT / ".tmp"
 SCRIPTS_DIR = ROOT / "scripts"
 
-DEFAULT_MODEL = "moonshotai/kimi-k2-0905"
+# Empty = use whatever OFFLOAD_MODEL is configured in
+# ~/.config/personal-os/offload.env (currently FREE Gemini Flash). Keeps the
+# fallback writer provider-agnostic — the offload provider is a config choice,
+# not hardcoded. Pass --model only to override for a one-off test.
+DEFAULT_MODEL = ""
 
 # Per-source truncation caps (chars) so the prompt stays bounded on a pay-per-token
 # model. The topic brief and build-pitch summary are the spine and go in whole.
