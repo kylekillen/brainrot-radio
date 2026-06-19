@@ -75,15 +75,17 @@ run_claude_step() {
     return 0
 }
 
-# OpenRouter (Kimi) FALLBACK writer — used ONLY when a Claude write pass has
-# already failed (its own retry included), or when PODCAST_FORCE_OPENROUTER=1
-# forces it for a manual quality test. The daily default path is 100% Claude
-# (flat-rate Max pool, $0 marginal) and makes ZERO OpenRouter calls. or_writer.py
-# gathers the same inputs the Claude pass would have read and writes/appends the
-# script identically, so QC + dedup downstream are unchanged. Args: pass_no (1|2)
+# OFFLOAD FALLBACK writer — used ONLY when a Claude write pass has already failed
+# (its own retry included), or when PODCAST_FORCE_OPENROUTER=1 forces it for a
+# manual quality test. The daily default path is 100% Claude (flat-rate Max pool,
+# $0 marginal). The offload provider is whatever ~/.config/personal-os/offload.env
+# configures — currently FREE Gemini Flash (so the fallback is also $0; only a
+# pay-per-token provider would cost). or_writer.py gathers the same inputs the
+# Claude pass would have read and writes/appends the script identically, so QC +
+# dedup downstream are unchanged. Args: pass_no (1|2)
 run_kimi_pass() {
     local pass_no=$1
-    log "⚠️  FALLBACK: routing write-pass $pass_no to OpenRouter (Kimi). This episode is being written on a PAID model because the Claude pass failed (or was force-overridden). Normal days run on Claude only."
+    log "⚠️  FALLBACK: routing write-pass $pass_no to the configured offload provider (offload.env — currently free Gemini Flash) because the Claude pass failed (or was force-overridden). Normal days run on Claude only."
     if python3 or_writer.py --pass "$pass_no" --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
         log "FALLBACK pass $pass_no via OpenRouter (Kimi) complete"
         return 0
