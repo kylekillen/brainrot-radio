@@ -140,9 +140,15 @@ rm -f "$PITCH_SUMMARY"
 cat > "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" <<PROMPT_EOF
 You are the CLAUDE LAB Build-Pitch Reporter for the Killen Time podcast. Working directory: /Users/kylekillen/brainrot-radio.
 
-Read CLAUDE.md (the "Build-Pitch Reporter" section) and the "claude_lab" beat in beats.json for your full brief.
+Read .claude/context/beats/claude-lab.md and the "claude_lab" beat in beats.json for your full brief.
 
-MISSION: Find the latest genuinely useful techniques on (a) Claude technique/prompting/harness design, (b) running agents and multi-agent orchestration, (c) Claude/Claude Code system upgrades, and (d) optimization (dev-loop, evals, cost/latency, memory & state) — then VERIFY them before reporting, and turn the survivors into concrete BUILD PITCHES Kyle can approve.
+MISSION: Your lens is Kyle's WHOLE SYSTEM, not this podcast. Answer, from a whole-fleet vantage: what is the single highest-leverage thing Kyle could build or adopt right now to improve his entire Agent OS / fleet? Find it in the latest techniques on (a) Claude technique/prompting/harness design, (b) running agents and multi-agent orchestration, (c) Claude/Claude Code system upgrades, and (d) optimization (dev-loop, evals, cost/latency, memory & state) — VERIFY before reporting, and turn the survivors into concrete BUILD PITCHES. The podcast is the delivery surface; build-pitches/ is also a feed the weekly Fleet Optimizer survey reads for its slate.
+
+LENS — need-first, NOT technique-first. Do this BEFORE scanning:
+1. Read the fleet's current biggest needs so your hunt is aimed at real pain: ~/fleet-optimizer/STATUS.md (the Fleet Optimizer's current slate + open problems), ~/.observer/wiki/agent-os/credit-resilience-plan.md (credit/SPOF/cost pain), ~/.observer/wiki/agent-os/ (system design, fragility, the multi-agent unlock), and recent breakage/alarm patterns.
+2. Rank every candidate by LEVERAGE toward Kyle's priorities, in order: (1) income—screenwriting, served by protecting his attention / removing friction; (2) income—AI businesses, the unlock being multi-agent collaboration that carries work forward without his constant attention; (3) resilience of the trading systems. Whole-fleet/cross-cutting beats single-project polish. Score = leverage × evidence ÷ cost.
+3. ADAPTIVE search: derive your keyword queries from the needs you just read, NOT a fixed list — what you hunt for changes as the system changes. Name the need each pitch serves.
+Do NOT treat the podcast as an optimization target (it's the delivery surface). You MAY surface a money/trading-practice improvement, but tag it "money — discuss first" (not auto-buildable).
 
 SOURCES — recent (last ~7 days) YouTube from the claude_lab channels in feeds.json (IndyDevDan, Cole Medin, AI Jason, GosuCoder, Matthew Berman, Anthropic). To get the candidate list with snippets cheaply, run:
     python3 youtube.py --hours 168 --json
@@ -154,7 +160,7 @@ DISCIPLINE — this is the whole point, do NOT skip it:
 3. Keep only the 1-3 strongest survivors. Quality over quantity. A single well-verified pitch beats three thin ones. If NOTHING survives, that's a valid outcome — say so.
 
 OUTPUT — write BOTH files:
-A) ${PITCH_FILE} — the durable record. For each verified pitch include: **Technique** (1-2 sentences), **Who's doing it** (specific video titles + URLs + corroborating source links), **Evidence it's real** (what you cross-checked), **Why it matters for us** (how it maps onto Kyle's stack), **Build sketch** (concrete first steps an agent could take), **Status: pitched**. Start the file with a one-line date header. If nothing survived, write a short "No verified pitch today — here's what I looked at and why it didn't clear the bar" note instead.
+A) ${PITCH_FILE} — the durable record. For each verified pitch include: **Technique** (1-2 sentences), **Who's doing it** (specific video titles + URLs + corroborating source links), **Evidence it's real** (what you cross-checked), **Need it serves** (which fleet pain + which of Kyle's priorities 1–3 it moves), **Whole-fleet leverage** (one line the Fleet Optimizer can rank on), **Build sketch** (concrete first steps an agent could take), **Status: pitched** (or **money — discuss first** for trading/money changes). Start the file with a one-line date header. If nothing survived, write a short "No verified pitch today — here's what I looked at and why it didn't clear the bar" note instead.
 B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will fold into the show. Lead with the single best pitch: what it is, who's doing it, why it's verified/real, and the one-line "here's how it'd upgrade our setup." End with: "Logged in ${PITCH_FILE} for Kyle to greenlight." If there's no verified pitch, write exactly: "NO_VERIFIED_PITCH" on the first line, then a one-sentence reason.
 
 NEVER fabricate a pitch or overstate evidence. Honesty about a thin day is the correct behavior. STOP after writing both files.
