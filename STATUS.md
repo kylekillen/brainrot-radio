@@ -1,3 +1,6 @@
+### 2026-06-19 — Reviewed PR #9: approved and merged
+Approved: OpenRouter completion helper (or_complete.py). Clean stdlib-only implementation, correct key fallback, solid empty-content guard for reasoning models. Fits podcast offload mission. No CI configured (pre-existing).
+
 ### 2026-06-19 12:39 — Reviewed PR #8: approved and merged
 Approved: Telegram notification on publish. Non-fatal, suppressible, uses existing creds file, single call-site at the right chokepoint. No CI configured on repo (pre-existing).
 
