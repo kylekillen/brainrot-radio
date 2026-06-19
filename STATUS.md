@@ -585,3 +585,8 @@ Provider-agnostic offload config (or_complete.py) passed all three gates. _read_
 ### 2026-06-19 — Reviewed PR #11: approved and merged
 
 OpenRouter (Kimi) fallback for write passes passed all three gates. Shell elif logic correctly preserves 100%-Claude default path; fallback only fires on Claude double-failure or explicit PODCAST_FORCE_OPENROUTER. or_writer.py handles max-tokens ladder for credit-constrained accounts, transition-join dedup, covered-stories roundtrip, and 500-word sanity gate. Kimi hallucination risk documented in PR body and known from 2026-06-18 STATUS entry; QC Step 3 is the catch. No CI configured for repo.
+
+
+### 2026-06-19 — Reviewed PR #12: approved and merged
+
+Offload provider generalization (use configured OFFLOAD_MODEL, not hardcoded Kimi) passed all three gates. DEFAULT_MODEL="" correctly defers to or_complete._config() which reads OFFLOAD_MODEL from offload.env — the model-or-default fallback in complete() handles the empty string. Non-blocking: run_kimi_pass() function name and success log still say "Kimi" — cosmetic stale references, no behavioral impact. No CI configured for repo.
