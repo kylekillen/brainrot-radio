@@ -577,3 +577,6 @@ The June 18 QC sourcing agent caught "Tyler Shuck" — a completely fabricated N
 ### 2026-06-18 — Reviewed PR #7: approved and merged
 
 Budget guard script (budget-guard.sh) passed all three gates — correctness, coherence, smallness. No CI configured for repo. Change is an interim stopgap to pause podcast generation under cap-pressure to preserve trading pool headroom, pending durable per-workload key tiering.
+### 2026-06-19 — Reviewed PR #10: approved and merged
+
+Provider-agnostic offload config (or_complete.py) passed all three gates. _read_env_file helper correct; _config() fallback chain (env vars → offload.env → legacy openrouter.env) sound; complete() model param now optional with clear RuntimeError if unset. No CI configured for repo.
