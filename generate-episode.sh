@@ -110,6 +110,18 @@ fi
 echo "$$" > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
 
+# ─── Budget guard: preserve the trading pool ─────────────────────────────────
+# If the shared Claude pool is under cap-pressure (a recent money-monitor cap-hit),
+# stand THIS non-critical job down so the trading sentinel keeps its headroom.
+# Reversible/override: BUDGET_GUARD_OFF=1. Durable fix = per-workload key tiering
+# (agent-os/proposal-tiered-failover-2026-06-18.md).
+if [ -x "$BRAINROT_DIR/budget-guard.sh" ] && [ -z "${BUDGET_GUARD_OFF:-}" ]; then
+    if ! "$BRAINROT_DIR/budget-guard.sh" check 2>>"$RESULT_LOG"; then
+        log "BUDGET GUARD: shared pool under cap-pressure — standing down today's episode to preserve trading functions. (override with BUDGET_GUARD_OFF=1)"
+        exit 0
+    fi
+fi
+
 # ─── Step 1: Ingest ──────────────────────────────────────────────────────────
 log "Running ingest..."
 python3 ingest.py --report -n 40 -o .tmp/topic-brief.txt >> "$RESULT_LOG" 2>&1
