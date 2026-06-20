@@ -20,6 +20,12 @@ TODAY=$(date '+%Y-%m-%d')
 # 5:30 AM podcast generation never narrates its turns to Kyle's phone.
 export CODE_VOICE_MUTE=1
 
+# Writer engine: claude (default) | gemini. Sourced from a config file so the daily
+# job AND the recovery checker both honor it. Switch back to Claude any time with:
+#   echo claude > ~/.observer/data/podcast-engine     (or: rm that file)
+PODCAST_ENGINE="${PODCAST_ENGINE:-$(cat "$HOME/.observer/data/podcast-engine" 2>/dev/null || echo claude)}"
+export PODCAST_ENGINE
+
 cd "$BRAINROT_DIR"
 source venv/bin/activate
 mkdir -p logs .tmp
@@ -197,7 +203,11 @@ B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will 
 NEVER fabricate a pitch or overstate evidence. Honesty about a thin day is the correct behavior. STOP after writing both files.
 PROMPT_EOF
 
-if ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" "build-pitch-reporter"; then
+if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
+    log "Build-Pitch Reporter on GEMINI (grounded claude_lab transcript combing)..."
+    python3 gemini_buildpitch.py >> "$RESULT_LOG" 2>&1 \
+        || log "Gemini build-pitch failed (non-fatal); AI block will omit the segment"
+elif ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" "build-pitch-reporter"; then
     log "Build-Pitch Reporter failed (non-fatal); AI block will omit the build-pitch segment"
 fi
 if [ -f "$BRAINROT_DIR/$PITCH_SUMMARY" ]; then
@@ -222,6 +232,14 @@ fi
 
 SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 
+# ─── Step 2: Write the episode (engine-dependent) ────────────────────────────
+if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
+    # All-Gemini write: per-segment, faithful beats, dedup + covered-story saving.
+    log "Writing episode on GEMINI (per-segment, faithful beats + covered-save)..."
+    if ! GEMINI_OUT="$BRAINROT_DIR/$SCRIPT_FILE" python3 gemini_episode.py >> "$RESULT_LOG" 2>&1; then
+        log "Gemini write failed, aborting"; exit 1
+    fi
+else
 # ─── Step 2a: Pass 1 — Intro + AI/Tech + Agents & Building ───────────────────
 cat > "$BRAINROT_DIR/.tmp/step2a-pass1.txt" <<PROMPT_EOF
 You are producing the FIRST HALF of a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
@@ -345,12 +363,18 @@ elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2";
     fi
 fi
 
+fi   # end engine branch (gemini | claude write)
+
 # Check combined word count
 NEW_SCRIPT="$BRAINROT_DIR/$SCRIPT_FILE"
 TOTAL_WORDS=$(wc -w < "$NEW_SCRIPT" | tr -d ' ')
 log "Combined script: $TOTAL_WORDS words"
 
 # ─── Step 3: QC Review (adversarial 3-skeptic + synthesizer) ─────────────────
+# The 3-skeptic QC is Claude-agentic. The Gemini engine skips it (the per-segment
+# writer applies deterministic join-fixes and honors dedup), keeping the show
+# 100% Claude-free. A Gemini QC pass is a future option.
+if [ "${PODCAST_ENGINE:-claude}" != "gemini" ]; then
 # Delegates to the .claude/commands/qc-episode.md command — the single source of
 # truth for QC, shared with the interactive `/qc-episode` path. That command
 # launches 3 independent adversarial agents (Freshness/Dedup, Coherence,
@@ -410,6 +434,9 @@ if [ "$QC_VERDICT" != "PASS" ]; then
     fi
     log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
 fi
+else
+    log "QC skipped (Gemini engine — segment-join fixes + dedup handled in the writer)."
+fi   # end QC engine branch
 
 # ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
 SCRIPT_BASENAME=$(basename "$NEW_SCRIPT" .txt)
