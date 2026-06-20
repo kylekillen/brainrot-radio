@@ -1,3 +1,6 @@
+### 2026-06-19 — Reviewed PR #14: approved and merged
+All-Gemini engine wired into generate-episode.sh behind PODCAST_ENGINE flag; if/else structure correct, gemini_episode.py/gemini_buildpitch.py faithfully port the original methodology with covered-story saving preserved, deterministic _fix_joins replaces Claude QC. No CI configured (pre-existing); author validated end-to-end.
+
 ### 2026-06-19 — Reviewed PR #13: approved and merged
 Turned thinking off for Gemini Flash content gen via OFFLOAD_REASONING_EFFORT; correct opt-in guard, coherent with existing OFFLOAD_* pattern, minimal diff. No CI configured (pre-existing).
 
