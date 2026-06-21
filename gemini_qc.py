@@ -20,13 +20,17 @@ Two layers, embracing both of Berman's loop principles:
      It cannot inherit the writer's blind spots because it never saw the writer's
      context. Emits MUST-FIX items + a greppable `QC VERDICT: PASS`/`FAIL`.
 
-  3. Bounded revision loop: on FAIL, a SEPARATE reviser call applies the MUST-FIX
-     items, then we re-grade. Up to QC_MAX_ATTEMPTS. Still-FAIL exits non-zero so
-     the pipeline flags loudly (never ships a known-bad episode silently).
+DETECTION + FLAG ONLY — this NEVER rewrites long-form content. An earlier version
+auto-revised on FAIL, and the reviser DELETED content (reading "fix the MUST-FIX
+items" as "cut them"), shrinking a renderable 6575-word script to 3856 and tripping
+voice.py's hard 6000-word render floor — the episode failed to produce (2026-06-21).
+QC must never hand voice.py a script shorter than the writer produced. So we apply
+only the non-shrinking deterministic seam fix, grade for the flag/signal, and ship
+the FULL script; the pipeline's QC_FAIL_ACTION gate decides what to do with a FAIL.
 
 Usage:  GEMINI_OUT=scripts/killen-time-<date>.txt python3 gemini_qc.py
         python3 gemini_qc.py scripts/killen-time-<date>.txt
-Exit 0 = PASS (script fixed in place), 2 = FAIL after max attempts, 1 = error.
+Exit 0 = PASS, 2 = FAIL (flagged, full script still shipped), 1 = error.
 The final line on stdout is always `QC VERDICT: PASS` or `QC VERDICT: FAIL`.
 """
 import os
