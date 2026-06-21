@@ -72,10 +72,15 @@ SEGMENTS = [
      "Begin with a [TRANSITION]."),
 ]
 DEDUP = ("DEDUP (critical): the sources block above includes RECENT EPISODE SCRIPTS "
-         "and the .covered-*.json record of facts already said on air. Do NOT repeat "
-         "ANY story, argument, quote, or fact already covered in a PREVIOUS episode — "
-         "if a topic was covered before, SKIP it unless there's a genuinely new "
-         "development. When in doubt, SKIP; a fresh story beats a retread.\n")
+         "and the .covered-*.json record of facts already said on air. Before writing "
+         "EACH story, check it against these — if the story or its specific facts "
+         "already appeared in a previous episode, SKIP IT ENTIRELY. A reworded restatement "
+         "of a covered story STILL violates dedup; only a genuinely NEW development "
+         "(a price moved, a deal closed, someone resigned, new data) earns a mention. "
+         "If skipping repeats leaves a beat with little fresh material, keep that beat "
+         "SHORT (a few hundred words) — a brief fresh beat is REQUIRED; padding it back "
+         "to the word target by rehashing prior episodes is a FAILURE. It is correct and "
+         "expected for a slow-news beat (e.g. off-season sports) to be short today.\n")
 
 # Why this exists: each segment used to be generated INDEPENDENTLY from the same
 # sources with no awareness of the others, so every segment grabbed the biggest
