@@ -1,3 +1,7 @@
+### 2026-06-21 16:26 — Reviewed PR #18: approved and merged
+
+All three gates passed. Introduces goal-seeking production loop (gemini_finalize.py): Phase 1 reaches render floor via per-segment regen with anti-shrink invariant, Phase 2 runs QC advisory-only and escalates via Telegram but never silently ships. gemini_qc.py refactored to detection primitive (no revise loop); source vs. freshness context separated and capped independently, fixing the 12K-truncation bug that made the grader fail every episode. Cross-segment awareness added to writer (prevents same-story repetition across segments). No CI configured.
+
 ### 2026-06-21 16:22 — Reviewed PR #16: approved and merged
 
 All three gates passed. Pure 28-line tail addition to generate-episode.sh that emits compound-loop signals (covered/gap) after publish. All referenced variables ($RUN_ID, $RESULT_LOG, $SCRIPT_FILE) confirmed defined. Non-fatal guards correct. No CI configured on repo.
