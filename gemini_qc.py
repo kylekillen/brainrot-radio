@@ -40,7 +40,10 @@ def _fix_joins(s: str) -> str:
     for ln in s.split("\n"):
         t = ln.strip()
         if t == "[TRANSITION]":
-            if out and out[-1].strip() == "[TRANSITION]":
+            # collapse doubled transition even across blank lines (compare to the
+            # last NON-BLANK emitted line) — seams produce blank-separated pairs.
+            prev = next((x.strip() for x in reversed(out) if x.strip()), "")
+            if prev == "[TRANSITION]":
                 continue
             last_speaker = None
             out.append(ln)
@@ -72,13 +75,19 @@ def deterministic_checks(script: str) -> list[str]:
     words = len(script.split())
     if words < WORD_FLOOR:
         issues.append(f"word count {words} below floor {WORD_FLOOR}")
-    # consecutive same-speaker (after _fix_joins these should be gone; residual = real)
+    # consecutive same-speaker (after _fix_joins these should be gone; residual = real).
+    # A [TRANSITION] is a valid speaker boundary — reset, so [BASIL]…[TRANSITION]…[BASIL]
+    # is NOT flagged (matches _fix_joins semantics; otherwise it false-flags every seam).
     last = None
     for ln in script.split("\n"):
-        m = re.match(r"\[(BASIL|BROOKE)\]", ln.strip())
+        t = ln.strip()
+        if t == "[TRANSITION]":
+            last = None
+            continue
+        m = re.match(r"\[(BASIL|BROOKE)\]", t)
         if m:
             if m.group(1) == last:
-                issues.append(f"consecutive same speaker [{m.group(1)}]: {ln.strip()[:60]}")
+                issues.append(f"consecutive same speaker [{m.group(1)}]: {t[:60]}")
             last = m.group(1)
     if re.search(r"\[TRANSITION\]\s*\n\s*\[TRANSITION\]", script):
         issues.append("doubled [TRANSITION] tag")

@@ -71,19 +71,45 @@ SEGMENTS = [
      "recap of the most interesting thread and a short sign-off. Keep it tight. [BASIL]/[BROOKE]. "
      "Begin with a [TRANSITION]."),
 ]
-# Honor dedup: do not repeat any story/argument/quote/fact already in recent episodes
-# (the sources block above includes them). Use ONLY what's in the sources.
-
-parts = []
 DEDUP = ("DEDUP (critical): the sources block above includes RECENT EPISODE SCRIPTS "
          "and the .covered-*.json record of facts already said on air. Do NOT repeat "
-         "ANY story, argument, quote, or fact already covered in a previous episode — "
+         "ANY story, argument, quote, or fact already covered in a PREVIOUS episode — "
          "if a topic was covered before, SKIP it unless there's a genuinely new "
          "development. When in doubt, SKIP; a fresh story beats a retread.\n")
+
+# Why this exists: each segment used to be generated INDEPENDENTLY from the same
+# sources with no awareness of the others, so every segment grabbed the biggest
+# stories and the episode repeated the same content 2-3x (the now-working QC caught
+# this on 2026-06-21). Each segment now sees the EPISODE SO FAR and must cover only
+# NEW material — segments written sequentially, each aware of the prior ones.
+NO_REPEAT = (
+    "NO INTERNAL REPETITION (critical): the EPISODE SO FAR (already written earlier in "
+    "THIS episode) is shown below. Do NOT repeat ANY story, fact, quote, or argument "
+    "already present in it — cover only DIFFERENT, new material in your segment.\n")
+
+# Why this exists: with a word target and thin sources, the writer invented specifics
+# (fake trades, invented projects, embellished bare headlines) to hit length. Reach
+# length by covering MORE real stories, never by fabricating.
+NO_FABRICATION = (
+    "ACCURACY OVER LENGTH (critical): cover ONLY stories and facts actually present in "
+    "the SOURCE MATERIAL above. Do NOT invent specifics, quotes, numbers, company "
+    "announcements, product or project names, trades, deaths, or events to fill the "
+    "word target. If a story is only a brief headline with no detail in the sources, "
+    "give it one or two sentences — never embellish a thin source into a fabricated "
+    "deep-dive. Reach length by covering MORE distinct real stories from the brief, NOT "
+    "by padding or inventing. A shorter fully-sourced segment is required; a longer "
+    "fabricated one is a failure.\n")
+
+parts = []
 for key, instr in SEGMENTS:
-    prompt = (block + "\n\n=== YOUR TASK ===\n"
-              "This is a sample episode produced for an offload A/B test — morning tone.\n"
-              + DEDUP + instr)
+    episode_so_far = "\n\n".join(parts).strip()
+    cross = ""
+    if episode_so_far:
+        cross = ("\n=== EPISODE SO FAR (already written — do NOT repeat any of this) ===\n"
+                 + episode_so_far[-120000:] + "\n=== END EPISODE SO FAR ===\n")
+    prompt = (block + cross + "\n\n=== YOUR TASK ===\n"
+              "This is today's PRODUCTION episode — morning tone.\n"
+              + DEDUP + (NO_REPEAT if episode_so_far else "") + NO_FABRICATION + instr)
     print(f"[gemini] generating segment: {key} ...", file=sys.stderr, flush=True)
     try:
         text = or_complete.complete(prompt, system=ow.SYSTEM, max_tokens=16000)
@@ -106,8 +132,12 @@ def _fix_joins(s: str) -> str:
     for ln in lines:
         t = ln.strip()
         if t == "[TRANSITION]":
-            if out and out[-1].strip() == "[TRANSITION]":
-                continue  # collapse doubled transition
+            # collapse doubled transition even across blank lines (each segment is
+            # told to begin AND end with [TRANSITION], so seams produce a blank-line-
+            # separated pair) — compare against the last NON-BLANK emitted line.
+            prev = next((x.strip() for x in reversed(out) if x.strip()), "")
+            if prev == "[TRANSITION]":
+                continue
             last_speaker = None
             out.append(ln); continue
         m = re.match(r"\[(BASIL|BROOKE)\]", t)
