@@ -203,8 +203,16 @@ B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will 
 NEVER fabricate a pitch or overstate evidence. Honesty about a thin day is the correct behavior. STOP after writing both files.
 PROMPT_EOF
 
-if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
-    log "Build-Pitch Reporter on GEMINI (grounded claude_lab transcript combing)..."
+# Build-Pitch engine: defaults to CLAUDE even when the episode WRITE runs on Gemini.
+# The build pitch is the highest-stakes output — Kyle greenlights real builds from it —
+# and Gemini confabulates: on 2026-06-21 it invented "Walrus Memory / MemWal", an
+# on-chain memory-MCP product that exists in ZERO source (it grafted the real Walrus
+# storage protocol onto Cole Medin's portable-memory topic) and pitched it as a
+# must-have to "greenlight development." A fabricated pitch is far costlier than one
+# Claude call/day; the episode write stays $0 on Gemini. Override: BUILDPITCH_ENGINE=gemini.
+BUILDPITCH_ENGINE="${BUILDPITCH_ENGINE:-claude}"
+if [ "$BUILDPITCH_ENGINE" = "gemini" ]; then
+    log "Build-Pitch Reporter on GEMINI (override; note: Gemini has confabulated fake pitches)..."
     python3 gemini_buildpitch.py >> "$RESULT_LOG" 2>&1 \
         || log "Gemini build-pitch failed (non-fatal); AI block will omit the segment"
 elif ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" "build-pitch-reporter"; then
