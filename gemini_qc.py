@@ -38,7 +38,6 @@ import or_complete
 import or_writer as ow
 
 WORD_FLOOR = int(os.getenv("QC_WORD_FLOOR", "5500"))
-QC_MAX_ATTEMPTS = int(os.getenv("QC_MAX_ATTEMPTS", "2"))
 
 
 def _fix_joins(s: str) -> str:
@@ -142,42 +141,32 @@ def grade(script: str, digest: str) -> tuple[str, str]:
     return verdict, out
 
 
-def revise(script: str, must_fix: str) -> str:
-    """Separate reviser context: apply the grader's MUST-FIX items, return full script."""
-    prompt = (
-        "You are editing a finished podcast script. Apply ONLY the MUST-FIX items "
-        "below — fix each one in place, change nothing else, preserve every [BASIL]/"
-        "[BROOKE]/[TRANSITION] tag and the overall length. Output the COMPLETE corrected "
-        "script and nothing else (no preamble, no commentary).\n\n"
-        f"=== MUST-FIX ITEMS ===\n{must_fix}\n\n"
-        f"=== SCRIPT ===\n{script}"
-    )
-    out = or_complete.complete(prompt, system=ow.SYSTEM, max_tokens=16000)
-    return ow._clean_script(out)
-
-
 def main() -> int:
+    # DETECTION + FLAG ONLY — never rewrite long-form content. An earlier version
+    # auto-revised on FAIL; the reviser DELETED content (it reads "fix the MUST-FIX
+    # items" as "cut them"), shrinking a renderable 6575-word script to 3856 and
+    # tripping voice.py's hard 6000-word render floor — the episode failed to
+    # produce (2026-06-21). QC must NEVER hand voice.py a script shorter than the
+    # writer produced. So: apply only the non-shrinking deterministic seam fix,
+    # grade for the flag/signal, and ship the FULL script. The pipeline's
+    # publish/abort gate (QC_FAIL_ACTION) decides what to do with a FAIL verdict.
     path = _target()
-    script = _fix_joins(path.read_text())  # verifiable auto-fix of seam defects first
+    before = path.read_text()
+    script = _fix_joins(before)  # non-destructive: only flips seam tags / collapses dupes
     path.write_text(script)
-    digest = _dedup_digest()
+    # Hard guarantee: we never reduced the renderable length.
+    if len(script.split()) < len(before.split()):
+        path.write_text(before)
+        script = before
 
-    for attempt in range(1, QC_MAX_ATTEMPTS + 1):
-        det = deterministic_checks(script)
-        verdict, report = grade(script, digest)
-        det_block = ("\nDETERMINISTIC (hard) violations:\n- " + "\n- ".join(det)) if det else ""
-        print(f"--- QC attempt {attempt}/{QC_MAX_ATTEMPTS} ---\n{report}{det_block}",
-              file=sys.stderr)
-        if verdict == "PASS" and not det:
-            print("QC VERDICT: PASS")
-            return 0
-        if attempt < QC_MAX_ATTEMPTS:
-            must_fix = report + det_block
-            try:
-                script = _fix_joins(revise(script, must_fix))
-                path.write_text(script)
-            except Exception as e:  # noqa: BLE001
-                print(f"gemini_qc: revise failed ({e}); keeping last script", file=sys.stderr)
+    digest = _dedup_digest()
+    det = deterministic_checks(script)
+    verdict, report = grade(script, digest)
+    det_block = ("\nDeterministic violations:\n- " + "\n- ".join(det)) if det else ""
+    print(f"--- Gemini QC (detection-only) ---\n{report}{det_block}", file=sys.stderr)
+    if verdict == "PASS" and not det:
+        print("QC VERDICT: PASS")
+        return 0
     print("QC VERDICT: FAIL")
     return 2
 
