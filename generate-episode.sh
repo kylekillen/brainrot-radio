@@ -203,8 +203,16 @@ B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will 
 NEVER fabricate a pitch or overstate evidence. Honesty about a thin day is the correct behavior. STOP after writing both files.
 PROMPT_EOF
 
-if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
-    log "Build-Pitch Reporter on GEMINI (grounded claude_lab transcript combing)..."
+# Build-Pitch engine: defaults to CLAUDE even when the episode WRITE runs on Gemini.
+# The build pitch is the highest-stakes output — Kyle greenlights real builds from it —
+# and Gemini confabulates: on 2026-06-21 it invented "Walrus Memory / MemWal", an
+# on-chain memory-MCP product that exists in ZERO source (it grafted the real Walrus
+# storage protocol onto Cole Medin's portable-memory topic) and pitched it as a
+# must-have to "greenlight development." A fabricated pitch is far costlier than one
+# Claude call/day; the episode write stays $0 on Gemini. Override: BUILDPITCH_ENGINE=gemini.
+BUILDPITCH_ENGINE="${BUILDPITCH_ENGINE:-claude}"
+if [ "$BUILDPITCH_ENGINE" = "gemini" ]; then
+    log "Build-Pitch Reporter on GEMINI (override; note: Gemini has confabulated fake pitches)..."
     python3 gemini_buildpitch.py >> "$RESULT_LOG" 2>&1 \
         || log "Gemini build-pitch failed (non-fatal); AI block will omit the segment"
 elif ! run_claude_step 1500 "$BRAINROT_DIR/.tmp/step1b-build-pitch.txt" "build-pitch-reporter"; then
@@ -438,23 +446,26 @@ if [ "$QC_VERDICT" != "PASS" ]; then
     log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
 fi
 else
-    # Gemini engine: Independent Outcome Grader (separate-context rubric grade +
-    # deterministic verifiable checks). Same fail-loud gate as Claude QC; $0/zero-Claude.
-    # gemini_qc.py exits 0=PASS, non-zero=FAIL and prints the QC VERDICT line.
-    QC_FAIL_ACTION=${QC_FAIL_ACTION:-publish}   # publish | abort
-    log "QC review on GEMINI (independent outcome grader: fresh-context rubric + deterministic checks)..."
-    if GEMINI_OUT="$NEW_SCRIPT" python3 gemini_qc.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1; then
-        log "Gemini QC verdict: PASS"
-    else
-        QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
-        echo "Gemini QC did not reach PASS — script: $NEW_SCRIPT" > "$QC_FLAG"
-        log "⚠️  GEMINI QC GATE FAILED. Flag: $QC_FLAG"
-        if [ "$QC_FAIL_ACTION" = "abort" ]; then
-            log "QC_FAIL_ACTION=abort → NOT publishing today's episode. Investigate $NEW_SCRIPT."
-            exit 1
-        fi
-        log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
-    fi
+    # Gemini engine: GOAL-SEEKING production loop (gemini_finalize.py). The GOAL is a
+    # publishable episode — render-ready (>= voice.py's word floor) AND QC-clean. The
+    # loop VERIFIES the goal and, while unmet, REPAIRS CONSTRUCTIVELY toward it (expand
+    # when short, fix-in-place when flagged — never shrink, structurally), then
+    # re-verifies, up to a bounded budget. This is the loop the methodology calls for:
+    # not fail-and-abort or fail-and-ship-broken, but loop-back-to-fix-until-the-goal-
+    # holds, then ESCALATE if genuinely stuck. $0 / zero-Claude.
+    #   exit 0 = goal met · 2 = render-ready but still QC-flagged (publish + Kyle pinged)
+    #   3 = below render floor → do NOT ship a stub (abort; Kyle pinged inside the loop)
+    log "Finalizing episode on GEMINI (goal-seeking loop: verify → repair → until publishable)..."
+    GEMINI_OUT="$NEW_SCRIPT" python3 gemini_finalize.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1
+    FINALIZE_RC=$?
+    case "$FINALIZE_RC" in
+        0) log "Finalize: GOAL MET (render-ready + QC clean).";;
+        2) QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
+           echo "Gemini finalize: render-ready but QC never cleared — script: $NEW_SCRIPT" > "$QC_FLAG"
+           log "⚠️  Finalize: render-ready but QC-flagged after repairs — publishing flagged (Kyle notified; $QC_FLAG).";;
+        *) log "⚠️  Finalize: could NOT reach render floor (rc=$FINALIZE_RC) — NOT publishing a broken stub. Kyle notified inside the loop."
+           exit 1;;
+    esac
 fi   # end QC engine branch
 
 # ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
