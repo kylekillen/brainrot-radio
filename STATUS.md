@@ -611,3 +611,6 @@ OpenRouter (Kimi) fallback for write passes passed all three gates. Shell elif l
 ### 2026-06-19 — Reviewed PR #12: approved and merged
 
 Offload provider generalization (use configured OFFLOAD_MODEL, not hardcoded Kimi) passed all three gates. DEFAULT_MODEL="" correctly defers to or_complete._config() which reads OFFLOAD_MODEL from offload.env — the model-or-default fallback in complete() handles the empty string. Non-blocking: run_kimi_pass() function name and success log still say "Kimi" — cosmetic stale references, no behavioral impact. No CI configured for repo.
+### 2026-06-21 07:58 — Reviewed PR #15: approved and merged
+
+Added Independent Outcome Grader for the all-Gemini engine (gemini_qc.py + generate-episode.sh branch). All three gates passed: correct logic with proper exit-code handling, coherent with existing or_complete/or_writer patterns, minimal scope (new file + one branch replacement, Claude path untouched). Non-blocking: GEMINI_OUT env var and sys.argv[1] both passed to _target() — redundant but harmless. No CI configured for repo.
