@@ -370,10 +370,13 @@ NEW_SCRIPT="$BRAINROT_DIR/$SCRIPT_FILE"
 TOTAL_WORDS=$(wc -w < "$NEW_SCRIPT" | tr -d ' ')
 log "Combined script: $TOTAL_WORDS words"
 
-# ─── Step 3: QC Review (adversarial 3-skeptic + synthesizer) ─────────────────
-# The 3-skeptic QC is Claude-agentic. The Gemini engine skips it (the per-segment
-# writer applies deterministic join-fixes and honors dedup), keeping the show
-# 100% Claude-free. A Gemini QC pass is a future option.
+# ─── Step 3: QC Review (independent outcome grader) ──────────────────────────
+# Claude engine: 3-skeptic adversarial QC (below). Gemini engine: gemini_qc.py —
+# a FRESH-context Gemini grader that sees ONLY the finished script + rubric (never
+# the writer's context, so it can't inherit the writer's blind spots — the
+# Independent Outcome Grader pattern) plus deterministic verifiable checks. Both
+# end on a greppable `QC VERDICT:` and gate the same fail-loud way. Gemini path
+# stays 100% Claude-free / $0.
 if [ "${PODCAST_ENGINE:-claude}" != "gemini" ]; then
 # Delegates to the .claude/commands/qc-episode.md command — the single source of
 # truth for QC, shared with the interactive `/qc-episode` path. That command
@@ -435,7 +438,23 @@ if [ "$QC_VERDICT" != "PASS" ]; then
     log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
 fi
 else
-    log "QC skipped (Gemini engine — segment-join fixes + dedup handled in the writer)."
+    # Gemini engine: Independent Outcome Grader (separate-context rubric grade +
+    # deterministic verifiable checks). Same fail-loud gate as Claude QC; $0/zero-Claude.
+    # gemini_qc.py exits 0=PASS, non-zero=FAIL and prints the QC VERDICT line.
+    QC_FAIL_ACTION=${QC_FAIL_ACTION:-publish}   # publish | abort
+    log "QC review on GEMINI (independent outcome grader: fresh-context rubric + deterministic checks)..."
+    if GEMINI_OUT="$NEW_SCRIPT" python3 gemini_qc.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1; then
+        log "Gemini QC verdict: PASS"
+    else
+        QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
+        echo "Gemini QC did not reach PASS — script: $NEW_SCRIPT" > "$QC_FLAG"
+        log "⚠️  GEMINI QC GATE FAILED. Flag: $QC_FLAG"
+        if [ "$QC_FAIL_ACTION" = "abort" ]; then
+            log "QC_FAIL_ACTION=abort → NOT publishing today's episode. Investigate $NEW_SCRIPT."
+            exit 1
+        fi
+        log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
+    fi
 fi   # end QC engine branch
 
 # ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
