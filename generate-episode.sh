@@ -518,4 +518,32 @@ for f in (tmp / 'transcripts').glob('*.txt'):
 print(f'Archived {moved} source files to .tmp/used/')
 " >> "$RESULT_LOG" 2>&1
 
+# ─── Step 6: Emit compound-loop signals (shared fleet brain) ─────────────────
+# The podcast is a loop; after it publishes it writes signals other loops READ
+# (the COS orientation, dispatched workers). 'covered' = what's already handled
+# today (so other loops don't re-prioritize a covered story); 'gap' = a weakness
+# worth a fix. Optional + non-fatal — absent signals.py changes nothing.
+SIGNALS_PY="$HOME/observer-system/scripts/signals.py"
+if [ -f "$SIGNALS_PY" ]; then
+    COVERED=$(python3 - <<'PY' 2>/dev/null
+import json, glob
+files = sorted(glob.glob('scripts/.covered-*.json'))
+if files:
+    d = json.load(open(files[-1]))
+    keys = list((d.get('segments') or {}).keys())[:8]
+    print('; '.join(k.replace('-', ' ') for k in keys))
+PY
+)
+    if [ -n "$COVERED" ]; then
+        python3 "$SIGNALS_PY" emit --source brainrot-radio --category covered \
+            --summary "Podcast covered today: $COVERED" --tags podcast \
+            --linked "$SCRIPT_FILE" >> "$RESULT_LOG" 2>&1 && log "Signal: covered topics emitted."
+    fi
+    if [ -f "logs/qc-FAIL-${RUN_ID}.flag" ]; then
+        python3 "$SIGNALS_PY" emit --source brainrot-radio --category gap \
+            --summary "Today's episode shipped FLAGGED sub-par by QC (logs/qc-FAIL-${RUN_ID}.flag)" \
+            --tags podcast >> "$RESULT_LOG" 2>&1 && log "Signal: QC-gap emitted."
+    fi
+fi
+
 log "Episode generation complete (log: $RESULT_LOG)"
