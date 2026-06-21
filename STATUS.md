@@ -1,3 +1,7 @@
+### 2026-06-21 16:22 — Reviewed PR #16: approved and merged
+
+All three gates passed. Pure 28-line tail addition to generate-episode.sh that emits compound-loop signals (covered/gap) after publish. All referenced variables ($RUN_ID, $RESULT_LOG, $SCRIPT_FILE) confirmed defined. Non-fatal guards correct. No CI configured on repo.
+
 ### 2026-06-20 04:49 — Second-half writer has no NFL transcript material; Ringer FF / Barnwell episodes not downloading
 
 The four `.tmp/transcripts/` files available today were Dean Ball (Cognitive Revolution), Sam Vecenie (Athletic NBA Daily), Odd Lots panel, and Modern Wisdom. No Ringer Fantasy Football Show, no Fantasy Footballers, no Bill Barnwell episode was downloaded. The NFL segment had to be written from analytical framework knowledge rather than specific episode quotes — which is technically against the editorial rule of pulling actual source transcripts. Worth diagnosing why the sports podcast feed isn't producing transcripts; if those shows aren't in `feeds.json` as podcast feeds with working RSS, the beat's primary sources are invisible to the pipeline every run.
