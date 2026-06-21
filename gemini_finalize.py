@@ -7,28 +7,27 @@ fail-and-ship-broken, not fail-and-alarm-then-sit. The episode pipeline was a st
 line: a step failed and the run aborted or shipped a broken script. This wraps
 production in the loop the methodology actually calls for.
 
-GOAL (verifiable AND achievable): the script is RENDER-READY —
-    word_count >= MIN_WORD_COUNT (voice.py's hard render floor).
+GOAL: a publishable episode — RENDER-READY (word_count >= MIN_WORD_COUNT, voice.py's
+hard floor) AND QC-clean (the grader, now trustworthy, finds no fabrication / dedup /
+broken structure).
 
-Why not "QC PASS" too? The adversarial QC rubric currently fails essentially every
-episode (it failed today's perfectly good 7546-word show), so gating on it would make
-the loop never exit. Until the rubric is calibrated so PASS means something, QC runs
-ADVISORY: it still grades and FLAGS a sub-par episode (the flag the pipeline reads),
-but it does not block. Calibrating the rubric is the follow-up that lets QC graduate
-to a real gate.
-
-REPAIR (when the goal is unmet): REGENERATE via the per-segment writer
+Phase 1 — reach the render floor. REGENERATE via the per-segment writer
 (gemini_episode.py), which reliably clears the floor — NOT a one-shot "expand", which
-Gemini Flash just reproduces (verified 2026-06-21: a whole-script expand returned the
-input unchanged; the writer is per-segment for exactly this reason). We keep the
-longest script seen and never write one shorter than the original — so a verification
-step can never hand voice.py a script worse than what it received (the 06-21 outage
-was a "repair" that deleted content below the floor; that is now impossible).
+Gemini Flash just reproduces (verified 2026-06-21). Anti-shrink: keep the longest
+script seen, never write one shorter than the original (the 06-21 outage was a
+"repair" that deleted below the floor; now impossible). Can't reach the floor after
+MAX_REGENS → escalate, don't publish a stub (exit 3).
 
-Bounded by MAX_REGENS. On exhaustion it ESCALATES to Kyle (Telegram) — loudly, never
-silent. Exit: 0 = render-ready (publish; QC flag may be attached). 3 = could not reach
-the floor after the budget (do NOT publish a stub; escalated). Pipeline renders on 0,
-aborts otherwise.
+Phase 2 — QC gate. We do NOT regenerate to chase a PASS: Gemini Flash confabulates
+specifics even with transcripts, and a fresh generation yields DIFFERENT fabrications,
+not a clean one — so regen-for-QC would burn cost and escalate daily without
+converging. Instead: clean → publish (exit 0); not clean → still publish (don't block
+the feed) but ESCALATE the specific issues + the engine off-switch so Kyle can decide
+whether to switch back to Claude (exit 2). Never silently ship fabrication.
+
+The unresolved hard problem this surfaces: Gemini Flash is not reliably factual enough
+for a daily news show. That is a cost/quality/engine decision for Kyle — the loop
+makes it visible with evidence instead of burying it.
 """
 import os
 import subprocess
@@ -67,25 +66,19 @@ def regenerate(path: pathlib.Path) -> None:
                    cwd=str(HERE), env=env, timeout=600, check=False)
 
 
-def run_advisory_qc(script: str, path: pathlib.Path, run_id: str) -> bool:
-    """Grade for the flag/signal — does NOT gate. Writes a qc-FAIL flag the pipeline
-    reads. Returns True if QC passed (clean)."""
+def run_qc(script: str) -> tuple[bool, str]:
+    """Grade against the writer's full sources. Returns (clean, report)."""
     try:
-        verdict, report = grade(script)   # grades against the writer's full sources
+        verdict, report = grade(script)
         det = deterministic_checks(script)
     except Exception as e:  # noqa: BLE001
-        print(f"finalize: advisory QC errored ({e}); skipping flag", file=sys.stderr)
-        return True
+        print(f"finalize: QC errored ({e}); treating as clean", file=sys.stderr)
+        return True, ""
     clean = verdict == "PASS" and not det
-    print(f"--- advisory QC: {'PASS' if clean else 'FAIL'} ---\n{report}"
-          + (("\nDeterministic: " + "; ".join(det)) if det else ""), file=sys.stderr)
-    if not clean and run_id:
-        flag = HERE / "logs" / f"qc-FAIL-{run_id}.flag"
-        try:
-            flag.write_text(f"advisory QC flagged sub-par (non-blocking) — {path}\n")
-        except OSError:
-            pass
-    return clean
+    if det:
+        report += "\nDeterministic: " + "; ".join(det)
+    print(f"--- QC: {'PASS' if clean else 'FAIL'} ---\n{report}", file=sys.stderr)
+    return clean, report
 
 
 def escalate(summary: str) -> None:
@@ -121,38 +114,56 @@ def main() -> int:
     path.write_text(best)
     best_words = _wc(best)
 
+    # Phase 1 — reach the RENDER FLOOR. Regenerating reliably fixes "too short" (the
+    # writer is per-segment and clears the floor), so we loop on it. Anti-shrink:
+    # never keep a shorter candidate.
     for attempt in range(1, MAX_REGENS + 2):
-        print(f"--- finalize attempt {attempt}/{MAX_REGENS + 1}: {best_words}w "
-              f"(floor {MIN_WORD_COUNT}) ---", file=sys.stderr)
         if best_words >= MIN_WORD_COUNT:
-            run_advisory_qc(best, path, run_id)   # flag-only, never blocks
-            print("FINALIZE: GOAL MET (render-ready).")
-            return 0
-        if attempt > MAX_REGENS:
             break
-        # Repair: regenerate via the writer, keep it only if it's longer (anti-shrink).
-        print(f"finalize: short ({best_words}w) — regenerating via writer "
-              f"(attempt {attempt}/{MAX_REGENS})…", file=sys.stderr)
+        if attempt > MAX_REGENS:
+            path.write_text(best)
+            escalate(f"could NOT reach render floor ({best_words}w < {MIN_WORD_COUNT}) "
+                     f"after {MAX_REGENS} regenerations — NOT publishing a stub.")
+            print("FINALIZE: below render floor — NOT publishing.")
+            return 3
+        print(f"finalize: short ({best_words}w) — regenerating (attempt {attempt})…",
+              file=sys.stderr)
         try:
             regenerate(path)
             cand = _fix_joins(path.read_text())
         except Exception as e:  # noqa: BLE001
             print(f"finalize: regenerate failed ({e}); keeping best", file=sys.stderr)
-            path.write_text(best)
-            continue
-        if _wc(cand) >= best_words:
-            best, best_words = cand, _wc(cand)
-            path.write_text(best)
         else:
-            print(f"finalize: regen shorter ({_wc(cand)}w < {best_words}w); keeping best",
-                  file=sys.stderr)
-            path.write_text(best)
+            if _wc(cand) >= best_words:
+                best, best_words = cand, _wc(cand)
+        path.write_text(best)
 
-    path.write_text(best)  # longest seen, never below original
-    escalate(f"could NOT reach render floor ({best_words}w < {MIN_WORD_COUNT}) after "
-             f"{MAX_REGENS} regenerations — NOT publishing a stub. Needs a look.")
-    print("FINALIZE: below render floor — NOT publishing.")
-    return 3
+    # Phase 2 — QC GATE. The grader is now trustworthy (it checks against the writer's
+    # full sources). We do NOT regenerate to chase a PASS: evidence shows Gemini Flash
+    # confabulates specifics even with transcripts, and a fresh generation just yields
+    # DIFFERENT fabrications, not a clean one — so regen-for-QC would burn cost + escalate
+    # daily without converging. Instead: if it's clean, publish; if not, still publish
+    # (don't block the feed) but ESCALATE the specific issues + the engine decision so
+    # Kyle can act. Never silently ship fabrication.
+    clean, report = run_qc(best)
+    path.write_text(best)
+    if clean:
+        print("FINALIZE: GOAL MET (render-ready + QC clean).")
+        return 0
+    if run_id:
+        try:
+            (HERE / "logs" / f"qc-FAIL-{run_id}.flag").write_text(
+                f"QC not clean (published flagged) — {path}\n\n{report}\n")
+        except OSError:
+            pass
+    escalate("today's episode PUBLISHED but the QC grader flags it (render-ready, not "
+             "blocked). Likely Gemini confabulation/dedup. Top issues:\n"
+             + report[:600]
+             + "\n\nIf this keeps recurring, the all-Gemini writer may not be accurate "
+             "enough for a daily news show — switch the engine back to Claude with:\n"
+             "  echo claude > ~/.observer/data/podcast-engine\n(or accept it as-is).")
+    print("FINALIZE: render-ready but QC-flagged — published flagged, Kyle escalated.")
+    return 2
 
 
 if __name__ == "__main__":
