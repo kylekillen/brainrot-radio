@@ -1,3 +1,18 @@
+### 2026-06-20 04:49 — Second-half writer has no NFL transcript material; Ringer FF / Barnwell episodes not downloading
+
+The four `.tmp/transcripts/` files available today were Dean Ball (Cognitive Revolution), Sam Vecenie (Athletic NBA Daily), Odd Lots panel, and Modern Wisdom. No Ringer Fantasy Football Show, no Fantasy Footballers, no Bill Barnwell episode was downloaded. The NFL segment had to be written from analytical framework knowledge rather than specific episode quotes — which is technically against the editorial rule of pulling actual source transcripts. Worth diagnosing why the sports podcast feed isn't producing transcripts; if those shows aren't in `feeds.json` as podcast feeds with working RSS, the beat's primary sources are invisible to the pipeline every run.
+
+### 2026-06-20 04:34 — Speaker alternation fixes cascade badly when done one-at-a-time; fix all in one coordinated pass
+
+Inserting expansion paragraphs via Edit during episode writing routinely creates consecutive same-speaker blocks. Fixing them one at a time shifts the problem downstream — each correction creates a new collision. The right approach is to grep the full speaker sequence first, map the entire broken cluster, then make all 5+ tag swaps in a single round.
+
+### 2026-06-20 — youtube.py claude_lab scan returned 12 items with null IDs and empty transcripts — triage signal was blind this run
+
+All 12 claude_lab items from `youtube.py --hours 168 --json` came back with `id: null`, no channel, no date, and no transcript snippet. The titles were visible but that was it. The dedup/ID problem in youtube.py made the primary triage signal useless; had to fall back entirely to yt-search skill + targeted web searches. Worth investigating why the ID field is null for the claude_lab batch specifically (could be a channel_id mismatch or a recent ingest dedup collision).
+
+### 2026-06-19 17:35 — Claude Code fallback chains don't help the credit crunch (billing errors are explicitly excluded)
+The `fallbackModel` setting activates on model overload/unavailability (529s etc.) but the official docs state billing and spend-limit errors **never trigger a switch** — they follow their normal retry/error path. The fleet's actual failure mode is a monthly spend-limit hit, not model overload, so configuring a fallback chain does nothing for the credit crunch. A prior Gemini-generated build pitch for today claimed the opposite; it was withdrawn. The right moves remain GLM offload (pending Z.ai key) and LiteLLM tiered-failover proxy (pending Kyle's approval).
+
 ### 2026-06-19 — Reviewed PR #14: approved and merged
 All-Gemini engine wired into generate-episode.sh behind PODCAST_ENGINE flag; if/else structure correct, gemini_episode.py/gemini_buildpitch.py faithfully port the original methodology with covered-story saving preserved, deterministic _fix_joins replaces Claude QC. No CI configured (pre-existing); author validated end-to-end.
 
