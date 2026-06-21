@@ -1,33 +1,24 @@
 #!/usr/bin/env python3
-"""gemini_qc.py — Independent Outcome Grader for the all-Gemini episode.
+"""gemini_qc.py — verification primitive for the all-Gemini episode (grade + checks).
 
-The all-Gemini engine previously SKIPPED QC entirely: the writer applied its own
-deterministic join-fixes and was otherwise trusted with no separate verification.
-That is the exact failure the "Independent Outcome Grader" build pitch (2026-06-20)
-and Matthew Berman's loop taxonomy warn about — a generator grading its own work
-inherits its own blind spots. This restores QC for the Gemini show while keeping
-it 100% Claude-free and $0 (free Gemini Flash).
+A SEPARATE-CONTEXT grader: a fresh Gemini context sees the finished script, the
+writer's ACTUAL source material, and a rubric — never the generation prompts — so it
+can't inherit the writer's blind spots. Two layers:
 
-Two layers, embracing both of Berman's loop principles:
+  1. DETERMINISTIC checks (no model, boolean): word floor, no consecutive same-speaker
+     tags, no doubled [TRANSITION], no empty turns.
+  2. SOURCED grader: judges FABRICATION against the full source material (brief +
+     transcripts + articles — NOT a 12K truncation, which was the bug that made it
+     flag real back-half content as fabricated and fail every episode), DEDUP against
+     previously-covered facts, and STRUCTURE. Emits a greppable `QC VERDICT: PASS/FAIL`.
 
-  1. VERIFIABLE exit conditions (no model — a command returning a boolean):
-     word-count floor, no consecutive same-speaker tags, no doubled [TRANSITION],
-     no empty segments. Auto-fixes the seam defects via _fix_joins, then hard-FAILs
-     on anything left.
-
-  2. SEPARATE-CONTEXT grader (a FRESH Gemini context that sees ONLY the finished
-     script + a compact dedup digest + the rubric — never the generation prompts).
-     It cannot inherit the writer's blind spots because it never saw the writer's
-     context. Emits MUST-FIX items + a greppable `QC VERDICT: PASS`/`FAIL`.
-
-  3. Bounded revision loop: on FAIL, a SEPARATE reviser call applies the MUST-FIX
-     items, then we re-grade. Up to QC_MAX_ATTEMPTS. Still-FAIL exits non-zero so
-     the pipeline flags loudly (never ships a known-bad episode silently).
+This is the verification PRIMITIVE. The pipeline's repair/produce LOOP lives in
+gemini_finalize.py (verify → repair → until publishable). The CLI here is detection +
+flag only — it never rewrites/shrinks a script.
 
 Usage:  GEMINI_OUT=scripts/killen-time-<date>.txt python3 gemini_qc.py
         python3 gemini_qc.py scripts/killen-time-<date>.txt
-Exit 0 = PASS (script fixed in place), 2 = FAIL after max attempts, 1 = error.
-The final line on stdout is always `QC VERDICT: PASS` or `QC VERDICT: FAIL`.
+Exit 0 = PASS, 2 = FAIL (flagged; script unchanged), 1 = error.
 """
 import os
 import re
@@ -38,7 +29,6 @@ import or_complete
 import or_writer as ow
 
 WORD_FLOOR = int(os.getenv("QC_WORD_FLOOR", "5500"))
-QC_MAX_ATTEMPTS = int(os.getenv("QC_MAX_ATTEMPTS", "2"))
 
 
 def _fix_joins(s: str) -> str:
@@ -98,42 +88,86 @@ def deterministic_checks(script: str) -> list[str]:
     return issues
 
 
-def _dedup_digest() -> str:
-    """Compact recent-episode context for the freshness check — the ONLY context
-    the grader gets besides the script itself and the rubric."""
+SOURCE_CAP = int(os.getenv("QC_SOURCE_CAP", "500000"))
+FRESHNESS_CAP = int(os.getenv("QC_FRESHNESS_CAP", "200000"))
+
+
+def _source_material() -> str:
+    """The ACTUAL source material the writer used — topic brief + build-pitch +
+    transcripts + articles — the reference for the SOURCING check. Full, NOT a 12K
+    slice: feeding only the first 12K chars (the top of a 33K brief, before the
+    transcripts) was THE bug that made the grader flag real, sourced back-half content
+    (sports/entertainment/economics) as fabricated and fail every episode. Gemini
+    Flash's context easily holds the whole thing."""
     src = ow._gather_sources()
-    recent = ow._sources_block(src, include_recent_scripts=True)
-    return recent[:12000]
+    parts = ["=== TODAY'S TOPIC BRIEF (.tmp/topic-brief.txt) ===\n" + src.get("topic_brief", "")]
+    if src.get("build_pitches"):
+        parts.append("=== BUILD-PITCH SUMMARY ===\n" + src["build_pitches"])
+    for name, body in src.get("transcripts", []):
+        parts.append(f"=== PODCAST TRANSCRIPT ({name}) ===\n{body}")
+    for name, body in src.get("articles", []):
+        parts.append(f"=== ARTICLE ({name}) ===\n{body}")
+    return "\n\n".join(parts)[:SOURCE_CAP]
+
+
+def _freshness_material() -> str:
+    """Previously-covered facts + recent episode scripts — the reference for the
+    DEDUP/freshness check (a SEPARATE concern from sourcing; conflating the two into
+    one truncated blob was the other half of the bug)."""
+    src = ow._gather_sources()
+    # Drop the NEWEST covered file and the newest recent script — those are the
+    # CURRENT episode's own records (covered-stories are saved before QC runs), and
+    # including them makes the grader flag this episode as "already covered" by itself.
+    covered = (src.get("covered") or [])[:-1]
+    recent = (src.get("recent_scripts") or [])[:-1]
+    parts = []
+    if covered:
+        parts.append("=== FACTS ALREADY COVERED IN PREVIOUS EPISODES ===\n"
+                     + "\n\n".join(f"-- {n} --\n{b}" for n, b in covered))
+    if recent:
+        parts.append("=== RECENT EPISODE SCRIPTS ===\n"
+                     + "\n\n".join(f"-- {n} --\n{b}" for n, b in recent))
+    return "\n\n".join(parts)[:FRESHNESS_CAP]
 
 
 GRADER_SYSTEM = (
-    "You are an ADVERSARIAL quality reviewer for a daily two-host news podcast "
-    "(hosts BASIL and BROOKE). You did NOT write this script and have no stake in "
-    "it. Your job is to REFUTE it — find every place it repeats a prior episode, "
-    "makes an unsupported claim, invents a quote or statistic, or breaks the "
-    "two-host conversational flow. Be specific and cite the offending line. Default "
-    "to skepticism: if a factual claim has no named source, flag it."
+    "You are a quality reviewer for a daily two-host news podcast (hosts BASIL and "
+    "BROOKE). You are given the EXACT source material the writer was allowed to use. "
+    "Your job is to catch genuine defects — claims with NO basis in the source "
+    "material (fabrications), stories repeated from previous episodes, and broken "
+    "two-host structure. Be precise: cite the offending line. Critically — a claim "
+    "that traces to the source material, even loosely or via a transcript excerpt, is "
+    "NOT a violation. Do NOT flag a claim merely because the script doesn't name its "
+    "source out loud; check whether the FACT appears in the source material provided. "
+    "Only escalate to MUST-FIX what genuinely cannot be supported by the sources."
 )
 
 
-def grade(script: str, digest: str) -> tuple[str, str]:
-    """Fresh-context grade. Returns (verdict, must_fix_text)."""
+def grade(script: str, sources: "str | None" = None,
+          freshness: "str | None" = None) -> tuple[str, str]:
+    """Fresh-context grade against the writer's ACTUAL sources. Returns (verdict, report)."""
+    if sources is None:
+        sources = _source_material()
+    if freshness is None:
+        freshness = _freshness_material()
     prompt = (
-        "Review the SCRIPT below against this rubric. For each failing item give the "
-        "specific line and the fix.\n\n"
-        "RUBRIC:\n"
-        "1. FRESHNESS/DEDUP — no story, argument, quote, or fact that already appeared "
-        "in the recent episodes / covered-facts digest. A new take on old facts is NOT "
-        "fresh.\n"
-        "2. SOURCING — every factual/numeric claim is attributed to a named source. No "
-        "invented quotes, no fabricated numbers.\n"
-        "3. COHERENCE — segments connect logically; no abrupt non-sequiturs at seams.\n"
-        "4. VOICE — BASIL and BROOKE genuinely alternate; it reads like a conversation, "
-        "not a monologue split in two.\n\n"
-        "List MUST-FIX items (rubric-violating) first, then ADVISORY items. End with "
-        "EXACTLY one line: `QC VERDICT: PASS` if there are zero MUST-FIX items, else "
-        "`QC VERDICT: FAIL`.\n\n"
-        f"=== RECENT EPISODES / COVERED FACTS (for the freshness check) ===\n{digest}\n\n"
+        "Review the SCRIPT against this rubric, using the SOURCE MATERIAL and the "
+        "PREVIOUSLY-COVERED material below. For each failing item cite the line.\n\n"
+        "RUBRIC — a MUST-FIX is ONLY one of:\n"
+        "1. FABRICATION — a factual/numeric claim, quote, name, or story in the script "
+        "that has NO basis anywhere in the SOURCE MATERIAL. (If the fact appears in the "
+        "brief or a transcript, it is SOURCED — not a violation, even if the script "
+        "doesn't say the source's name aloud.)\n"
+        "2. DEDUP — a story/fact already present in the PREVIOUSLY-COVERED material, "
+        "repeated with no genuinely new development.\n"
+        "3. STRUCTURE — broken two-host format: consecutive same-speaker blocks, doubled "
+        "[TRANSITION] tags, or empty turns.\n"
+        "Everything else (a transition that could be smoother, a claim that could name "
+        "its source, stylistic nits) is ADVISORY, not MUST-FIX.\n\n"
+        "List MUST-FIX items first (or 'None'), then ADVISORY. End with EXACTLY one line: "
+        "`QC VERDICT: PASS` if there are ZERO MUST-FIX items, else `QC VERDICT: FAIL`.\n\n"
+        f"=== SOURCE MATERIAL (what the writer was allowed to use) ===\n{sources}\n\n"
+        f"=== PREVIOUSLY COVERED (for the dedup check) ===\n{freshness}\n\n"
         f"=== SCRIPT TO REVIEW ===\n{script}"
     )
     out = or_complete.complete(prompt, system=GRADER_SYSTEM, max_tokens=4000)
@@ -142,42 +176,24 @@ def grade(script: str, digest: str) -> tuple[str, str]:
     return verdict, out
 
 
-def revise(script: str, must_fix: str) -> str:
-    """Separate reviser context: apply the grader's MUST-FIX items, return full script."""
-    prompt = (
-        "You are editing a finished podcast script. Apply ONLY the MUST-FIX items "
-        "below — fix each one in place, change nothing else, preserve every [BASIL]/"
-        "[BROOKE]/[TRANSITION] tag and the overall length. Output the COMPLETE corrected "
-        "script and nothing else (no preamble, no commentary).\n\n"
-        f"=== MUST-FIX ITEMS ===\n{must_fix}\n\n"
-        f"=== SCRIPT ===\n{script}"
-    )
-    out = or_complete.complete(prompt, system=ow.SYSTEM, max_tokens=16000)
-    return ow._clean_script(out)
-
-
 def main() -> int:
+    # DETECTION + FLAG ONLY — never rewrites/shrinks (the pipeline's repair lives in
+    # gemini_finalize.py's goal loop). Applies the non-shrinking seam fix, grades
+    # against the writer's full sources, prints the greppable verdict.
     path = _target()
-    script = _fix_joins(path.read_text())  # verifiable auto-fix of seam defects first
+    before = path.read_text()
+    script = _fix_joins(before)
     path.write_text(script)
-    digest = _dedup_digest()
-
-    for attempt in range(1, QC_MAX_ATTEMPTS + 1):
-        det = deterministic_checks(script)
-        verdict, report = grade(script, digest)
-        det_block = ("\nDETERMINISTIC (hard) violations:\n- " + "\n- ".join(det)) if det else ""
-        print(f"--- QC attempt {attempt}/{QC_MAX_ATTEMPTS} ---\n{report}{det_block}",
-              file=sys.stderr)
-        if verdict == "PASS" and not det:
-            print("QC VERDICT: PASS")
-            return 0
-        if attempt < QC_MAX_ATTEMPTS:
-            must_fix = report + det_block
-            try:
-                script = _fix_joins(revise(script, must_fix))
-                path.write_text(script)
-            except Exception as e:  # noqa: BLE001
-                print(f"gemini_qc: revise failed ({e}); keeping last script", file=sys.stderr)
+    if len(script.split()) < len(before.split()):
+        path.write_text(before)
+        script = before
+    det = deterministic_checks(script)
+    verdict, report = grade(script)
+    det_block = ("\nDeterministic violations:\n- " + "\n- ".join(det)) if det else ""
+    print(f"--- Gemini QC (detection-only) ---\n{report}{det_block}", file=sys.stderr)
+    if verdict == "PASS" and not det:
+        print("QC VERDICT: PASS")
+        return 0
     print("QC VERDICT: FAIL")
     return 2
 

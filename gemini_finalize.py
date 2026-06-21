@@ -35,7 +35,7 @@ import subprocess
 import sys
 import pathlib
 
-from gemini_qc import grade, deterministic_checks, _fix_joins, _dedup_digest
+from gemini_qc import grade, deterministic_checks, _fix_joins
 
 try:
     from config import MIN_WORD_COUNT
@@ -71,7 +71,7 @@ def run_advisory_qc(script: str, path: pathlib.Path, run_id: str) -> bool:
     """Grade for the flag/signal — does NOT gate. Writes a qc-FAIL flag the pipeline
     reads. Returns True if QC passed (clean)."""
     try:
-        verdict, report = grade(script, _dedup_digest())
+        verdict, report = grade(script)   # grades against the writer's full sources
         det = deterministic_checks(script)
     except Exception as e:  # noqa: BLE001
         print(f"finalize: advisory QC errored ({e}); skipping flag", file=sys.stderr)
