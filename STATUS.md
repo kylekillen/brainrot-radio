@@ -622,3 +622,8 @@ Offload provider generalization (use configured OFFLOAD_MODEL, not hardcoded Kim
 ### 2026-06-21 07:58 — Reviewed PR #15: approved and merged
 
 Added Independent Outcome Grader for the all-Gemini engine (gemini_qc.py + generate-episode.sh branch). All three gates passed: correct logic with proper exit-code handling, coherent with existing or_complete/or_writer patterns, minimal scope (new file + one branch replacement, Claude path untouched). Non-blocking: GEMINI_OUT env var and sys.argv[1] both passed to _target() — redundant but harmless. No CI configured for repo.
+
+
+### 2026-06-22 12:00 — Reviewed PR #19: approved and merged
+
+`set -e` guard fix for `gemini_finalize.py` call. The bare call let `set -e` abort the run on exit 2 (render-ready-but-QC-flagged, the common case) before the case statement could route to render+publish. `cmd || FINALIZE_RC=$?` idiom correctly captures the code without triggering the trap. All three gates passed. No CI configured for repo.
