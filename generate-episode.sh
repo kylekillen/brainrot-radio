@@ -456,8 +456,13 @@ else
     #   exit 0 = goal met · 2 = render-ready but still QC-flagged (publish + Kyle pinged)
     #   3 = below render floor → do NOT ship a stub (abort; Kyle pinged inside the loop)
     log "Finalizing episode on GEMINI (goal-seeking loop: verify → repair → until publishable)..."
-    GEMINI_OUT="$NEW_SCRIPT" python3 gemini_finalize.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1
-    FINALIZE_RC=$?
+    # `set -e` is active: capture the exit code WITHOUT letting a non-zero (exit 2 =
+    # render-ready-but-QC-flagged, the COMMON case) abort the whole run before the case
+    # statement routes it to render+publish. The bare call killed the 2026-06-22 run after
+    # a flagged-but-renderable 7654-word episode — episode never rendered.
+    FINALIZE_RC=0
+    GEMINI_OUT="$NEW_SCRIPT" python3 gemini_finalize.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1 \
+        || FINALIZE_RC=$?
     case "$FINALIZE_RC" in
         0) log "Finalize: GOAL MET (render-ready + QC clean).";;
         2) QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
