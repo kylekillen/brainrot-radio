@@ -431,6 +431,10 @@ def publish(mp3_path: str, title: str = None, description: str = None, artwork_p
     # Tell Kyle it landed in the feed (episodes + Fleet briefs both reach here).
     _notify_published(title, urls.get("mp3", ""))
 
+    # Return the URLs dict so programmatic callers (e.g. render_report.py) can
+    # read urls["mp3"]. Additive: the argparse CLI caller below ignores it.
+    return urls
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Publish Killen Time episode")
