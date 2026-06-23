@@ -627,3 +627,7 @@ Added Independent Outcome Grader for the all-Gemini engine (gemini_qc.py + gener
 ### 2026-06-22 12:00 — Reviewed PR #19: approved and merged
 
 `set -e` guard fix for `gemini_finalize.py` call. The bare call let `set -e` abort the run on exit 2 (render-ready-but-QC-flagged, the common case) before the case statement could route to render+publish. `cmd || FINALIZE_RC=$?` idiom correctly captures the code without triggering the trap. All three gates passed. No CI configured for repo.
+
+### 2026-06-22 — Reviewed PR #20: approved and merged
+
+All three gates passed. Adds render_report.py (CONTRACT A): floorless arbitrary-length text -> Kokoro TTS -> ffmpeg concat -> publish. Additive return-value change to publish(). Full mock test suite (5 tests). No CI configured.
