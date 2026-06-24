@@ -450,6 +450,16 @@
       "note": "TOP TIER. Daily Kalshi streams + clips. 156 videos."
     },
     {
+      "id": "eventual_news",
+      "name": "Eventual",
+      "channel": "@Eventual-News",
+      "channel_id": "UCsYnqcP1cHvRVvuwAKR5s_g",
+      "topic": "prediction_markets",
+      "weight": 3.0,
+      "transcript_pull": true,
+      "note": "TOP TIER (added 2026-06-23, Kyle). eventual.news — 'Prediction Markets. Decoded.' Pull YouTube transcripts; high-signal anchor for the prediction-markets beat (same consideration as the AI anchors)."
+    },
+    {
       "id": "karpathy_yt",
       "name": "Andrej Karpathy",
       "channel": "@AndrejKarpathy",
