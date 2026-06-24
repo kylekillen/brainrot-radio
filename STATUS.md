@@ -1,3 +1,7 @@
+### 2026-06-23 — Reviewed PR #21: approved and merged
+
+All three gates passed. Adds Eventual (@Eventual-News, eventual.news) as a TOP TIER YouTube feed (weight 3.0, transcript_pull) and re-elevates the prediction_markets beat from 0 to 1 target segment, anchored on Eventual with the same editorial treatment as AI anchors. Clean minimal diff — 15 additions across feeds.json and beats.json, no unrelated changes. No CI configured (pre-existing condition).
+
 ### 2026-06-21 16:26 — Reviewed PR #18: approved and merged
 
 All three gates passed. Introduces goal-seeking production loop (gemini_finalize.py): Phase 1 reaches render floor via per-segment regen with anti-shrink invariant, Phase 2 runs QC advisory-only and escalates via Telegram but never silently ships. gemini_qc.py refactored to detection primitive (no revise loop); source vs. freshness context separated and capped independently, fixing the 12K-truncation bug that made the grader fail every episode. Cross-segment awareness added to writer (prevents same-story repetition across segments). No CI configured.
