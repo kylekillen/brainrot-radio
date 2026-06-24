@@ -115,16 +115,18 @@
     },
     {
       "id": "prediction_markets",
-      "name": "Prediction Markets (quick-hit, de-emphasized)",
+      "name": "Prediction Markets (Eventual-anchored)",
       "sources": [
+        "youtube:eventual_news",
+        "youtube:predmtrader",
         "rss:event_horizon",
         "rss:nate_silver",
         "podcast:star_spangled",
         "positions:locksy",
         "positions:foster"
       ],
-      "target_segments": 0,
-      "editorial_notes": "DE-EMPHASIZED as of 2026-06-09 — Kyle's focus has moved off prediction markets. Include at most ONE short quick-hit, and only if there is genuinely notable movement (a big position change, a market resolving, a real edge). Otherwise skip entirely. No full trading block.",
+      "target_segments": 1,
+      "editorial_notes": "RE-ELEVATED 2026-06-23 (Kyle) around EVENTUAL as the high-signal anchor. Eventual (eventual.news, 'Prediction Markets. Decoded.', YouTube @Eventual-News) gets the SAME treatment as the AI anchors: when a fresh Eventual episode exists, lead this beat with its actual arguments and quotes and give it real airtime (a full segment), building around what they actually said — not a passing mention. Pull their YouTube transcripts. The other sources (PredMTrader Kalshi streams, the RSS/positions) are context/quick-hits around the Eventual discussion. If there is NO fresh Eventual content, fall back to at most one quick-hit on genuinely notable movement; otherwise skip — do not pad.",
       "context_file": ".claude/context/beats/prediction-markets.md"
     }
   ],
