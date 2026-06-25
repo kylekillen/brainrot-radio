@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Render an arbitrary-length report -> Kokoro TTS (af_heart/Brooke) -> one mp3
--> publish to the Killen Time podcast feed.
+-> publish to Kyle's PRIVATE podcast feed (here.now-hosted, unlisted).
+
+PRIVACY (2026-06-25): report deliveries route to the private feed via
+publish_private.py — NOT the world-public Killen Time show (publish.py). Kyle's
+standing decision: "use it for all future report deliveries instead of the
+public channel so that none of this pollutes that feed." Dispatched reports
+(finances, family, etc.) must never land in a directory-listed public feed.
 
 CONTRACT A (journal-dispatch pipeline). Unlike voice.py, this enforces NO word
 floor — a two-paragraph report renders and publishes just like a long one.
@@ -27,7 +33,11 @@ from datetime import datetime
 
 import requests
 
-from publish import publish
+# Report deliveries go to Kyle's PRIVATE here.now-hosted feed, NOT the
+# world-public Killen Time podcast (publish.py). Both expose the same
+# publish(mp3, title, description) -> urls dict interface, so this is a
+# drop-in swap. See publish_private.py for the full rationale.
+from publish_private import publish
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 KOKORO_URL = "http://127.0.0.1:8765/v1/audio/speech"
