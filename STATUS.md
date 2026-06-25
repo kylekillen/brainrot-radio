@@ -644,3 +644,6 @@ The journal-dispatch audio pipeline (render_report.py / CONTRACT A) auto-publish
 
 ### 2026-06-25 00:25 — Report deliveries now route to a private here.now feed
 `render_report.py` previously published dispatched reports to the WORLD-PUBLIC Killen Time feed (publish.py → kylekillen/killen-time-podcast). Added `publish_private.py` — an unlisted, `itunes:block=yes` podcast hosted on a stable unguessable `*.here.now` URL — and swapped render_report's publish import to it. Per Kyle's standing decision, ALL future report deliveries go private; the daily public news show is unchanged. Feed: https://plush-warden-27sa.here.now/feed.xml ; episode store + slug live locally at ~/.observer/private-feed/ (slug recoverable via `herenow list`).
+### 2026-06-25 — Reviewed PR #22: approved and merged
+
+feat: auto-route build pitches to private podcast feed. New publish_review.py primitive (idempotent content-hash ledger, skip-on-empty, subprocess-render via render_report.py), integrated into gemini_buildpitch.py as best-effort (non-fatal). First PR with CI configured — pytest gate added, 15 tests green.
