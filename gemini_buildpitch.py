@@ -7,6 +7,7 @@ Zero Claude. Writes build-pitches/<today>.md + .tmp/build-pitches.md.
 """
 import datetime
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -116,6 +117,28 @@ NO_VERIFIED_PITCH"""
     (ROOT / ".tmp").mkdir(exist_ok=True)
     (ROOT / ".tmp" / "build-pitches.md").write_text(summary.strip() + "\n")
     print(f"DONE: combed {len(transcripts)} transcripts, grounded={'groundingMetadata' in cand}, {len(text.split())} words")
+
+    # Auto-route the build pitch to Kyle's PRIVATE podcast feed as audio so he can
+    # review it on a walk instead of reading it on his phone (Kyle, 2026-06-25:
+    # "build plans generated for my review should be automatically routed as audio
+    # to my podcast feed"). Best-effort: a kokoro/publish outage must NEVER fail
+    # pitch generation — the durable file still exists for the dashboard "Send to
+    # podcast" button fallback. Idempotent (content-hash ledger) so re-runs of
+    # generate-episode.sh don't double-publish. Disable with BUILDPITCH_AUTO_PODCAST=0.
+    if os.environ.get("BUILDPITCH_AUTO_PODCAST", "1") != "0":
+        try:
+            sys.path.insert(0, str(ROOT))
+            import publish_review
+            pitch_file = ROOT / "build-pitches" / f"{TODAY}.md"
+            res = publish_review.publish_review(
+                title=f"Fleet Build Pitch — {TODAY}",
+                md_path=pitch_file,
+                description="Daily Fleet build-pitch — a verified Claude/agent technique for Kyle's review.",
+                source=str(pitch_file),
+            )
+            print(f"build-pitch podcast: {res['state']} {res.get('url') or ''}", file=sys.stderr)
+        except Exception as e:
+            print(f"build-pitch podcast route failed (non-fatal): {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":
