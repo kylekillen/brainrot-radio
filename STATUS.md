@@ -1,3 +1,7 @@
+### 2026-06-24 04:19 — `fallbackModel` missing from fleet; LiteLLM 1.82.7/8 compromised
+
+Claude Code v2.1.166 (live on Kyle's v2.1.183) added a native `fallbackModel` chain — JSON config that auto-retries overloaded turns on a cheaper model — but it's not yet in `~/.claude/settings.json` or the alarm responder despite the Fleet Optimizer's June 22 model-pinning work. Important scoping note: `fallbackModel` handles 529 overloads and retired models only, NOT monthly-spend-limit exhaustion (that's the Gemini offload plan's job — two different failure classes). Also: official Claude Code docs include a security advisory that LiteLLM PyPI 1.82.7 and 1.82.8 were compromised with credential-stealing malware — flag before any LiteLLM integration.
+
 ### 2026-06-23 — Reviewed PR #21: approved and merged
 
 All three gates passed. Adds Eventual (@Eventual-News, eventual.news) as a TOP TIER YouTube feed (weight 3.0, transcript_pull) and re-elevates the prediction_markets beat from 0 to 1 target segment, anchored on Eventual with the same editorial treatment as AI anchors. Clean minimal diff — 15 additions across feeds.json and beats.json, no unrelated changes. No CI configured (pre-existing condition).
@@ -635,3 +639,8 @@ Added Independent Outcome Grader for the all-Gemini engine (gemini_qc.py + gener
 ### 2026-06-22 — Reviewed PR #20: approved and merged
 
 All three gates passed. Adds render_report.py (CONTRACT A): floorless arbitrary-length text -> Kokoro TTS -> ffmpeg concat -> publish. Additive return-value change to publish(). Full mock test suite (5 tests). No CI configured.
+### 2026-06-24 23:41 — render_report.py publishes ONLY to the public Killen Time feed — privacy hazard for dispatch reports
+The journal-dispatch audio pipeline (render_report.py / CONTRACT A) auto-publishes to `kylekillen/killen-time-podcast`, which is a PUBLIC GitHub repo + RSS listed in podcast directories. The screenwriting lead's original `golden-boy/render_brief.py` it's based on deliberately does NOT publish ("separate step") — public-publish was added downstream. Used it to render Kyle's private ~$2.6M family-finance memo to audio (8.3 min); rendered render-only and delivered via a private here.now link (https://vivid-spirit-6ned.here.now/) instead of publishing, and blocked for Kyle to choose public vs. a new private feed. If we want render_report to safely serve private/family reports, it needs a configurable private-feed target.
+
+### 2026-06-25 00:25 — Report deliveries now route to a private here.now feed
+`render_report.py` previously published dispatched reports to the WORLD-PUBLIC Killen Time feed (publish.py → kylekillen/killen-time-podcast). Added `publish_private.py` — an unlisted, `itunes:block=yes` podcast hosted on a stable unguessable `*.here.now` URL — and swapped render_report's publish import to it. Per Kyle's standing decision, ALL future report deliveries go private; the daily public news show is unchanged. Feed: https://plush-warden-27sa.here.now/feed.xml ; episode store + slug live locally at ~/.observer/private-feed/ (slug recoverable via `herenow list`).
