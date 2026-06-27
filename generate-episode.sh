@@ -223,7 +223,12 @@ if [ -f "$BRAINROT_DIR/$PITCH_SUMMARY" ]; then
 fi
 
 # ─── Build dedup context (shared by both passes) ─────────────────────────────
-LATEST_SCRIPTS=$(find "$BRAINROT_DIR"/scripts -name "killen-time-*.txt" -type f | sort | tail -3)
+# Exclude TODAY's own script: it's written to scripts/killen-time-${TODAY}.txt BEFORE
+# the QC grader runs, so an unfiltered `tail -3` includes today's file in the "previous
+# episodes" dedup context — making the QC grader flag the new episode as a word-for-word
+# DUPLICATE OF ITSELF (the recurring 6/24–6/27 false-positive DEDUP fails).
+LATEST_SCRIPTS=$(find "$BRAINROT_DIR"/scripts -name "killen-time-*.txt" -type f \
+    ! -name "killen-time-${TODAY}.txt" | sort | tail -3)
 DEDUP_CONTEXT=""
 if [ -n "$LATEST_SCRIPTS" ]; then
     DEDUP_CONTEXT="

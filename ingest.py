@@ -199,8 +199,11 @@ def load_covered_stories():
         day = (datetime.now() - timedelta(days=delta)).strftime("%Y-%m-%d")
         covered_file = SCRIPTS_DIR / f".covered-{day}.json"
         if covered_file.exists():
-            with open(covered_file) as f:
-                data = json.load(f)
+            try:
+                with open(covered_file) as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                data = {}  # empty/corrupt covered file → skip it, don't crash dedup
             result["stories"] = list(set(result["stories"] + data.get("stories", [])))
             result["segments"].update(data.get("segments", {}))
             result["podcast_guids"] = list(set(result["podcast_guids"] + data.get("podcast_guids", [])))
@@ -218,8 +221,13 @@ def save_covered_stories(stories, segments=None, podcast_guids=None):
     # Only load today's file for saving (not yesterday's)
     existing = {"stories": [], "segments": {}, "podcast_guids": [], "last_episode": None}
     if covered_file.exists():
-        with open(covered_file) as f:
-            existing = json.load(f)
+        try:
+            with open(covered_file) as f:
+                existing = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            # empty/corrupt covered file (caused "Expecting value: line 1 column 1"
+            # save crashes) → start fresh instead of throwing, so today's dedup state saves.
+            existing = {"stories": [], "segments": {}, "podcast_guids": [], "last_episode": None}
 
     all_stories = list(set(existing.get("stories", []) + stories))
     all_segments = existing.get("segments", {})
