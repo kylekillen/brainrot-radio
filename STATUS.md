@@ -647,3 +647,6 @@ The journal-dispatch audio pipeline (render_report.py / CONTRACT A) auto-publish
 ### 2026-06-25 — Reviewed PR #22: approved and merged
 
 feat: auto-route build pitches to private podcast feed. New publish_review.py primitive (idempotent content-hash ledger, skip-on-empty, subprocess-render via render_report.py), integrated into gemini_buildpitch.py as best-effort (non-fatal). First PR with CI configured — pytest gate added, 15 tests green.
+### 2026-06-27 — Reviewed PR #23: approved and merged
+
+fix(qc): exclude today's own script from dedup context. generate-episode.sh was writing today's script to disk before building the LATEST_SCRIPTS dedup context, so tail -3 included today's own file — making the QC grader flag the episode as a duplicate of itself (recurring 6/24–6/27 DEDUP false positives). Fix excludes killen-time-${TODAY}.txt from the find. Also hardened both json.load sites in ingest.py against empty/corrupt .covered-*.json files (was crashing before dedup state could persist, compounding the issue). All three gates passed; CI green.
