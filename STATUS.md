@@ -1,3 +1,7 @@
+### 2026-06-28 03:05 — Reviewed PR #24: approved and merged
+
+All three gates passed. CI green (2× pytest). Decision logic covers all six branches, double-probe and cooldown guards are sound. Non-blocking: plist comment says "~3.5min warmup" but STATUS.md in same PR documents ~5.5min (math still correct; 600s cooldown >> 330s). Squash-merged feat/codevoice-watchdog → main.
+
 ### 2026-06-27 20:53 — Code Voice synth-server watchdog built (auto-restarts wedges)
 
 New `code-voice/voice-watchdog.py` + `com.codevoice.watchdog.plist` (StartInterval 180s, installed/bootstrapped). It POSTs a tiny real synth to `:8765/v1/audio/speech` (20s cap) and restarts `com.codevoice.server` ONLY when the process is up + model warm + synth hangs — the wedge signature that `/health` can't see (health never takes the synth lock). Guards against restart storms: a single timeout is confirmed with a second probe (~40s of continuous hang before declaring wedged), warmup is recognized (port refused / `warm:false` → no restart), and a 600s cooldown stamp backstops everything. Verified all four states (ok / wedged / warming / cooldown) via mock + a live kickstart; decision logic has a `--self-test`.
