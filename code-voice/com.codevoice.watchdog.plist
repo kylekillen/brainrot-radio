@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.codevoice.watchdog</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/kylekillen/brainrot-radio/venv/bin/python3</string>
+        <string>/Users/kylekillen/brainrot-radio/code-voice/voice-watchdog.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/kylekillen/brainrot-radio</string>
+
+    <!-- Probe the synth path every 3 min. The server's ~3.5min model-reload
+         warmup outlasts one interval, so a restart's warmup completes before
+         the next probe could fire a second restart; the 10min cooldown in the
+         script is the hard backstop against restart storms. -->
+    <key>StartInterval</key>
+    <integer>180</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/kylekillen/brainrot-radio/code-voice/watchdog.launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/kylekillen/brainrot-radio/code-voice/watchdog.launchd.err.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>
