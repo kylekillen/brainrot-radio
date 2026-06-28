@@ -66,10 +66,12 @@ def regenerate(path: pathlib.Path) -> None:
                    cwd=str(HERE), env=env, timeout=600, check=False)
 
 
-def run_qc(script: str) -> tuple[bool, str]:
-    """Grade against the writer's full sources. Returns (clean, report)."""
+def run_qc(script: str, current_path: pathlib.Path | None = None) -> tuple[bool, str]:
+    """Grade against the writer's full sources. Returns (clean, report).
+
+    Pass current_path so the dedup corpus excludes the episode's own records."""
     try:
-        verdict, report = grade(script)
+        verdict, report = grade(script, current_path=current_path)
         det = deterministic_checks(script)
     except Exception as e:  # noqa: BLE001
         print(f"finalize: QC errored ({e}); treating as clean", file=sys.stderr)
@@ -145,7 +147,7 @@ def main() -> int:
     # daily without converging. Instead: if it's clean, publish; if not, still publish
     # (don't block the feed) but ESCALATE the specific issues + the engine decision so
     # Kyle can act. Never silently ship fabrication.
-    clean, report = run_qc(best)
+    clean, report = run_qc(best, current_path=path)
     path.write_text(best)
     if clean:
         print("FINALIZE: GOAL MET (render-ready + QC clean).")

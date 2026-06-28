@@ -83,7 +83,10 @@ def build_concat_list(segment_files, concat_file_path, show_date=None):
             if speaker == "TRANSITION":
                 f.write(f"file '{transition_clip}'\n")
             elif path and path.exists():
-                f.write(f"file '{path}'\n")
+                # Absolute path: ffmpeg's concat demuxer resolves relative `file`
+                # entries against the concat file's own dir (.tmp/), so a relative
+                # --segments-dir like ".tmp/segments" became ".tmp/.tmp/segments".
+                f.write(f"file '{path.resolve()}'\n")
                 # Add tiny gap between consecutive speech segments
                 if i + 1 < len(segment_files) and segment_files[i + 1][0] != "TRANSITION":
                     f.write(f"file '{gap_pad}'\n")

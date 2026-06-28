@@ -119,16 +119,29 @@ def _source_material() -> str:
     return "\n\n".join(parts)[:SOURCE_CAP]
 
 
-def _freshness_material() -> str:
+def _freshness_material(current_path: "pathlib.Path | None" = None) -> str:
     """Previously-covered facts + recent episode scripts — the reference for the
     DEDUP/freshness check (a SEPARATE concern from sourcing; conflating the two into
     one truncated blob was the other half of the bug)."""
     src = ow._gather_sources()
-    # Drop the NEWEST covered file and the newest recent script — those are the
-    # CURRENT episode's own records (covered-stories are saved before QC runs), and
-    # including them makes the grader flag this episode as "already covered" by itself.
-    covered = (src.get("covered") or [])[:-1]
-    recent = (src.get("recent_scripts") or [])[:-1]
+    covered = src.get("covered") or []
+    recent = src.get("recent_scripts") or []
+    # Exclude the CURRENT episode's own records, else the grader flags this episode as
+    # "already covered" by ITSELF. Exclude by NAME, not position: a positional drop
+    # ([:-1]) assumed the episode under review sorts last on disk, but legacy
+    # `killen-time-gemini-*.txt` names sort lexicographically AFTER the dated
+    # `killen-time-YYYY-MM-DD.txt` ones, so the current episode was NOT last — it
+    # survived the drop and self-dupe'd every single day.
+    if current_path is not None:
+        cur_name = pathlib.Path(current_path).name
+        m = re.search(r"(\d{4}-\d{2}-\d{2})", cur_name)
+        cur_date = m.group(1) if m else None
+        recent = [(n, b) for n, b in recent if n != cur_name]
+        if cur_date:  # covered-stories for this date are this episode's own facts
+            covered = [(n, b) for n, b in covered if f"covered-{cur_date}" not in n]
+    else:
+        # No path supplied: best-effort positional drop of the newest of each.
+        covered, recent = covered[:-1], recent[:-1]
     parts = []
     if covered:
         parts.append("=== FACTS ALREADY COVERED IN PREVIOUS EPISODES ===\n"
@@ -153,12 +166,16 @@ GRADER_SYSTEM = (
 
 
 def grade(script: str, sources: "str | None" = None,
-          freshness: "str | None" = None) -> tuple[str, str]:
-    """Fresh-context grade against the writer's ACTUAL sources. Returns (verdict, report)."""
+          freshness: "str | None" = None,
+          current_path: "pathlib.Path | None" = None) -> tuple[str, str]:
+    """Fresh-context grade against the writer's ACTUAL sources. Returns (verdict, report).
+
+    Pass current_path (the episode under review) so the dedup corpus excludes the
+    episode's own records — otherwise it self-flags as a duplicate."""
     if sources is None:
         sources = _source_material()
     if freshness is None:
-        freshness = _freshness_material()
+        freshness = _freshness_material(current_path)
     prompt = (
         "Review the SCRIPT against this rubric, using the SOURCE MATERIAL and the "
         "PREVIOUSLY-COVERED material below. For each failing item cite the line.\n\n"
@@ -173,13 +190,18 @@ def grade(script: str, sources: "str | None" = None,
         "[TRANSITION] tags, or empty turns.\n"
         "Everything else (a transition that could be smoother, a claim that could name "
         "its source, stylistic nits) is ADVISORY, not MUST-FIX.\n\n"
+        "Answer DIRECTLY — do NOT narrate your reasoning or think out loud in the "
+        "response body. Output ONLY the two lists and the verdict line.\n"
         "List MUST-FIX items first (or 'None'), then ADVISORY. End with EXACTLY one line: "
         "`QC VERDICT: PASS` if there are ZERO MUST-FIX items, else `QC VERDICT: FAIL`.\n\n"
         f"=== SOURCE MATERIAL (what the writer was allowed to use) ===\n{sources}\n\n"
         f"=== PREVIOUSLY COVERED (for the dedup check) ===\n{freshness}\n\n"
         f"=== SCRIPT TO REVIEW ===\n{script}"
     )
-    out = or_complete.complete(prompt, system=GRADER_SYSTEM, max_tokens=4000)
+    # 8000 (not 4000): reasoning_effort is on for the grader, so deliberation eats the
+    # budget — a tight cap truncated the response BEFORE the verdict line, leaving it
+    # unparseable and defaulting every episode to FAIL.
+    out = or_complete.complete(prompt, system=GRADER_SYSTEM, max_tokens=8000)
     m = re.search(r"QC VERDICT:\s*(PASS|FAIL)", out)
     verdict = m.group(1) if m else "FAIL"  # no parseable verdict → treat as FAIL
     return verdict, out
@@ -197,7 +219,7 @@ def main() -> int:
         path.write_text(before)
         script = before
     det = deterministic_checks(script)
-    verdict, report = grade(script)
+    verdict, report = grade(script, current_path=path)
     det_block = ("\nDeterministic violations:\n- " + "\n- ".join(det)) if det else ""
     print(f"--- Gemini QC (detection-only) ---\n{report}{det_block}", file=sys.stderr)
     if verdict == "PASS" and not det:
