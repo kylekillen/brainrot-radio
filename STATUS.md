@@ -1,3 +1,7 @@
+### 2026-06-28 04:39 — Dynamic Workflows (Claude Code research preview) — monitor for GA before pitching
+
+Anthropic launched Dynamic Workflows in research preview June 1: lead agent generates orchestration scripts on demand, fans out parallel subagents, saves progress for resume. Not pitched today because it's preview-only and the existing Workflow tool is more controlled for fleet production use. Re-evaluate when it hits GA — it would be the right pitch if it meaningfully simplifies the dispatch-then-fan-out pattern Kyle already runs.
+
 ### 2026-06-28 03:05 — Reviewed PR #24: approved and merged
 
 All three gates passed. CI green (2× pytest). Decision logic covers all six branches, double-probe and cooldown guards are sound. Non-blocking: plist comment says "~3.5min warmup" but STATUS.md in same PR documents ~5.5min (math still correct; 600s cooldown >> 330s). Squash-merged feat/codevoice-watchdog → main.
@@ -666,3 +670,6 @@ feat: auto-route build pitches to private podcast feed. New publish_review.py pr
 ### 2026-06-27 — Reviewed PR #23: approved and merged
 
 fix(qc): exclude today's own script from dedup context. generate-episode.sh was writing today's script to disk before building the LATEST_SCRIPTS dedup context, so tail -3 included today's own file — making the QC grader flag the episode as a duplicate of itself (recurring 6/24–6/27 DEDUP false positives). Fix excludes killen-time-${TODAY}.txt from the find. Also hardened both json.load sites in ingest.py against empty/corrupt .covered-*.json files (was crashing before dedup state could persist, compounding the issue). All three gates passed; CI green.
+
+### 2026-06-28 — Reviewed PR #25: approved and merged
+chore: GUARDRAILS.md added — 5-row invariant table seeded from real documented failures (fleet-state-in-audio, QC-FAIL episodes shipped, private reports to public feed, RSS-only segments, deploy-gap class). Pure Markdown, no code changes, CI green.
