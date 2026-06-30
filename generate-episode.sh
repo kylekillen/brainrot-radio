@@ -246,13 +246,22 @@ fi
 SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 
 # ─── Step 2: Write the episode (engine-dependent) ────────────────────────────
+# A Gemini-write failure must NOT kill the episode. Default to the proven Claude
+# write path (which has its own Claude->OpenRouter fallback chain) and only clear
+# the flag on a clean Gemini write — so when Gemini aborts (e.g. 2026-06-30: an
+# empty segment / finish_reason=None made it exit and the episode silently never
+# produced), the show still ships via Claude instead of being skipped.
+WRITE_WITH_CLAUDE=1
 if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
     # All-Gemini write: per-segment, faithful beats, dedup + covered-story saving.
     log "Writing episode on GEMINI (per-segment, faithful beats + covered-save)..."
-    if ! GEMINI_OUT="$BRAINROT_DIR/$SCRIPT_FILE" python3 gemini_episode.py >> "$RESULT_LOG" 2>&1; then
-        log "Gemini write failed, aborting"; exit 1
+    if GEMINI_OUT="$BRAINROT_DIR/$SCRIPT_FILE" python3 gemini_episode.py >> "$RESULT_LOG" 2>&1; then
+        WRITE_WITH_CLAUDE=0
+    else
+        log "Gemini write failed — falling back to Claude so the episode still ships."
     fi
-else
+fi
+if [ "$WRITE_WITH_CLAUDE" = "1" ]; then
 # ─── Step 2a: Pass 1 — Intro + AI/Tech + Agents & Building ───────────────────
 cat > "$BRAINROT_DIR/.tmp/step2a-pass1.txt" <<PROMPT_EOF
 You are producing the FIRST HALF of a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
@@ -376,7 +385,7 @@ elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2";
     fi
 fi
 
-fi   # end engine branch (gemini | claude write)
+fi   # end Claude write path (engine=claude, or Gemini's fallback)
 
 # Check combined word count
 NEW_SCRIPT="$BRAINROT_DIR/$SCRIPT_FILE"
