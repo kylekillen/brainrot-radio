@@ -1,3 +1,15 @@
+### 2026-06-30 — Ornith-1.0 pitch is closer to "30 lines of proxy script" than an integration project — Ollama already installed with models running
+
+Checked the actual Mac: Ollama is at `/opt/homebrew/bin/ollama` with `qwen2.5:7b` already running, and `run_task.sh` line 30 exposes `OBSERVER_TASK_RUNNER_CLAUDE` as the exact hook for routing dispatches to a different runner. The Fleet Optimizer's June 29 scan flagged the integration path as unverified; it's now clear the blockers are (a) write a ~30-line proxy translating Claude CLI flags to Ollama API calls, and (b) pull `ornith` (5.6 GB). Full pitch in build-pitches/2026-06-30.md.
+
+### 2026-06-29 04:07 — Pre-negotiated "done" contracts is a distinct technique from the 06-28 adversarial-verification item — don't merge them
+
+Today's build pitch (generator-evaluator with contract negotiation before building starts) and the 06-28 Fleet Optimizer item (N agents → tournament picks winner) are complementary but different: the 06-28 pattern asks "what's the right solution?"; today's asks "did we build what we promised?" before a single token of build work is spent. Implementation source: Anthropic AI Engineer Conference workshop transcript (https://www.youtube.com/watch?v=mR-WAvEPRwE) — this has more concrete implementation detail than the June 2 blog post the 06-28 scan cited, and should be the reference for anyone building either pattern.
+
+### 2026-06-28 08:02 — Recovered 6/28 episode interrupted by reboot — PUBLISHED (spurious QC dedup overruled)
+
+The 4am run rendered all 48 segments then the 07:12 reboot killed it ~1 min before finalize. Verified all 48 .tmp/segments intact (non-zero), ran gemini_finalize WITHOUT re-rendering (word count 6753 ≥ 6000 floor, so no regen). QC returned FAIL on DEDUP claiming the script is a "word-for-word duplicate of killen-time-2026-06-28.txt" — i.e. the file under review compared against ITSELF (Gemini Flash self-comparison hallucination; the corpus includes today's own script via or_writer's name-sorted glob). Disproved objectively: 0% verbatim-line overlap with 06-23/24/25/27 and entirely distinct lead stories vs 06-27. NOT a genuine content fail → published. Mixed existing segments via mixer.py (skipped voice.py, which deletes+re-renders), published via publish.py → release ep-2026-06-28-01 (Latest), live feed.xml carries 06-28. Removed stale logs/qc-FAIL-20260628-040006.flag. Feed: https://kylekillen.github.io/killen-time-podcast/feed.xml
+
 ### 2026-06-28 04:39 — Dynamic Workflows (Claude Code research preview) — monitor for GA before pitching
 
 Anthropic launched Dynamic Workflows in research preview June 1: lead agent generates orchestration scripts on demand, fans out parallel subagents, saves progress for resume. Not pitched today because it's preview-only and the existing Workflow tool is more controlled for fleet production use. Re-evaluate when it hits GA — it would be the right pitch if it meaningfully simplifies the dispatch-then-fan-out pattern Kyle already runs.
@@ -673,3 +685,9 @@ fix(qc): exclude today's own script from dedup context. generate-episode.sh was 
 
 ### 2026-06-28 — Reviewed PR #25: approved and merged
 chore: GUARDRAILS.md added — 5-row invariant table seeded from real documented failures (fleet-state-in-audio, QC-FAIL episodes shipped, private reports to public feed, RSS-only segments, deploy-gap class). Pure Markdown, no code changes, CI green.
+
+### 2026-06-30 — Build pitch: Tool-Armed External Evaluator (pitched, ready for greenlight)
+Anthropic's own AI Engineer Conference workshop confirmed the fleet's current gap: every worker self-grades, but a worker grading its own output is systematically biased toward approval ("really bad QA agent" — Ash Prabaker). The fix is a separate fresh-context evaluator with bash/test tool access, grading against the GUARDRAILS rubric independently. Concrete pilot: extend the delegate skill with a post-completion verifier sub-agent; first target is the PR reviewer. Full detail in build-pitches/2026-06-30.md. Note: today's automated morning pitch (Ornith-1.0 local coding tier) was verified blocked by fleet optimizer — Ollama 0.16.3 too old, 16 GB RAM insufficient for agentic dispatches.
+
+### 2026-06-30 13:06 — Reviewed PR #26: approved and merged
+fix(podcast): Gemini write failure fallback to Claude. WRITE_WITH_CLAUDE flag replaces the hard `exit 1` on Gemini failure — Gemini success clears it, failure falls through to the existing Claude→OpenRouter chain. Fixes the 2026-06-30 missed episode. All three gates passed; CI green (pytest x2).
