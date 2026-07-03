@@ -11,5 +11,13 @@
     </array>
     <key>RunAtLoad</key>
     <true/>
+    <!-- Self-heal: the flag lives in /tmp, which macOS auto-cleans after ~3 days
+         of no access. RunAtLoad only fires at login, so on a long-uptime machine
+         (no reboot) the flag would vanish mid-session and voice silently died
+         (2026-07-03 incident: flag gone after 5 days uptime, no summaries). Re-run
+         the restore every 30 min so a cleaned flag is back within the window. The
+         job is a cheap file-copy; source of truth stays ~/.config/codevoice/voice-scope. -->
+    <key>StartInterval</key>
+    <integer>1800</integer>
 </dict>
 </plist>
