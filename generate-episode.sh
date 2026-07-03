@@ -8,6 +8,19 @@
 
 set -e
 
+# Fleet burn gate: the podcast is a DEFERRABLE workload. If burn_monitor.py has
+# flagged that we're over the pause threshold (default 60% of monthly budget), skip
+# today's episode so scarce token headroom goes to essential/real-money work. The
+# flag auto-clears at month rollover (burn_monitor 'check' removes it), or delete it
+# to resume manually. See ~/observer-system/scripts/burn_monitor.py.
+BURN_PAUSE_FLAG="$HOME/.observer/pause-flags/podcast.pause"
+if [ -f "$BURN_PAUSE_FLAG" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] SKIPPED: fleet burn over budget — $BURN_PAUSE_FLAG present" \
+        | tee -a "/Users/kylekillen/brainrot-radio/logs/generate.log"
+    cat "$BURN_PAUSE_FLAG" 2>/dev/null || true
+    exit 0
+fi
+
 BRAINROT_DIR="/Users/kylekillen/brainrot-radio"
 LOGFILE="$BRAINROT_DIR/logs/generate.log"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
