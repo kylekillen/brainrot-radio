@@ -1,3 +1,7 @@
+### 2026-07-03 14:22 — Reviewed PR #27: approved and merged
+
+All three gates passed. Small (8-line), well-scoped plist change adding `StartInterval=1800` to `com.codevoice.flag` so the /tmp voice flag self-heals every 30 min instead of only at login; `restore-flag.sh` is idempotent/cheap so re-running it is safe. CI green (2x pytest). Squash-merged fix/codevoice-flag-selfheal → main.
+
 ### 2026-06-30 — Ornith-1.0 pitch is closer to "30 lines of proxy script" than an integration project — Ollama already installed with models running
 
 Checked the actual Mac: Ollama is at `/opt/homebrew/bin/ollama` with `qwen2.5:7b` already running, and `run_task.sh` line 30 exposes `OBSERVER_TASK_RUNNER_CLAUDE` as the exact hook for routing dispatches to a different runner. The Fleet Optimizer's June 29 scan flagged the integration path as unverified; it's now clear the blockers are (a) write a ~30-line proxy translating Claude CLI flags to Ollama API calls, and (b) pull `ornith` (5.6 GB). Full pitch in build-pitches/2026-06-30.md.
