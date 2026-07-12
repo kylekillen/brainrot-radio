@@ -83,26 +83,38 @@ def _assistant_messages(transcript_path: str):
     return out
 
 
+#: The COS's identity file. Only an attachment of THIS path marks a session as
+#: the COS. Matching on attachment *content* ("You are the COS") false-positived
+#: 2026-07-12: ~/observer-system/CLAUDE.md (the workspace SWITCHBOARD, which any
+#: session auto-attaches the moment its shell cd's into ~/observer-system, e.g.
+#: to check PRs) contains the same phrases — so working sessions were silently
+#: voice-muted for the rest of their life. Path is identity; content is not.
+_COS_IDENTITY_SUFFIX = "observer-system/cos/CLAUDE.md"
+
+
 def is_cos_session(transcript_path: str) -> bool:
     """True if this session is the Chief of Staff.
 
-    The COS loads its identity CLAUDE.md as an `attachment` entry containing
-    "You are the COS" / "You are the Chief of Staff". A session that merely
-    DISCUSSES the COS has those strings only in user/assistant message text,
-    never in an attachment — so this never false-positives on a normal
-    session talking about the COS. Identity-based: works wherever the COS
-    roams, no cwd or restart needed.
+    The COS launches with cwd ~/observer-system/cos, so its role file
+    cos/CLAUDE.md is loaded as an `attachment` entry. We match the attachment's
+    PATH, never its content — see _COS_IDENTITY_SUFFIX for the 2026-07-12
+    false-positive this replaces.
     """
     try:
         with open(transcript_path) as f:
             for line in f:
-                if "You are the COS" in line or "You are the Chief of Staff" in line:
-                    try:
-                        obj = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-                    if obj.get("type") == "attachment":
-                        return True
+                if _COS_IDENTITY_SUFFIX not in line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if obj.get("type") != "attachment":
+                    continue
+                att = obj.get("attachment") or {}
+                path = att.get("path") or att.get("displayPath") or ""
+                if path.endswith(_COS_IDENTITY_SUFFIX):
+                    return True
     except OSError:
         return False
     return False
