@@ -1,3 +1,7 @@
+### 2026-07-12 01:54 — Reviewed PR #28: approved and merged
+
+Fixed a real incident: `is_cos_session()` matched attachment *content* ("You are the COS"), and the observer-system switchboard CLAUDE.md (auto-attached to any session cd'ing into `~/observer-system`) contains the same phrase — silently voice-muting working sessions for life. PR swaps to matching the attachment *path* (`observer-system/cos/CLAUDE.md`). CI green, manual verification credible. Found and fixed in-place (4c) a stale doc: `code-voice/README.md`'s "hard-won design decisions" section still called the old content-match approach "false-positive-proof" — updated it so it doesn't contradict the code. Squash-merged fix/cos-mute-path-match → main.
+
 ### 2026-07-03 14:22 — Reviewed PR #27: approved and merged
 
 All three gates passed. Small (8-line), well-scoped plist change adding `StartInterval=1800` to `com.codevoice.flag` so the /tmp voice flag self-heals every 30 min instead of only at login; `restore-flag.sh` is idempotent/cheap so re-running it is safe. CI green (2x pytest). Squash-merged fix/codevoice-flag-selfheal → main.
