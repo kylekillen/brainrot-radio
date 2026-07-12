@@ -41,10 +41,12 @@ paragraph → Kokoro → Telegram voice note.
 - **The COS is excluded by IDENTITY, not cwd.** The COS roams directories as
   it works (cwd cycles through home, `.observer/wiki`, project dirs…), so no
   cwd rule can pin it. `is_cos_session()` returns True iff the transcript has
-  an `attachment`-type entry containing "You are the COS"/"You are the Chief
-  of Staff" (its loaded CLAUDE.md). This is false-positive-proof: a session
-  that merely *discusses* the COS has those strings only in message text,
-  never in an attachment.
+  an `attachment`-type entry whose **path** ends in `observer-system/cos/CLAUDE.md`
+  (the COS's identity file). Match on path, not content: matching on the phrase
+  "You are the COS" false-positived on 2026-07-12 — `~/observer-system/CLAUDE.md`
+  (the workspace switchboard, auto-attached to any session that cd's into
+  `~/observer-system`) contains the same phrase, silently muting working
+  sessions for the rest of their life.
 - **Verbatim, not summarized.** An earlier Ollama summarizer dropped critical
   detail (numbers, questions). Kyle's call: speak the closing summary I
   already write, verbatim. The summarizer is OUT of this path.
