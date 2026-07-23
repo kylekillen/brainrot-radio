@@ -50,10 +50,15 @@ def _creds():
 
 def synth_mp3(text: str) -> bytes:
     payload = json.dumps({"model": "kokoro", "voice": VOICE, "input": text}).encode()
-    # Retry on transient connection failures. The TTS server serializes synthesis
-    # behind a lock, but it can still be briefly unavailable (e.g. mid-restart, or
-    # a request that landed during a crash before the lock was added). A short
-    # backoff lets the note survive that window instead of vanishing silently.
+    # Timeout scales with length: the server synthesizes ~140 chars/s (measured),
+    # so a long closing message legitimately takes minutes — the old flat 180s
+    # gave up on anything past ~25K chars even when the server was fine.
+    timeout = 120 + len(text) // 50
+    # Retry ONLY on connection-level failures (mid-restart refused/reset) — never
+    # on a timeout. Re-POSTing a timed-out giant request queued a duplicate
+    # multi-minute synth each attempt; those duplicates were what kept the
+    # server "wedged" through watchdog restarts on 07-18/07-20 (each restart's
+    # fresh server immediately received the same giant payload again).
     last = None
     for attempt in range(4):
         try:
@@ -61,9 +66,12 @@ def synth_mp3(text: str) -> bytes:
                 TTS_ENDPOINT, data=payload,
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(req, timeout=180) as r:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read()
         except (urllib.error.URLError, ConnectionError, OSError) as e:
+            reason = str(getattr(e, "reason", "")) + " " + str(e)
+            if isinstance(e, TimeoutError) or "timed out" in reason.lower():
+                raise  # server got the request; don't queue a duplicate synth
             last = e
             time.sleep(1.5 * (attempt + 1))  # 1.5s, 3s, 4.5s
     raise last if last else RuntimeError("synth failed")

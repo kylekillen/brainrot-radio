@@ -15,6 +15,16 @@ careful NOT to restart during the ~3.5min model-reload warmup after a restart
 (during which the port is refused / health isn't warm yet) and enforces a
 ~10min cooldown so it can never restart-storm.
 
+BUSY IS NOT WEDGED. Every "wedge" from 07-08 through 07-21 was actually a
+legitimate multi-KB synth (the stop hook speaks whole closing messages —
+2K-35K chars, ~140 chars/s) monopolizing the synth lock long enough for two
+probe timeouts. Restarting killed real work, the client retried the same
+giant payload, and the fresh server got declared wedged again minutes later.
+The server now synthesizes in ~600-char chunks (a probe waits at most ~5s
+for the lock) and exposes a monotonic `chunks_done` counter in /health. On
+probe timeout we check that counter across the two probes: advancing ->
+"busy" (leave it alone); frozen -> a true wedge -> restart.
+
 Run on a ~180s launchd StartInterval (com.codevoice.watchdog). Manual / test:
     python3 code-voice/voice-watchdog.py            # one real probe
     python3 code-voice/voice-watchdog.py --self-test # unit-test decision logic
@@ -71,15 +81,18 @@ def write_health(state: str):
 # ---------------------------------------------------------------------------
 
 def check_health(host=HOST, port=PORT):
-    """Return {reachable: bool, warm: bool}. Connection-refused/timeout means the
-    server isn't up (mid-restart / loading model) -> not reachable."""
+    """Return {reachable, warm, chunks_done}. Connection-refused/timeout means
+    the server isn't up (mid-restart / loading model) -> not reachable.
+    chunks_done is the server's monotonic synth-progress counter (None on an
+    older server that doesn't report it)."""
     url = f"http://{host}:{port}/health"
     try:
         with urllib.request.urlopen(url, timeout=HEALTH_TIMEOUT) as r:
             body = json.loads(r.read() or b"{}")
-            return {"reachable": True, "warm": bool(body.get("warm"))}
+            return {"reachable": True, "warm": bool(body.get("warm")),
+                    "chunks_done": body.get("chunks_done")}
     except Exception:  # noqa: BLE001 — refused / timeout / bad body all == not-up
-        return {"reachable": False, "warm": False}
+        return {"reachable": False, "warm": False, "chunks_done": None}
 
 
 def probe_synth(host=HOST, port=PORT, timeout=SYNTH_TIMEOUT):
@@ -113,18 +126,25 @@ def probe_synth(host=HOST, port=PORT, timeout=SYNTH_TIMEOUT):
 # Decision logic (pure — unit tested)
 # ---------------------------------------------------------------------------
 
-def classify(health: dict, synth_outcome: str) -> str:
+def classify(health: dict, synth_outcome: str, progressed: bool = False) -> str:
     """Pure verdict from observed probe outcomes.
 
-    Returns: "ok" | "wedged" | "warming" | "error".
+    Returns: "ok" | "wedged" | "busy" | "warming" | "error".
     Only "wedged" should trigger a restart.
 
     - Not reachable          -> warming  (port refused: restarting / loading model)
     - Reachable, not warm     -> warming  (model still loading after a restart)
     - Warm, synth ok          -> ok
-    - Warm, synth timed out    -> wedged   (the bug: synth lock held forever)
+    - Warm, synth timed out,
+        progress advancing     -> busy    (long legit synth grinding — leave it)
+    - Warm, synth timed out,
+        progress frozen        -> wedged  (the bug: synth lock held forever)
     - Warm, synth refused      -> warming  (server went down mid-probe)
     - Warm, synth errored      -> error    (responsive but raised — NOT a wedge)
+
+    `progressed` is whether the server's chunks_done counter advanced between
+    the two probes. An old server that doesn't report the counter yields
+    progressed=False, i.e. the pre-counter behavior (timeout == wedged).
     """
     if not health.get("reachable"):
         return "warming"
@@ -133,7 +153,7 @@ def classify(health: dict, synth_outcome: str) -> str:
     if synth_outcome == "ok":
         return "ok"
     if synth_outcome == "timeout":
-        return "wedged"
+        return "busy" if progressed else "wedged"
     if synth_outcome == "refused":
         return "warming"
     return "error"
@@ -187,15 +207,22 @@ def run_once(host=HOST, port=PORT, dry_run=False) -> str:
             return state
 
         outcome = probe_synth(host, port)
-        # A single timeout could be a momentarily-busy server (a long real synth
-        # holds the lock ~25s). Confirm with a second probe before declaring a
-        # wedge — a true wedge hangs forever, a busy server clears. ~40s of
-        # continuous hang is the wedge signature, not transient load.
+        # A single timeout could be a momentarily-busy server. Confirm with a
+        # second probe before declaring a wedge, and bracket it with health
+        # reads: if the server's chunks_done counter advanced across the two
+        # probes it is BUSY on a long legit synth (grinding, not stuck) — a
+        # true wedge freezes the counter for the full ~40s window.
+        progressed = False
         if outcome == "timeout":
+            before = check_health(host, port).get("chunks_done")
             log("synth probe timed out — confirming with a second probe")
             outcome = probe_synth(host, port)
+            if outcome == "timeout":
+                after = check_health(host, port).get("chunks_done")
+                progressed = (before is not None and after is not None
+                              and after > before)
 
-        state = classify(health, outcome)
+        state = classify(health, outcome, progressed)
 
         if state == "wedged":
             if cooldown_active():
@@ -224,21 +251,23 @@ def run_once(host=HOST, port=PORT, dry_run=False) -> str:
 
 def self_test() -> int:
     cases = [
-        # (health, synth_outcome, expected)
-        ({"reachable": True, "warm": True}, "ok", "ok"),
-        ({"reachable": True, "warm": True}, "timeout", "wedged"),
-        ({"reachable": False, "warm": False}, "refused", "warming"),  # port refused
-        ({"reachable": True, "warm": False}, "ok", "warming"),        # loading model
-        ({"reachable": True, "warm": True}, "refused", "warming"),     # down mid-probe
-        ({"reachable": True, "warm": True}, "error", "error"),         # responsive 5xx
+        # (health, synth_outcome, progressed, expected)
+        ({"reachable": True, "warm": True}, "ok", False, "ok"),
+        ({"reachable": True, "warm": True}, "timeout", False, "wedged"),
+        ({"reachable": True, "warm": True}, "timeout", True, "busy"),  # long synth grinding
+        ({"reachable": False, "warm": False}, "refused", False, "warming"),  # port refused
+        ({"reachable": True, "warm": False}, "ok", False, "warming"),        # loading model
+        ({"reachable": True, "warm": True}, "refused", False, "warming"),     # down mid-probe
+        ({"reachable": True, "warm": True}, "error", False, "error"),         # responsive 5xx
+        ({"reachable": True, "warm": True}, "ok", True, "ok"),  # progress irrelevant when ok
     ]
     failures = 0
-    for health, outcome, expected in cases:
-        got = classify(health, outcome)
+    for health, outcome, progressed, expected in cases:
+        got = classify(health, outcome, progressed)
         ok = got == expected
         failures += not ok
         print(f"[{'PASS' if ok else 'FAIL'}] health={health} synth={outcome} "
-              f"-> {got} (expected {expected})")
+              f"progressed={progressed} -> {got} (expected {expected})")
     print(f"\n{len(cases) - failures}/{len(cases)} passed")
     return 1 if failures else 0
 
