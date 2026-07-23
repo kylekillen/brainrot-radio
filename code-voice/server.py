@@ -14,7 +14,20 @@ Run via the LaunchAgent (com.codevoice.server). For manual runs:
 
 Endpoints:
     POST /speak   {"text": "...", "session": "optional-id"}  -> 200, fire-and-forget
-    GET  /health  -> {"ok": true, "warm": bool, "queue": N}
+    GET  /health  -> {"ok": true, "warm": bool, "queue": N,
+                      "chunks_done": M, "synth_active": K}
+
+Synthesis is CHUNKED: long texts are split into ~600-char sentence chunks and
+the synth lock is taken per chunk, not per request. A multi-KB request (the
+stop hook speaks whole closing messages verbatim — 2K-35K chars observed)
+synthesizes at ~140 chars/s, so holding the lock for the whole request starved
+every other caller for minutes. The watchdog's tiny probe then timed out and
+it "healed" a perfectly busy server by killing it mid-synth — after which the
+client retried the same giant payload and the fresh server was declared
+wedged again ~3min later (the 07-18/07-20 "restart didn't clear it" episodes).
+Per-chunk locking bounds any caller's wait to one chunk (~5s), and the
+monotonic chunks_done counter lets the watchdog tell busy (counter advancing)
+from truly wedged (counter frozen).
 """
 import json
 import os
@@ -134,26 +147,78 @@ FFMPEG = "/opt/homebrew/bin/ffmpeg"
 # through one lock so overlapping turns queue (~25s each) instead of crashing.
 _synth_lock = threading.Lock()
 
+# Progress instrumentation for the watchdog. _chunks_done is monotonic and
+# increments after every synthesized chunk; a wedged process freezes it, a
+# busy one advances it every few seconds. _synth_active counts requests
+# currently inside synth_to_wav. Plain int ops under the GIL — monitoring
+# only, no lock needed.
+_chunks_done = 0
+_synth_active = 0
+
+# ~600 chars ≈ 4-5s of synth on this machine (measured 140 chars/s inc. the
+# ffmpeg encode). Small enough that a waiting caller (the watchdog probe)
+# gets the lock well inside its 20s timeout; big enough that per-chunk
+# overhead is noise.
+CHUNK_TARGET = 600
+CHUNK_HARD_MAX = 900  # wrap a punctuation-free run at a word boundary
+
+
+def split_chunks(text: str, target: int = CHUNK_TARGET,
+                 hard: int = CHUNK_HARD_MAX) -> list:
+    """Split text into synth chunks, packing whole sentences up to ~target
+    chars. A sentence longer than `hard` is wrapped at word boundaries so no
+    chunk can hold the lock unboundedly."""
+    import re
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    pieces = []
+    for s in sentences:
+        while len(s) > hard:
+            cut = s.rfind(" ", 0, hard)
+            if cut <= 0:
+                cut = hard
+            pieces.append(s[:cut])
+            s = s[cut:].lstrip()
+        if s:
+            pieces.append(s)
+    chunks, cur = [], ""
+    for p in pieces:
+        if cur and len(cur) + 1 + len(p) > target:
+            chunks.append(cur)
+            cur = p
+        else:
+            cur = f"{cur} {p}" if cur else p
+    if cur:
+        chunks.append(cur)
+    return chunks
+
 
 def synth_to_wav(text: str, voice: str = VOICE) -> str:
+    global _chunks_done, _synth_active
     import numpy as np
     import soundfile as sf
 
-    with _synth_lock:
-        model = get_model()
+    _synth_active += 1
+    try:
         chunks = []
         sr = None
-        for r in model.generate(text, voice=voice, lang_code=LANG):
-            # r.audio is a LAZY mlx array — the GPU work is deferred until
-            # something reads its buffer. np.asarray() forces that eval NOW,
-            # while we still hold _synth_lock. If we defer it to the
-            # np.concatenate() below (outside the lock), two concurrent
-            # requests run Metal command buffers at once and abort the whole
-            # process (Gather::eval_gpu Metal-encoder assertion). The lock
-            # only protected model.generate(); the eval leaked past it. Pull
-            # the eval inside the lock so ALL GPU work is serialized.
-            chunks.append(np.asarray(r.audio))
-            sr = r.sample_rate
+        for piece in split_chunks(text):
+            with _synth_lock:
+                model = get_model()
+                for r in model.generate(piece, voice=voice, lang_code=LANG):
+                    # r.audio is a LAZY mlx array — the GPU work is deferred
+                    # until something reads its buffer. np.asarray() forces
+                    # that eval NOW, while we still hold _synth_lock. If it
+                    # leaked outside the lock, two concurrent requests would
+                    # run Metal command buffers at once and abort the whole
+                    # process (Gather::eval_gpu Metal-encoder assertion).
+                    chunks.append(np.asarray(r.audio))
+                    sr = r.sample_rate
+            _chunks_done += 1
+            # Yield between chunks: a bare release-then-reacquire usually lets
+            # the same thread win the lock again, starving a waiting probe.
+            time.sleep(0.05)
+    finally:
+        _synth_active -= 1
     if not chunks:
         raise RuntimeError("no audio generated")
     audio = np.concatenate(chunks)
@@ -234,7 +299,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            self._json(200, {"ok": True, "warm": _warm, "queue": _jobs.qsize()})
+            self._json(200, {"ok": True, "warm": _warm, "queue": _jobs.qsize(),
+                             "chunks_done": _chunks_done,
+                             "synth_active": _synth_active})
         else:
             self._json(404, {"error": "not found"})
 
@@ -291,6 +358,42 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"queued": True, "queue": _jobs.qsize()})
 
 
+def self_test() -> int:
+    """Unit-test split_chunks invariants (no model / GPU needed)."""
+    failures = 0
+
+    def check(name, cond):
+        nonlocal failures
+        print(f"[{'PASS' if cond else 'FAIL'}] {name}")
+        failures += not cond
+
+    short = "Hello there."
+    check("short text is one chunk", split_chunks(short) == [short])
+
+    sentences = "This is sentence number one. " * 100  # ~2900 chars
+    chunks = split_chunks(sentences.strip())
+    check("long text splits", len(chunks) > 1)
+    check("no chunk exceeds hard max", all(len(c) <= CHUNK_HARD_MAX for c in chunks))
+    rejoined = " ".join(chunks)
+    check("no words lost", rejoined.split() == sentences.strip().split())
+
+    unbroken = "word" * 500  # 2000 chars, no spaces or punctuation
+    chunks = split_chunks(unbroken)
+    check("punctuation-free run still bounded",
+          all(len(c) <= CHUNK_HARD_MAX for c in chunks))
+    check("punctuation-free run keeps all chars", "".join(chunks) == unbroken)
+
+    spaced = ("longword " * 200).strip()  # long "sentence" with spaces
+    chunks = split_chunks(spaced)
+    check("spaced run wraps at word boundaries",
+          all(len(c) <= CHUNK_HARD_MAX for c in chunks))
+    check("spaced run keeps all words", " ".join(chunks).split() == spaced.split())
+
+    check("empty text -> no chunks", split_chunks("") == [])
+    print(f"\n{'OK' if not failures else 'FAILED'}")
+    return 1 if failures else 0
+
+
 def main():
     LOG.parent.mkdir(parents=True, exist_ok=True)
     log(f"Code Voice server starting on {HOST}:{PORT}")
@@ -314,4 +417,8 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--self-test" in sys.argv:
+        sys.exit(self_test())
+    if "--port" in sys.argv:  # integration testing on a scratch port
+        PORT = int(sys.argv[sys.argv.index("--port") + 1])
     main()
