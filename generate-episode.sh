@@ -33,9 +33,16 @@ TODAY=$(date '+%Y-%m-%d')
 # 5:30 AM podcast generation never narrates its turns to Kyle's phone.
 export CODE_VOICE_MUTE=1
 
-# Writer engine: claude (default) | gemini. Sourced from a config file so the daily
-# job AND the recovery checker both honor it. Switch back to Claude any time with:
+# Writer engine: claude (default) | gemini | external. Sourced from a config file
+# so the daily job AND the recovery checker both honor it. Switch back to Claude
+# any time with:
 #   echo claude > ~/.observer/data/podcast-engine     (or: rm that file)
+# "external" routes the two long write passes (the expensive part) through
+# observer-system's external_summon to a free non-Claude model (ox-alpha,
+# free thru ~08-27) — $0 Claude window per episode. Everything else (build-pitch
+# reporter, QC, render/mix/publish) stays on the existing Claude path; see
+# external_writer.py for why (the killen-time role's file tools are scoped to a
+# different workspace, so it's a pure text-completion call, not agentic).
 PODCAST_ENGINE="${PODCAST_ENGINE:-$(cat "$HOME/.observer/data/podcast-engine" 2>/dev/null || echo claude)}"
 export PODCAST_ENGINE
 
@@ -272,6 +279,19 @@ if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
         WRITE_WITH_CLAUDE=0
     else
         log "Gemini write failed — falling back to Claude so the episode still ships."
+    fi
+elif [ "${PODCAST_ENGINE:-claude}" = "external" ]; then
+    # External write: 2-pass, same content/format as the Claude path, but each
+    # pass is a single free non-Claude dispatch (ox-alpha via external_summon)
+    # instead of an agentic claude -p run. external_writer.py does its own
+    # retry; a failure here (both attempts) falls back to the full Claude
+    # 2-pass path below so the episode still ships $0 either way.
+    log "Writing episode on EXTERNAL (ox-alpha via external_summon, 2-pass)..."
+    if python3 external_writer.py --pass 1 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1 \
+       && python3 external_writer.py --pass 2 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
+        WRITE_WITH_CLAUDE=0
+    else
+        log "External write failed (both passes' retries exhausted) — falling back to Claude so the episode still ships."
     fi
 fi
 if [ "$WRITE_WITH_CLAUDE" = "1" ]; then
