@@ -6,14 +6,14 @@ pulls Claude's last response out of the transcript, cleans the markdown,
 and POSTs it to the resident warm server (which summarizes + speaks it).
 
 Opt-in: does nothing unless the flag file exists. Default OFF so background
-workers / the COS aren't narrated.
+workers aren't narrated.
     touch /tmp/claude-voice-enabled    # turn on for ALL sessions
     rm    /tmp/claude-voice-enabled    # turn off everywhere
 
 Per-session scoping: if the flag file is non-empty, each non-blank line is
 treated as a cwd substring allowlist — only sessions whose working directory
-matches a line are narrated. This keeps the COS / other projects silent while
-you listen to one. Example (narrate only brainrot-radio sessions):
+matches a line are narrated. This keeps other projects silent while you listen
+to one. Example (narrate only brainrot-radio sessions):
     echo /Users/kylekillen/brainrot-radio > /tmp/claude-voice-enabled
 
 Stdlib only — runs under whatever python3 the session has. Fast and silent;
@@ -83,41 +83,17 @@ def _assistant_messages(transcript_path: str):
     return out
 
 
-#: The COS's identity file. Only an attachment of THIS path marks a session as
-#: the COS. Matching on attachment *content* ("You are the COS") false-positived
-#: 2026-07-12: ~/observer-system/CLAUDE.md (the workspace SWITCHBOARD, which any
-#: session auto-attaches the moment its shell cd's into ~/observer-system, e.g.
-#: to check PRs) contains the same phrases — so working sessions were silently
-#: voice-muted for the rest of their life. Path is identity; content is not.
-_COS_IDENTITY_SUFFIX = "observer-system/cos/CLAUDE.md"
-
-
-def is_cos_session(transcript_path: str) -> bool:
-    """True if this session is the Chief of Staff.
-
-    The COS launches with cwd ~/observer-system/cos, so its role file
-    cos/CLAUDE.md is loaded as an `attachment` entry. We match the attachment's
-    PATH, never its content — see _COS_IDENTITY_SUFFIX for the 2026-07-12
-    false-positive this replaces.
-    """
-    try:
-        with open(transcript_path) as f:
-            for line in f:
-                if _COS_IDENTITY_SUFFIX not in line:
-                    continue
-                try:
-                    obj = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if obj.get("type") != "attachment":
-                    continue
-                att = obj.get("attachment") or {}
-                path = att.get("path") or att.get("displayPath") or ""
-                if path.endswith(_COS_IDENTITY_SUFFIX):
-                    return True
-    except OSError:
-        return False
-    return False
+# NOTE — the COS used to be hard-excluded here by identity (an `attachment`
+# entry whose path ended in observer-system/cos/CLAUDE.md). Removed 2026-08-29
+# on Kyle's instruction: the original reason (the COS was the surface Kyle was
+# already typing at, so narrating it was duplicative) no longer holds — the COS
+# is a standing role like every other, Kyle reads it from his phone, and he
+# wants its turns verbalized to Telegram at parity with the rest of the fleet.
+# The flag-file scope machinery (`in_scope`) is now the ONLY gate; the matching
+# `=/Users/kylekillen/observer-system/cos` exclude line was cleared from both
+# /tmp/claude-voice-enabled and ~/.config/codevoice/voice-scope in the same
+# change. If you ever need to mute a single role again, use the flag file —
+# don't reintroduce a code-level identity exclusion.
 
 
 def final_prose_text(transcript_path: str) -> str:
@@ -215,10 +191,6 @@ def main():
         return
     transcript = payload.get("transcript_path")
     if not transcript:
-        return
-    # The COS is the one always-excluded session — identity-based, so it holds
-    # no matter what directory the COS happens to be working in.
-    if is_cos_session(transcript):
         return
     # Settle wait: the final message may still be flushing when Stop fires.
     # Poll until the pure-prose text stops changing (max ~4s).

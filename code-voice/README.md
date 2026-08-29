@@ -6,9 +6,15 @@ Time "Brooke" voice (local Kokoro). It's the substitute for the claude.ai
 mobile read-aloud button (which is server-side ElevenLabs with no API).
 
 **Goal, in Kyle's words:** "every single code session produces voice-memo
-summaries, with one exception — the COS." Kyle interacts by typing/dictating
-from his phone (Remote Control, etc.); this is the voice coming *back*. He
-does not think in repos/cwds, so nothing here requires him to.
+summaries." Kyle interacts by typing/dictating from his phone (Remote Control,
+etc.); this is the voice coming *back*. He does not think in repos/cwds, so
+nothing here requires him to.
+
+**No exceptions as of 2026-08-29.** The COS used to be the one hard-coded
+exclusion; Kyle removed it ("this role is exempt for reasons that are no longer
+valid — bring it to parity so I receive verbalized turns in Telegram like the
+other roles"). The COS is a standing role like every other now. See the design
+note below.
 
 ## How it works (voice-OUT only)
 
@@ -17,7 +23,6 @@ A Claude Code session finishes a turn
   └─ Stop hook  (~/.claude/hooks/voice-stop.sh → code-voice/stop_hook.py)
        ├─ CODE_VOICE_MUTE=1 set?            → skip   (podcast pipeline self-mutes)
        ├─ flag /tmp/claude-voice-enabled?   → on/off + optional scoping
-       ├─ is this the COS? (identity)       → skip   (the one exclusion)
        ├─ wait for my FINAL prose message to settle on disk
        ├─ take the WHOLE final message (my closing summary), strip markdown
        └─ say_to_phone.py:
@@ -38,15 +43,25 @@ paragraph → Kokoro → Telegram voice note.
   transcript's LAST assistant message is pure prose (no tool call) — which is
   my closing summary by construction. A settle-loop waits for it to land
   (defeats a flush race where Stop fires before the final message is on disk).
-- **The COS is excluded by IDENTITY, not cwd.** The COS roams directories as
-  it works (cwd cycles through home, `.observer/wiki`, project dirs…), so no
-  cwd rule can pin it. `is_cos_session()` returns True iff the transcript has
-  an `attachment`-type entry whose **path** ends in `observer-system/cos/CLAUDE.md`
-  (the COS's identity file). Match on path, not content: matching on the phrase
-  "You are the COS" false-positived on 2026-07-12 — `~/observer-system/CLAUDE.md`
-  (the workspace switchboard, auto-attached to any session that cd's into
+- **There is no longer a per-role exclusion in code** *(removed 2026-08-29 on
+  Kyle's instruction)*. The COS was excluded by IDENTITY — `is_cos_session()`
+  matched an `attachment`-type transcript entry whose **path** ended in
+  `observer-system/cos/CLAUDE.md`, because the COS roams directories as it
+  works (cwd cycles through home, `.observer/wiki`, project dirs…) so no cwd
+  rule could pin it. Kyle's ruling: the reason for the exemption is no longer
+  valid and the COS should verbalize at parity with the rest of the fleet.
+  Three layers held the mute and all three were cleared: the code gate, the
+  `=/Users/kylekillen/observer-system/cos` line in `/tmp/claude-voice-enabled`,
+  and the same line in `~/.config/codevoice/voice-scope`. **If you ever need to
+  mute one role again, use the flag file — do not reintroduce a code-level
+  identity gate.** Two things worth keeping from the old note: (a) match on
+  attachment *path*, never *content* — matching the phrase "You are the COS"
+  false-positived on 2026-07-12 because `~/observer-system/CLAUDE.md` (the
+  workspace switchboard, auto-attached to any session that cd's into
   `~/observer-system`) contains the same phrase, silently muting working
-  sessions for the rest of their life.
+  sessions for the rest of their life; (b) a roaming role needs the `=<exact
+  path>` form, not a substring, since the COS's home cwd is a prefix of every
+  project path.
 - **Verbatim, not summarized.** An earlier Ollama summarizer dropped critical
   detail (numbers, questions). Kyle's call: speak the closing summary I
   already write, verbatim. The summarizer is OUT of this path.
@@ -110,8 +125,10 @@ rm the file            → OFF everywhere
 "=<exact path>"        → exclude exactly this cwd
 ```
 
-Current state: **empty (universal)**. The COS is excluded in code (identity),
-NOT via the flag. The cwd machinery is kept for ad-hoc scoping but unused.
+Current state: **empty (universal), with no exclusions anywhere.** Until
+2026-08-29 this file held `=/Users/kylekillen/observer-system/cos` and the code
+carried a second, redundant COS gate; both are gone. The cwd machinery is kept
+for ad-hoc scoping but is currently unused.
 
 ```bash
 curl -s 127.0.0.1:8765/health           # Kokoro server warm?
