@@ -320,7 +320,19 @@ def _notify_published(title: str, mp3_url: str = ""):
     BOTH daily episodes and Fleet Optimizer briefs (everything routes through
     publish()). Non-fatal — never breaks a publish. Suppress with
     PUBLISH_NO_TELEGRAM=1. Creds: ~/.config/personal-os/telegram.env (same file
-    the alarm responder uses): TELEGRAM_BOT_TOKEN + TELEGRAM_USER_ID."""
+    the alarm responder uses): TELEGRAM_BOT_TOKEN + TELEGRAM_USER_ID.
+
+    TODO (model-router brief 07, checked 2026-09-03): a one-tap 👍/👎 here
+    would give the router pilot a real listening signal. Sending the buttons
+    is cheap (Telegram's sendMessage takes a reply_markup inline_keyboard),
+    but nothing in the fleet currently RECORDS a tap — there's no
+    callback_query/getUpdates handler anywhere (checked observer-system,
+    brainrot-radio, and the live ~/mojo-daemon/src/telegram_bot.py bot, which
+    only handles plain text messages). Wiring that up is a separate,
+    cross-repo piece of infra, not a one-line add here. Until it exists,
+    router-pilot logs (~/.observer/data/router-pilot/podcast/) carry
+    kyle_signal: null.
+    """
     if os.getenv("PUBLISH_NO_TELEGRAM") == "1":
         return
     env_file = os.path.expanduser("~/.config/personal-os/telegram.env")
