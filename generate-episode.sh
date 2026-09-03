@@ -46,6 +46,20 @@ export CODE_VOICE_MUTE=1
 PODCAST_ENGINE="${PODCAST_ENGINE:-$(cat "$HOME/.observer/data/podcast-engine" 2>/dev/null || echo claude)}"
 export PODCAST_ENGINE
 
+# Router pilot (model-router brief 07, ~/model-router/briefs/07-podcast-pilot.md):
+# the writer's model pick can be routed through observer.router.choose("podcast_segment")
+# instead of the hardcoded Claude default. Same config-file pattern as PODCAST_ENGINE above.
+#   off    — router untouched; kill-switch back to today's behaviour.
+#   shadow — log what the router WOULD have picked + its estimated cost; the
+#            engine selected by PODCAST_ENGINE above still writes the episode.
+#   on     — actually write with the router's pick (only when PODCAST_ENGINE=claude,
+#            the default slot this pilots); ANY failure falls back to Claude.
+# Ships "shadow" (this file's default below). Flip with:
+#   echo on > ~/.observer/data/podcast-router-mode
+# The lead (~/model-router) flips it after two clean shadow days.
+ROUTER_MODE="${ROUTER_MODE:-$(cat "$HOME/.observer/data/podcast-router-mode" 2>/dev/null || echo shadow)}"
+export ROUTER_MODE
+
 cd "$BRAINROT_DIR"
 source venv/bin/activate
 mkdir -p logs .tmp
@@ -265,6 +279,20 @@ fi
 
 SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 
+# ─── Router pilot: resolve (and, off "on", only log) the model pick ──────────
+# One choose() call per episode — pass 1 and pass 2 (if ROUTER_MODE=on) reuse
+# this same pick via --choice-file, so the router's decisions log gets exactly
+# one line per episode, not one per pass.
+ROUTER_CHOICE_FILE="$BRAINROT_DIR/.tmp/router-choice-${RUN_ID}.json"
+if [ "$ROUTER_MODE" != "off" ]; then
+    if python3 router_writer.py --choose > "$ROUTER_CHOICE_FILE" 2>>"$RESULT_LOG"; then
+        log "Router pilot (mode=$ROUTER_MODE): $(cat "$ROUTER_CHOICE_FILE")"
+    else
+        log "Router pilot (mode=$ROUTER_MODE): choose() failed — no pick logged this episode"
+        rm -f "$ROUTER_CHOICE_FILE"
+    fi
+fi
+
 # ─── Step 2: Write the episode (engine-dependent) ────────────────────────────
 # A Gemini-write failure must NOT kill the episode. Default to the proven Claude
 # write path (which has its own Claude->OpenRouter fallback chain) and only clear
@@ -272,11 +300,13 @@ SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 # empty segment / finish_reason=None made it exit and the episode silently never
 # produced), the show still ships via Claude instead of being skipped.
 WRITE_WITH_CLAUDE=1
+WRITE_ENGINE_USED="claude:sonnet"   # overwritten below only on a branch's SUCCESS path (incl. Claude-fallback cases, which stay this default — run_claude_step always calls --model sonnet)
 if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
     # All-Gemini write: per-segment, faithful beats, dedup + covered-story saving.
     log "Writing episode on GEMINI (per-segment, faithful beats + covered-save)..."
     if GEMINI_OUT="$BRAINROT_DIR/$SCRIPT_FILE" python3 gemini_episode.py >> "$RESULT_LOG" 2>&1; then
         WRITE_WITH_CLAUDE=0
+        WRITE_ENGINE_USED="gemini"
     else
         log "Gemini write failed — falling back to Claude so the episode still ships."
     fi
@@ -290,8 +320,27 @@ elif [ "${PODCAST_ENGINE:-claude}" = "external" ]; then
     if python3 external_writer.py --pass 1 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1 \
        && python3 external_writer.py --pass 2 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
         WRITE_WITH_CLAUDE=0
+        WRITE_ENGINE_USED="external"
     else
         log "External write failed (both passes' retries exhausted) — falling back to Claude so the episode still ships."
+    fi
+elif [ "$ROUTER_MODE" = "on" ] && [ -s "$ROUTER_CHOICE_FILE" ]; then
+    # Router pilot, mode=on: write via the model observer.router.choose() picked
+    # for "podcast_segment" instead of the hardcoded Claude default. Only engages
+    # when PODCAST_ENGINE is the default "claude" slot (this elif is only reached
+    # when neither gemini nor external above matched) — an explicit engine choice
+    # always wins over the pilot. Any failure here falls through to the unchanged
+    # Claude write path below, same fail-loud-but-recoverable shape as external/gemini.
+    ROUTER_MODEL=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['choice']['model'])" "$ROUTER_CHOICE_FILE" 2>/dev/null || echo unknown)
+    ROUTER_DISPATCH_LOG="$BRAINROT_DIR/.tmp/router-dispatch-${RUN_ID}.jsonl"
+    log "Writing episode via ROUTER PICK (mode=on, model=$ROUTER_MODEL)..."
+    if python3 router_writer.py --pass 1 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" --choice-file "$ROUTER_CHOICE_FILE" --result-file "$ROUTER_DISPATCH_LOG" >> "$RESULT_LOG" 2>&1 \
+       && python3 router_writer.py --pass 2 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" --choice-file "$ROUTER_CHOICE_FILE" --result-file "$ROUTER_DISPATCH_LOG" >> "$RESULT_LOG" 2>&1; then
+        WRITE_WITH_CLAUDE=0
+        WRITE_ENGINE_USED="router:$ROUTER_MODEL"
+        log "Router-picked write complete (model=$ROUTER_MODEL)."
+    else
+        log "Router-picked write FAILED (model=$ROUTER_MODEL) — falling back to Claude so the episode still ships."
     fi
 fi
 if [ "$WRITE_WITH_CLAUDE" = "1" ]; then
@@ -340,6 +389,7 @@ if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
         log "Forced OpenRouter pass 1 failed, aborting"
         exit 1
     fi
+    WRITE_ENGINE_USED="claude-fallback:kimi(openrouter,forced)"
 elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1"; then
     log "Pass 1 attempt 1 failed, retrying..."
     sleep 15
@@ -349,6 +399,7 @@ elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1";
             log "Pass 1 OpenRouter fallback also failed, aborting"
             exit 1
         fi
+        WRITE_ENGINE_USED="claude-fallback:kimi(openrouter)"
     fi
 fi
 
@@ -580,6 +631,83 @@ for f in (tmp / 'transcripts').glob('*.txt'):
 
 print(f'Archived {moved} source files to .tmp/used/')
 " >> "$RESULT_LOG" 2>&1
+
+# ─── Step 5.5: Router pilot measurement log ──────────────────────────────────
+# One JSON file per episode at ~/.observer/data/router-pilot/podcast/YYYY-MM-DD.json
+# (model-router brief 07): what wrote the episode, what the router would have/did
+# pick, the QC gate's verdict (QC stays authoritative for publish regardless of
+# who wrote — this log is measurement only), word count, and cost. Kyle's
+# listening signal (👍/👎) has no plumbing yet — see TODO in publish.py
+# (_notify_published): the podcast's Telegram ping is a plain sendMessage with no
+# inline buttons, and no callback_query listener exists anywhere in the fleet
+# (checked observer-system, brainrot-radio, and the live ~/mojo-daemon Telegram
+# bot) to record a tap even if one were added, so kyle_signal stays null until
+# that's built. Runs whenever ROUTER_MODE != off; harmless if the router or its
+# table is unavailable (fields fall back to null rather than failing the episode).
+if [ "$ROUTER_MODE" != "off" ]; then
+    python3 - "$TODAY" "$ROUTER_MODE" "${PODCAST_ENGINE:-claude}" "$WRITE_ENGINE_USED" \
+             "$ROUTER_CHOICE_FILE" "${ROUTER_DISPATCH_LOG:-}" "${QC_VERDICT:-n/a}" "$TOTAL_WORDS" "$RUN_ID" <<'PY' >> "$RESULT_LOG" 2>&1
+import json, sys
+from pathlib import Path
+
+today, router_mode, podcast_engine, write_engine_used, choice_file, dispatch_log, qc_verdict, total_words, run_id = sys.argv[1:10]
+
+router_pick = None
+choice_path = Path(choice_file)
+if choice_path.is_file():
+    try:
+        router_pick = json.loads(choice_path.read_text()).get("choice")
+    except (OSError, json.JSONDecodeError):
+        pass
+
+dispatch_results = []
+dispatch_path = Path(dispatch_log) if dispatch_log else None
+if dispatch_path and dispatch_path.is_file():
+    for line in dispatch_path.read_text().splitlines():
+        try:
+            dispatch_results.append(json.loads(line))
+        except json.JSONDecodeError:
+            pass
+actual_cost_usd = sum(r.get("cost_usd", 0.0) or 0.0 for r in dispatch_results) if dispatch_results else None
+
+record = {
+    "date": today,
+    "run_id": run_id,
+    "router_mode": router_mode,
+    "podcast_engine": podcast_engine,
+    "incumbent_model": "claude:sonnet" if podcast_engine == "claude" else f"{podcast_engine} (non-default engine, not the router pilot's incumbent)",
+    "write_engine_used": write_engine_used,
+    "router_pick": router_pick,
+    "router_write_actually_used": write_engine_used.startswith("router:"),
+    "router_dispatch_results": dispatch_results or None,
+    "generation_cost": {
+        # Claude path: $0 marginal (Max plan flat-rate); metered-equivalent proxy is
+        # router_pick's max_plan_points when a pick was resolved this episode.
+        "claude_max_plan_points_proxy": (router_pick or {}).get("max_plan_points"),
+        "router_pick_estimated_usd": (router_pick or {}).get("cost_usd_per_task"),
+        "actual_dispatch_usd": actual_cost_usd,
+    },
+    "qc_verdict": qc_verdict,
+    "word_count": int(total_words) if total_words.isdigit() else None,
+    "kyle_signal": None,  # TODO: no Telegram callback plumbing yet (see comment above)
+}
+
+out_dir = Path.home() / ".observer" / "data" / "router-pilot" / "podcast"
+out_dir.mkdir(parents=True, exist_ok=True)
+out_path = out_dir / f"{today}.json"
+existing = []
+if out_path.is_file():
+    try:
+        existing = json.loads(out_path.read_text())
+        if not isinstance(existing, list):
+            existing = [existing]
+    except (OSError, json.JSONDecodeError):
+        existing = []
+existing.append(record)
+out_path.write_text(json.dumps(existing, indent=2))
+print(f"router-pilot: wrote {out_path} (episode {len(existing)} today)")
+PY
+fi
 
 # ─── Step 6: Emit compound-loop signals (shared fleet brain) ─────────────────
 # The podcast is a loop; after it publishes it writes signals other loops READ
