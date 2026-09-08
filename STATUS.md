@@ -1,3 +1,6 @@
+### 2026-09-08 13:37 — Reviewed and merged PR #32: burn gate degrades to free writer instead of skipping
+Approved and squash-merged. Verified independently rather than trusting the PR body: traced the bash `${VAR:-default}` override order (burn-gate export at line 27 correctly precedes and wins over the config-file fallback at line 57), confirmed `nemotron-3-ultra-550b-free` is a real live entry in `external_models.py`, `bash -n`/`ast.parse` both clean, CI green, no standing HOLD or red-team requirement. Minor non-blocking note left in the PR comment: `external_writer.py`'s module docstring still says ox-alpha "free through ~08-27" — cosmetic, not fixed.
+
 ### 2026-09-08 07:31 — Burn gate now DEGRADES to the free writer instead of skipping the show; the "external" engine had been silently dead since ox-alpha's free window closed
 
 Kyle, 2026-09-08: *"No podcast published today. If it's a burn issue please route it through one of the free models that's currently available."* Two separate defects, both live:
