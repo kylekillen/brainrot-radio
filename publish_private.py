@@ -132,12 +132,54 @@ def _herenow_publish_or_update(slug: str | None) -> str:
     out = ANSI_RE.sub("", (r.stdout or "") + "\n" + (r.stderr or ""))
     if r.returncode != 0:
         raise RuntimeError(f"herenow failed (exit {r.returncode}):\n{out}")
+    # The CLI exits 0 on auth failure (2026-09-08: it printed "Not logged in and
+    # no claim token" and returned 0, so every post-migration report published
+    # nothing while still printing an EPISODE_URL). Exit code is not evidence —
+    # require the success line.
+    low = out.lower()
+    if "not logged in" in low or "no claim token" in low:
+        raise RuntimeError(
+            "herenow is not authenticated (exit 0 but refused to upload). "
+            "Restore ~/.herenow/config.json — a backup key lives at "
+            f"~/.observer/secrets/herenow-apikey.\n{out}")
     if slug:
+        if "successfully updated" not in low and "updated!" not in low:
+            raise RuntimeError(f"herenow update did not report success:\n{out}")
         return slug
     m = URL_RE.search(out)
     if not m:
         raise RuntimeError(f"could not parse here.now slug from output:\n{out}")
     return m.group(1)
+
+
+def _verify_live(url: str, attempts: int = 5, delay: float = 4.0) -> None:
+    """Confirm the freshly pushed episode is actually fetchable. Fail loud —
+    an EPISODE_URL that 404s is worse than an error, because it reads as shipped."""
+    import time
+    import urllib.request
+    import urllib.error
+
+    last = None
+    for i in range(attempts):
+        # Ranged GET, not HEAD — the here.now edge answers HEAD with 403.
+        # ...and it 403s the default Python-urllib UA, so send a podcast-client one.
+        req = urllib.request.Request(url, headers={
+            "Range": "bytes=0-0",
+            "User-Agent": "KillenTime-private-feed-verify/1.0",
+        })
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                if r.status in (200, 206):
+                    log(f"verified live: {url}")
+                    return
+                last = f"HTTP {r.status}"
+        except urllib.error.HTTPError as e:
+            last = f"HTTP {e.code}"
+        except Exception as e:  # noqa: BLE001 - network flake, retry
+            last = str(e)
+        if i < attempts - 1:
+            time.sleep(delay)
+    raise RuntimeError(f"published but NOT live after {attempts} checks ({last}): {url}")
 
 
 def _build_feed(base_url: str, episodes: list, has_artwork: bool) -> str:
@@ -268,6 +310,7 @@ def publish(mp3_path: str, title: str = None, description: str = None,
 
     log(f"pushing {len(episodes)} episode(s) to {base_url}")
     _herenow_publish_or_update(slug)  # update in place — stable URL
+    _verify_live(f"{base_url}/{mp3_name}")
 
     urls = {
         "mp3": f"{base_url}/{mp3_name}",
