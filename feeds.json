@@ -13,6 +13,15 @@
       "note": "Human-curated tech headlines. Top-tier signal."
     },
     {
+      "id": "model_landscape_release_watch",
+      "name": "Model Landscape — Release Watch",
+      "url": "file:///Users/kylekillen/.observer/data/release-watch/feed.xml",
+      "type": "rss",
+      "topic": "ai_and_tech",
+      "weight": 2.0,
+      "note": "Same-day AI model releases + scores, scored from X (observer-system release_watch). Local file, regenerated every 2h."
+    },
+    {
       "id": "anthropic_blog",
       "name": "Anthropic Blog",
       "url": "https://www.anthropic.com/rss.xml",

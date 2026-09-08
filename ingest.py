@@ -233,7 +233,11 @@ def save_covered_stories(stories, segments=None, podcast_guids=None):
     all_segments = existing.get("segments", {})
     if segments:
         all_segments.update(segments)
-    all_guids = list(set(existing.get("podcast_guids", []) + (podcast_guids or [])))
+    # Raw feed guids only — strip any "podcast_" prefix accidentally copied from
+    # a transcript cache filename, so the hard-exclude in ingest() (which compares
+    # against the raw guid) actually matches.
+    new_guids = [g[len("podcast_"):] if g.startswith("podcast_") else g for g in (podcast_guids or [])]
+    all_guids = list(set(existing.get("podcast_guids", []) + new_guids))
 
     data = {
         "stories": all_stories,
@@ -581,7 +585,8 @@ def fetch_all_feeds():
     # article/podcast episode twice.
     covered = load_covered_stories()
     covered_slugs = covered.get("stories", [])
-    covered_guids = set(covered.get("podcast_guids", []))
+    # Normalize away any "podcast_"-prefixed guids left over in older covered files.
+    covered_guids = {g[len("podcast_"):] if g.startswith("podcast_") else g for g in covered.get("podcast_guids", [])}
 
     pre_count = len(all_articles)
     filtered = []
