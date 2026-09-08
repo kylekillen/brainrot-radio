@@ -34,7 +34,14 @@ FFMPEG = "/opt/homebrew/bin/ffmpeg"
 
 def _creds():
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-    chat = os.getenv("TELEGRAM_CHAT_ID", "") or os.getenv("CHAT_ID", "")
+    # TELEGRAM_USER_ID is the fleet-canonical name -- observer/notifications.py
+    # reads `TELEGRAM_USER_ID or TELEGRAM_CHAT_ID`, and the shared telegram env
+    # file defines only TELEGRAM_USER_ID. Omitting it here is why Code Voice died
+    # silently on the mini: the bot token resolved fine, the chat id came back
+    # empty, and every note bailed out at "missing TELEGRAM_BOT_TOKEN / chat id"
+    # while the observer Telegram sends kept working. (2026-09-08)
+    chat = (os.getenv("TELEGRAM_CHAT_ID", "") or os.getenv("TELEGRAM_USER_ID", "")
+            or os.getenv("CHAT_ID", ""))
     if token and chat:
         return token, chat
     # Fallback: pull from the Claude settings env block.

@@ -28,6 +28,7 @@ import time
 from pathlib import Path
 
 FLAG = Path("/tmp/claude-voice-enabled")
+DELIVERY_LOG = str(Path(__file__).resolve().parent / "delivery.log")
 LOG = Path(__file__).resolve().parent / "phone_hook.log"
 
 
@@ -135,8 +136,14 @@ def send_to_phone(text: str):
         p = subprocess.Popen(
             [sys.executable, helper],
             stdin=subprocess.PIPE,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            # Delivery outcome MUST be visible. These were both DEVNULL, which
+            # meant say_to_phone's "ok" / "telegram error: ..." / "missing
+            # TELEGRAM_BOT_TOKEN" line vanished -- the hook logged "speaking N
+            # chars" (written BEFORE the handoff) and looked healthy while every
+            # voice note silently failed to be delivered. Kyle reported "no code
+            # voice audio" 2026-09-08 and nothing in any log said why.
+            stdout=open(DELIVERY_LOG, "a"),
+            stderr=subprocess.STDOUT,
             start_new_session=True,  # reparent so hook exit can't kill it
         )
         if p.stdin:
