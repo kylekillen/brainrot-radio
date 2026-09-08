@@ -46,6 +46,7 @@ caller — generate-episode.sh — falls back to the Claude write path).
 """
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -57,7 +58,14 @@ import or_writer  # reuse _gather_sources / _pass1_prompt / _pass2_prompt / pars
 ROOT = Path(__file__).resolve().parent
 OBSERVER_PY = Path.home() / "observer-system" / ".venv" / "bin" / "python"
 EXTERNAL_ROLE = "killen-time"
-DEFAULT_MODEL = "ox-alpha"
+# ox-alpha's free window closed (~08-27) and the model is no longer registered in
+# external_models.py, so the old default now fails --list-models/dispatch outright.
+# Live-verified free replacement 2026-09-08 ($0.0000/dispatch, 1M context, 131K max
+# output): nemotron-3-ultra-550b-free via OpenRouter's :free pool. Also checked that
+# day and NOT usable: minimax-m3-free (OpenRouter 404s it — "unavailable for free,
+# use the paid slug"), muse-spark-1.3-free and big-pickle-free (OpenCode Zen's free
+# tier only serves its own client now). Override per-run with PODCAST_EXTERNAL_MODEL.
+DEFAULT_MODEL = os.environ.get("PODCAST_EXTERNAL_MODEL") or "nemotron-3-ultra-550b-free"
 DISPATCH_TIMEOUT_SEC = 1800
 MIN_WORDS = 1500  # floor well below the 7000-9000 target — catches a truncated/short reply
 

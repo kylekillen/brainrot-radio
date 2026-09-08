@@ -8,17 +8,28 @@
 
 set -e
 
-# Fleet burn gate: the podcast is a DEFERRABLE workload. If burn_monitor.py has
-# flagged that we're over the pause threshold (default 60% of monthly budget), skip
-# today's episode so scarce token headroom goes to essential/real-money work. The
-# flag auto-clears at month rollover (burn_monitor 'check' removes it), or delete it
-# to resume manually. See ~/observer-system/scripts/burn_monitor.py.
+# Fleet burn gate: the podcast is a DEFERRABLE workload. burn_monitor.py drops
+# ~/.observer/pause-flags/podcast.pause when the fleet is over its level threshold
+# or its burn RATE trips. See ~/observer-system/scripts/burn_monitor.py.
+#
+# Kyle's ruling 2026-09-08 ("No podcast published today. If it's a burn issue please
+# route it through one of the free models that's currently available"): the gate must
+# DEGRADE, not skip. Silently dropping the show was the wrong response — the two write
+# passes are ~70% of the episode's Claude time (34 of 48 min on the 09-07 run) and they
+# already have a $0 non-Claude path (PODCAST_ENGINE=external). So under a burn pause we
+# force that path instead of exiting. Build-pitch and QC stay on Claude deliberately:
+# the pitch is what Kyle greenlights real builds from, and QC is the fabrication
+# backstop — both are one short sonnet call each and are not the burn problem.
 BURN_PAUSE_FLAG="$HOME/.observer/pause-flags/podcast.pause"
+BURN_DEGRADED=0
 if [ -f "$BURN_PAUSE_FLAG" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] SKIPPED: fleet burn over budget — $BURN_PAUSE_FLAG present" \
-        | tee -a "/Users/kylekillen/brainrot-radio/logs/generate.log"
-    cat "$BURN_PAUSE_FLAG" 2>/dev/null || true
-    exit 0
+    BURN_DEGRADED=1
+    PODCAST_ENGINE=external
+    export PODCAST_ENGINE
+    {
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] BURN-DEGRADED: $BURN_PAUSE_FLAG present — writing on the free external engine instead of skipping (Kyle's ruling 2026-09-08)."
+        cat "$BURN_PAUSE_FLAG" 2>/dev/null || true
+    } | tee -a "/Users/kylekillen/brainrot-radio/logs/generate.log"
 fi
 
 BRAINROT_DIR="/Users/kylekillen/brainrot-radio"
@@ -312,17 +323,21 @@ if [ "${PODCAST_ENGINE:-claude}" = "gemini" ]; then
     fi
 elif [ "${PODCAST_ENGINE:-claude}" = "external" ]; then
     # External write: 2-pass, same content/format as the Claude path, but each
-    # pass is a single free non-Claude dispatch (ox-alpha via external_summon)
-    # instead of an agentic claude -p run. external_writer.py does its own
-    # retry; a failure here (both attempts) falls back to the full Claude
-    # 2-pass path below so the episode still ships $0 either way.
-    log "Writing episode on EXTERNAL (ox-alpha via external_summon, 2-pass)..."
+    # pass is a single free non-Claude dispatch (see external_writer.py's
+    # DEFAULT_MODEL — ox-alpha's free window closed, the live free lane as of
+    # 2026-09-08 is nemotron-3-ultra-550b-free) instead of an agentic claude -p
+    # run. external_writer.py does its own retry; a failure here (both attempts)
+    # falls back to the full Claude 2-pass path below so the episode still ships.
+    log "Writing episode on EXTERNAL (${PODCAST_EXTERNAL_MODEL:-nemotron-3-ultra-550b-free} via external_summon, 2-pass)..."
     if python3 external_writer.py --pass 1 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1 \
        && python3 external_writer.py --pass 2 --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
         WRITE_WITH_CLAUDE=0
         WRITE_ENGINE_USED="external"
     else
         log "External write failed (both passes' retries exhausted) — falling back to Claude so the episode still ships."
+        if [ "$BURN_DEGRADED" = "1" ]; then
+            log "⚠️  BURN-DEGRADED run is falling back to CLAUDE writes while $BURN_PAUSE_FLAG stands — the free lane is broken, not the burn gate. Fix the free lane (external_writer.py DEFAULT_MODEL) before tomorrow's run."
+        fi
     fi
 elif [ "$ROUTER_MODE" = "on" ] && [ -s "$ROUTER_CHOICE_FILE" ]; then
     # Router pilot, mode=on: write via the model observer.router.choose() picked
