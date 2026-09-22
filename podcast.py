@@ -373,8 +373,10 @@ def get_transcript(episode, podcast_id, max_minutes=DEFAULT_MAX_AUDIO_MINUTES):
         mp3_path = download_episode(episode["mp3_url"], guid, podcast_id)
         if mp3_path:
             text = transcribe_episode(mp3_path, guid, max_minutes)
-            if text:
+            if text and len(text) > 500:
                 return text, "whisper"
+            elif text:
+                print(f"    [SKIP] Whisper transcript too short to be real ({len(text)} chars) — treating as no transcript", file=sys.stderr)
 
     return None, None
 
