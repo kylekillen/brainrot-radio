@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Brainrot Radio v0.2 — Audio Transcription Module.
 
-Shared transcription engine using mlx-whisper (Apple Silicon optimized).
-Used by podcast.py and twitch.py.
+Shared local transcription engine for podcast.py, twitch.py, and Code Voice.
+Parakeet TDT is the primary engine; Whisper remains a deliberately kept
+fallback for unusual audio and for environments where Parakeet cannot load.
 
 Usage:
     python3 transcribe.py audio.mp3                # Transcribe file
@@ -13,13 +14,22 @@ import argparse
 import hashlib
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 from config import FFMPEG, TEMP_DIR
 
 # ── Constants ─────────────────────────────────────────────────────
-MODEL = "mlx-community/whisper-large-v3-turbo"
+PRIMARY_MODEL = "mlx-community/parakeet-tdt-0.6b-v3"
+FALLBACK_MODEL = "mlx-community/whisper-large-v3-turbo"
+# Keep MODEL as the public/default name for existing callers and the CLI.
+MODEL = PRIMARY_MODEL
 CACHE_DIR = TEMP_DIR / "transcripts"
+
+# Both MLX runtimes keep mutable model state. Serialize inference and model
+# loading across the podcast workers and the resident Code Voice server.
+_INFERENCE_LOCK = threading.Lock()
+_MODEL_CACHE = {}
 
 
 def audio_hash(audio_path):
@@ -63,23 +73,75 @@ def truncate_audio(audio_path, max_minutes, output_path=None):
     return output_path
 
 
-def transcribe(audio_path, model=MODEL):
-    """Transcribe an audio file using mlx-whisper.
+def _result_text(result):
+    """Return plain text from either supported MLX result shape.
 
-    Returns the full transcription text.
+    Whisper returns a mapping with ``text``/``segments``; Parakeet returns
+    ``AlignedResult`` with ``text``/``sentences``. Keeping this adapter in one
+    place prevents callers from having to know which engine ran.
     """
-    import mlx_whisper
+    if isinstance(result, str):
+        return result.strip()
+    if isinstance(result, dict):
+        return (result.get("text") or "").strip()
+    return (getattr(result, "text", "") or "").strip()
 
+
+def _load_model(model):
+    """Load and retain one model per engine, under the shared MLX lock."""
+    if model in _MODEL_CACHE:
+        return _MODEL_CACHE[model]
+    if model == PRIMARY_MODEL:
+        from mlx_audio.stt import load
+        loaded = load(model)
+    else:
+        # Import lazily so installations that only use the fallback do not pay
+        # the Whisper import cost on the primary path.
+        import mlx_whisper
+        loaded = mlx_whisper
+    _MODEL_CACHE[model] = loaded
+    return loaded
+
+
+def _run_model(audio_path, model):
+    """Run one engine and normalize its result to text."""
     audio_path = str(audio_path)
-    print(f"  Transcribing with mlx-whisper ({model})...", file=sys.stderr)
+    if model == PRIMARY_MODEL:
+        engine = _load_model(model)
+        result = engine.generate(audio_path, chunk_duration=30.0)
+    else:
+        engine = _load_model(model)
+        result = engine.transcribe(
+            audio_path,
+            path_or_hf_repo=model,
+            language="en",
+        )
+    return _result_text(result)
 
-    result = mlx_whisper.transcribe(
-        audio_path,
-        path_or_hf_repo=model,
-        language="en",
-    )
 
-    text = result.get("text", "").strip()
+def transcribe(audio_path, model=MODEL):
+    """Transcribe an audio file locally, with Whisper as a safety fallback.
+
+    Parakeet is the primary path. A failure to load or run it is logged and
+    retried once with the already-cached Whisper model; a failure of both is
+    raised rather than silently returning an empty transcript.
+    """
+    audio_path = str(audio_path)
+    with _INFERENCE_LOCK:
+        if model == PRIMARY_MODEL:
+            print(f"  Transcribing with Parakeet ({model})...", file=sys.stderr)
+            try:
+                text = _run_model(audio_path, model)
+            except Exception as exc:  # noqa: BLE001
+                print(
+                    f"  [WARN] Parakeet failed ({exc}); falling back to Whisper",
+                    file=sys.stderr,
+                )
+                text = _run_model(audio_path, FALLBACK_MODEL)
+        else:
+            print(f"  Transcribing with Whisper ({model})...", file=sys.stderr)
+            text = _run_model(audio_path, model)
+
     print(f"  → {len(text)} chars transcribed", file=sys.stderr)
     return text
 
@@ -129,7 +191,11 @@ def main():
     parser = argparse.ArgumentParser(description="Brainrot Radio — Audio Transcription")
     parser.add_argument("audio", help="Path to audio file")
     parser.add_argument("--max-minutes", type=int, help="Truncate to first N minutes")
-    parser.add_argument("--model", default=MODEL, help=f"Whisper model (default: {MODEL})")
+    parser.add_argument(
+        "--model",
+        default=MODEL,
+        help=f"Parakeet/Whisper model (default: {MODEL}; fallback: {FALLBACK_MODEL})",
+    )
     parser.add_argument("--no-cache", action="store_true", help="Skip cache")
     args = parser.parse_args()
 
