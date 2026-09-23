@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Code Voice — local Whisper STT server (OpenAI-compatible).
+"""Code Voice — local Parakeet STT server (OpenAI-compatible).
 
 Exposes POST /v1/audio/transcriptions (the OpenAI audio-transcription shape)
-backed by local mlx-whisper (whisper-large-v3-turbo, already cached in this
-workspace). ccgram points CCGRAM_WHISPER_BASE_URL at this — so voice notes
-from the phone are transcribed locally, free, no cloud key.
+backed by local mlx-audio Parakeet, with mlx-whisper retained as a fallback.
+ccgram points CCGRAM_WHISPER_BASE_URL at this — so voice notes from the phone
+are transcribed locally, free, no cloud key.
 
-Telegram voice notes are OGG/Opus; mlx-whisper decodes via ffmpeg, so the
+Telegram voice notes are OGG/Opus; mlx-audio decodes via ffmpeg, so the
 format is handled transparently.
 
 Run via LaunchAgent (com.codevoice.stt). Manual:
@@ -22,13 +22,18 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+# The LaunchAgent starts this file by absolute path, so make the repository
+# root importable for the shared transcription engine.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from transcribe import FALLBACK_MODEL, PRIMARY_MODEL, transcribe as transcribe_file  # noqa: E402
+
 HOST = "127.0.0.1"
 PORT = 8766
-MODEL = "mlx-community/whisper-large-v3-turbo"  # cached; matches transcribe.py
+MODEL = PRIMARY_MODEL
+FALLBACK = FALLBACK_MODEL
 LOG = Path.home() / "brainrot-radio" / "code-voice" / "stt_server.log"
 
 _warm = False
-_lock = threading.Lock()  # mlx-whisper isn't thread-safe; serialize calls
 
 
 def log(msg: str):
@@ -43,17 +48,13 @@ def log(msg: str):
 
 
 def transcribe_bytes(audio_bytes: bytes, filename: str) -> str:
-    import mlx_whisper
-
     suffix = os.path.splitext(filename)[1] or ".ogg"
     fd, path = tempfile.mkstemp(prefix="codevoice_stt_", suffix=suffix)
     os.close(fd)
     with open(path, "wb") as f:
         f.write(audio_bytes)
     try:
-        with _lock:
-            result = mlx_whisper.transcribe(path, path_or_hf_repo=MODEL)
-        return (result.get("text") or "").strip()
+        return transcribe_file(path, model=MODEL)
     finally:
         try:
             os.unlink(path)
@@ -104,7 +105,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            self._json(200, {"ok": True, "warm": _warm})
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "warm": _warm,
+                    "model": MODEL,
+                    "fallback_model": FALLBACK,
+                },
+            )
         else:
             self._json(404, {"error": "not found"})
 
