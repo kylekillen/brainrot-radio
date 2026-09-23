@@ -150,3 +150,20 @@ ccgram (`uv tool install ccgram`, patched for local Kokoro/Whisper — for a
 future two-way voice-IN path), and the Ollama summarizer. Research:
 `~/.observer/wiki/research/phone-voice-claude-code-2026-06-08.md`.
 The full chronology is in `../STATUS.md` under "Code Voice".
+
+## Dictate gateway (phone dictation on our Parakeet) — `dictate_gateway.py`
+
+Kyle's Wispr-Flow replacement. LaunchAgent `com.codevoice.dictate`, 127.0.0.1:8767,
+reached from the tailnet only via `tailscale serve --bg --set-path /dictate http://127.0.0.1:8767`
+→ `https://kyles-mac-mini.tailb7cb3e.ts.net/dictate/`.
+
+- `POST /v1/audio/transcriptions` — OpenAI-compatible; Parakeet (:8766) then a local
+  cleanup pass (ollama `qwen3.6:35b-a3b`, no-think, temp 0). `?raw=1` skips cleanup.
+  A cold cleanup model never blocks: raw text returns and the model warms in the background.
+  The Android **Dictate** keyboard's "own server" points at `…/dictate/v1`.
+- `GET /` — long-form recorder page (record → transcribe → copy) with history.
+- `POST /v1/chat/completions` — local model, for the keyboard's optional rewording.
+- History: `~/.observer/dictation/history.jsonl`; failed uploads kept as `failed-*.bin`.
+
+Rollback: `launchctl bootout gui/$UID/com.codevoice.dictate` and
+`tailscale serve --set-path /dictate off`.
