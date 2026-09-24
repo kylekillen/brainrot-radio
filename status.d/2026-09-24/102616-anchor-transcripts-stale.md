@@ -1,0 +1,2 @@
+### 2026-09-24 04:26 — AI Daily Brief transcript file is stale show notes; no Moonshots transcript
+`.tmp/transcripts/podcast_0914d398…` (also `podcast_64f9f039…`, identical bytes) is an August episode-list of show notes, not a transcript of a fresh AI Daily Brief episode, and no Moonshots transcript existed today. The first-half writer had to anchor the AI block on Latent Space, Zvi, Innermost Loop, No Priors and a16z instead and said so on-air; the ingest/podcast step should reject show-notes-only files like it now rejects near-empty Whisper output (#33).
