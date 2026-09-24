@@ -43,7 +43,17 @@ topic coverage promised in the intro but missing, two consecutive same-speaker
 blocks, BASIL/BASIL or BROOKE/BROOKE collisions across `[TRANSITION]` joins
 (common in two-pass scripts), back-to-back `[TRANSITION]` tags, `---` dividers
 (would be spoken), and any speaker tag that isn't `[BASIL]`/`[BROOKE]`/
-`[TRANSITION]`.
+`[TRANSITION]`. Also flag — as MUST-FIX, citing the "Never include internal
+fleet state" row in `GUARDRAILS.md` — any line that describes Kyle's PRIVATE
+system rather than the public world: the names of his repos (`observer-system`,
+`brainrot-radio`, any other internal repo), fleet roles, agents, launchd jobs or
+daemons, internal files (STATUS/HANDOFF/INBOX/calibration/queue), config keys or
+file paths, or counts of his own launch sites / workers / credit balance /
+spend. Uncited numbers about his private setup are doubly wrong: they leak the
+setup and they go stale (the 09-24 episode put "observer-system had twenty-seven
+places that launch Claude … only eight pass an effort level" on air; measured at
+that day's commit it was 48 and 9, in `scripts/ observer/ bin/`). Public audio
+explains the vendor's technique in general terms and leaves Kyle's system to him.
 
 **Agent C — Sourcing Skeptic.** Attack ONLY grounding. Refute "every claim is
 sourced." Find: segments with no direct source quote, editorial claims with no
