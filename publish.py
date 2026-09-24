@@ -187,6 +187,23 @@ def list_all_episodes() -> list:
     return sorted(episodes, key=lambda e: e["published"], reverse=True)
 
 
+def enrich_episodes(episodes: list, ep_meta: dict) -> list:
+    """Copy persisted per-tag metadata (duration, description, size, artwork) onto
+    the release list in place. `list_all_episodes()` only knows what GitHub knows;
+    without this the feed loses durations and enclosure sizes."""
+    for ep in episodes:
+        stored = ep_meta.get(ep["tag"], {})
+        if stored.get("duration"):
+            ep["duration"] = stored["duration"]
+        if stored.get("description"):
+            ep["description"] = stored["description"]
+        if stored.get("mp3_size") and stored["mp3_size"] > 0:
+            ep["mp3_size"] = stored["mp3_size"]
+        if stored.get("artwork_url"):
+            ep["artwork_url"] = stored["artwork_url"]
+    return episodes
+
+
 def generate_feed(episodes: list) -> str:
     """Generate podcast RSS feed XML."""
     fg = FeedGenerator()
@@ -411,16 +428,7 @@ def publish(mp3_path: str, title: str = None, description: str = None, artwork_p
     episodes = list_all_episodes()
 
     # Enrich ALL episodes with persisted metadata
-    for ep in episodes:
-        stored = ep_meta.get(ep["tag"], {})
-        if stored.get("duration"):
-            ep["duration"] = stored["duration"]
-        if stored.get("description"):
-            ep["description"] = stored["description"]
-        if stored.get("mp3_size") and stored["mp3_size"] > 0:
-            ep["mp3_size"] = stored["mp3_size"]
-        if stored.get("artwork_url"):
-            ep["artwork_url"] = stored["artwork_url"]
+    enrich_episodes(episodes, ep_meta)
 
     feed_xml = generate_feed(episodes)
 
