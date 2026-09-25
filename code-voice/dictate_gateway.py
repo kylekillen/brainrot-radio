@@ -26,6 +26,7 @@ reaches it solely through ``tailscale serve``.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -202,6 +203,34 @@ def _form_field(body: bytes, ctype: str, name: str) -> str | None:
     return m.group(1).decode(errors="replace") if m else None
 
 
+def _stt(body: bytes, ctype: str) -> str:
+    req = urllib.request.Request(STT_URL, data=body, headers={"Content-Type": ctype})
+    with urllib.request.urlopen(req, timeout=600) as r:
+        return json.loads(r.read()).get("text", "")
+
+
+def _chat_audio(messages: list) -> tuple[bytes, str] | None:
+    """(audio bytes, format) from the first OpenAI ``input_audio`` part, else None."""
+    for m in messages:
+        content = m.get("content") if isinstance(m, dict) else None
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if isinstance(part, dict) and part.get("type") == "input_audio":
+                a = part.get("input_audio") or {}
+                return base64.b64decode(a.get("data", "")), a.get("format") or "wav"
+    return None
+
+
+def _multipart(audio: bytes, fmt: str) -> tuple[bytes, str]:
+    boundary = f"dictate{int(time.time() * 1000)}"
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n"
+            f"parakeet\r\n--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; "
+            f"filename=\"audio.{fmt}\"\r\nContent-Type: application/octet-stream\r\n\r\n"
+            ).encode() + audio + f"\r\n--{boundary}--\r\n".encode()
+    return body, f"multipart/form-data; boundary={boundary}"
+
+
 PAGE = (Path(__file__).resolve().parent / "dictate_page.html")
 
 
@@ -210,6 +239,10 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def _send(self, code: int, body: bytes, ctype: str) -> None:
+        # Every request, including 404s and failures: the phone's setup errors were
+        # invisible before because only successful transcriptions were logged.
+        log(f"{self.command} {urlparse(self.path).path} -> {code} "
+            f"ua={self.headers.get('User-Agent', '-')[:60]}")
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
@@ -264,9 +297,7 @@ class Handler(BaseHTTPRequestHandler):
         source = qs.get("source", [None])[0] or _form_field(body, ctype, "source") or "keyboard"
         t0 = time.perf_counter()
         try:
-            req = urllib.request.Request(STT_URL, data=body, headers={"Content-Type": ctype})
-            with urllib.request.urlopen(req, timeout=600) as r:
-                raw = json.loads(r.read()).get("text", "")
+            raw = _stt(body, ctype)
         except Exception as e:  # noqa: BLE001
             DATA.mkdir(parents=True, exist_ok=True)
             keep = DATA / f"failed-{int(time.time())}.bin"
@@ -289,10 +320,22 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         try:
             req = json.loads(self.rfile.read(length) or b"{}")
-            text = _chat(req.get("messages", []), timeout=60,
-                         temperature=float(req.get("temperature", 0.2)),
-                         base=REWORD_OLLAMA, model=REWORD_MODEL, think=False)
+            audio = _chat_audio(req.get("messages", []))
+            if audio is not None:
+                # The keyboard's "single-call" mode sends the recording here as an
+                # input_audio part; the text model can't hear it, so transcribe it.
+                raw = _stt(*_multipart(*audio))
+                text, status = clean_text(raw, allow_cold=False)
+                record({"ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "source": "keyboard-chat-audio", "status": status, "raw": raw,
+                        "text": text})
+                log(f"keyboard-chat-audio: {len(raw.split())} words {status}")
+            else:
+                text = _chat(req.get("messages", []), timeout=60,
+                             temperature=float(req.get("temperature", 0.2)),
+                             base=REWORD_OLLAMA, model=REWORD_MODEL, think=False)
         except Exception as e:  # noqa: BLE001
+            log(f"chat/completions failed: {e}")
             return self._json(502, {"error": {"message": f"local model failed: {e}"}})
         self._json(200, {
             "id": f"chatcmpl-{int(time.time()*1000)}", "object": "chat.completion",
