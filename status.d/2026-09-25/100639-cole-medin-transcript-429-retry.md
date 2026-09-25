@@ -1,0 +1,2 @@
+### 2026-09-25 04:06 — Build-pitch: no verified pitch; Cole Medin rate-limits video still unread (yt-dlp 429)
+Cole Medin's "AI Coding Rate Limits are RIDICULOUS Now" (NZq88JAJSag, 09-24) is the most burn-relevant claude_lab item and has failed transcript fetch two days running (HTTP 429), so tomorrow's run should retry it first. Jev (TypeSafe) was examined and parked as a watch item: only vendor benchmarks, waitlist access, and model-router already ruled routing doesn't move on landscape signals.
