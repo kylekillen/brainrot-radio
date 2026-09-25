@@ -38,19 +38,33 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import qos
+
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("DICTATE_PORT", "8767"))
 STT_URL = os.environ.get("DICTATE_STT_URL", "http://127.0.0.1:8766/v1/audio/transcriptions")
-OLLAMA = os.environ.get("DICTATE_OLLAMA", "http://127.0.0.1:11434")
-CLEAN_MODEL = os.environ.get("DICTATE_CLEAN_MODEL", "qwen3.6:35b-a3b")
-KEEP_ALIVE = os.environ.get("DICTATE_KEEP_ALIVE", "2h")
+# Dictation cleanup has its OWN small model on its OWN ollama (com.codevoice.ollama,
+# :11435) so it never queues behind fleet workers using the big model on :11434.
+OLLAMA = os.environ.get("DICTATE_OLLAMA", "http://127.0.0.1:11435")
+CLEAN_MODEL = os.environ.get("DICTATE_CLEAN_MODEL", "qwen3:4b-instruct-2507-q4_K_M")
+KEEP_ALIVE = os.environ.get("DICTATE_KEEP_ALIVE", "-1m")
+# The keyboard's optional "rewording" endpoint keeps the big model; it is not on the
+# dictation path, so its queueing only ever delays rewording.
+REWORD_OLLAMA = os.environ.get("DICTATE_REWORD_OLLAMA", "http://127.0.0.1:11434")
+REWORD_MODEL = os.environ.get("DICTATE_REWORD_MODEL", "qwen3.6:35b-a3b")
 DATA = Path(os.environ.get("DICTATE_DATA", str(Path.home() / ".observer" / "dictation")))
 HISTORY = DATA / "history.jsonl"
 LOG = Path(__file__).resolve().parent / "dictate_gateway.log"
 
 CHUNK_WORDS = 220          # long-form cleanup works paragraph by paragraph
-CHUNK_TIMEOUT = 25         # seconds per chunk before we keep the raw chunk
+# A 4B model at ollama's default 32k context holds 7.6 GB (KV cache) on a machine that is
+# already in swap; cleanup chunks are ~300 tokens, so 4k is ample. Must be identical on
+# every call to the model or ollama reloads it.
+CLEAN_NUM_CTX = 4096
+CLEAN_BUDGET = 3.0         # seconds Kyle waits on cleanup before he gets the raw text
+CLEAN_EXTRA_PER_CHUNK = 2.0  # long-form recordings get a little more per extra chunk
 MAX_UPLOAD = 200 * 1024 * 1024
+MIN_UPLOAD = 1024          # smaller than this is an empty/aborted recording, not audio
 
 CLEAN_SYSTEM = (
     "You clean up dictated speech into written text. Remove filler words (um, uh, "
@@ -97,7 +111,8 @@ def _model_loaded() -> bool:
 def warm_model() -> None:
     try:
         _post_json(f"{OLLAMA}/api/generate",
-                   {"model": CLEAN_MODEL, "prompt": "", "keep_alive": KEEP_ALIVE}, 120)
+                   {"model": CLEAN_MODEL, "prompt": "", "keep_alive": KEEP_ALIVE,
+                    "options": {"num_ctx": CLEAN_NUM_CTX}}, 120)
         log(f"cleanup model warmed: {CLEAN_MODEL}")
     except Exception as e:  # noqa: BLE001
         log(f"warm failed: {e}")
@@ -106,11 +121,20 @@ def warm_model() -> None:
 _THINK = re.compile(r"<think>.*?</think>", re.S)
 
 
-def _chat(messages: list[dict], timeout: float, temperature: float = 0.0) -> str:
-    out = _post_json(f"{OLLAMA}/api/chat", {
-        "model": CLEAN_MODEL, "messages": messages, "stream": False, "think": False,
+def _chat(messages: list[dict], timeout: float, temperature: float = 0.0,
+          *, base: str | None = None, model: str | None = None, think: bool | None = None,
+          num_ctx: int | None = None) -> str:
+    """One ollama chat call. ``think=False`` only for reasoning models: the small
+    instruct cleanup model rejects the flag with HTTP 400."""
+    payload = {
+        "model": model or CLEAN_MODEL, "messages": messages, "stream": False,
         "keep_alive": KEEP_ALIVE, "options": {"temperature": temperature},
-    }, timeout)
+    }
+    if num_ctx is not None:
+        payload["options"]["num_ctx"] = num_ctx
+    if think is not None:
+        payload["think"] = think
+    out = _post_json(f"{base or OLLAMA}/api/chat", payload, timeout)
     text = out.get("message", {}).get("content", "")
     return _THINK.sub("", text).split("</think>")[-1].strip()
 
@@ -139,10 +163,15 @@ def clean_text(raw: str, *, allow_cold: bool) -> tuple[str, str]:
     for q, a in FEW_SHOT:
         msgs += [{"role": "user", "content": q}, {"role": "assistant", "content": a}]
     out, failed = [], 0
-    for chunk in _chunks(raw):
+    chunks = _chunks(raw)
+    deadline = time.monotonic() + CLEAN_BUDGET + CLEAN_EXTRA_PER_CHUNK * (len(chunks) - 1)
+    for chunk in chunks:
         try:
-            cleaned = _chat(msgs + [{"role": "user", "content": chunk + " /no_think"}],
-                            timeout=CHUNK_TIMEOUT if allow_cold or out else 8)
+            left = deadline - time.monotonic()
+            if left <= 0.2:
+                raise TimeoutError("cleanup budget spent")
+            cleaned = _chat(msgs + [{"role": "user", "content": chunk}], timeout=left,
+                            num_ctx=CLEAN_NUM_CTX)
             # A cleanup that shrinks the text by more than half has summarized, not cleaned.
             if not cleaned or len(cleaned.split()) < 0.5 * len(chunk.split()):
                 raise ValueError("cleanup dropped too much text")
@@ -213,6 +242,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"error": "not found"})
 
     def do_POST(self):
+        qos.set_interactive()
         p = self._path()
         if p in ("/v1/audio/transcriptions", "/audio/transcriptions"):
             return self._transcribe()
@@ -224,6 +254,9 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         if length <= 0 or length > MAX_UPLOAD:
             return self._json(400, {"error": f"bad upload size {length}"})
+        if length < MIN_UPLOAD:
+            self.rfile.read(length)
+            return self._json(400, {"error": f"recording too short ({length} bytes) - nothing to transcribe"})
         body = self.rfile.read(length)
         ctype = self.headers.get("Content-Type", "")
         qs = parse_qs(urlparse(self.path).query)
@@ -257,20 +290,23 @@ class Handler(BaseHTTPRequestHandler):
         try:
             req = json.loads(self.rfile.read(length) or b"{}")
             text = _chat(req.get("messages", []), timeout=60,
-                         temperature=float(req.get("temperature", 0.2)))
+                         temperature=float(req.get("temperature", 0.2)),
+                         base=REWORD_OLLAMA, model=REWORD_MODEL, think=False)
         except Exception as e:  # noqa: BLE001
             return self._json(502, {"error": {"message": f"local model failed: {e}"}})
         self._json(200, {
             "id": f"chatcmpl-{int(time.time()*1000)}", "object": "chat.completion",
-            "created": int(time.time()), "model": CLEAN_MODEL,
+            "created": int(time.time()), "model": REWORD_MODEL,
             "choices": [{"index": 0, "finish_reason": "stop",
                          "message": {"role": "assistant", "content": text}}],
         })
 
 
 def main() -> None:
+    qos.set_interactive()
     DATA.mkdir(parents=True, exist_ok=True)
     log(f"dictate gateway starting on {HOST}:{PORT} (stt={STT_URL}, clean={CLEAN_MODEL})")
+    threading.Thread(target=warm_model, daemon=True).start()
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
 
 

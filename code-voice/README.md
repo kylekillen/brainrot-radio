@@ -165,5 +165,22 @@ reached from the tailnet only via `tailscale serve --bg --set-path /dictate http
 - `POST /v1/chat/completions` — local model, for the keyboard's optional rewording.
 - History: `~/.observer/dictation/history.jsonl`; failed uploads kept as `failed-*.bin`.
 
+### Latency design (2026-09-24 — phone round trip 30-60 s → ~2 s)
+
+- **STT**: every upload is transcoded to 16 kHz mono wav with ffmpeg, then run through
+  Parakeet on the **CPU** (`onnx-asr`, int8; `pip install "onnx-asr[cpu,hub]"` in the venv).
+  The MLX Parakeet loader rejects Chrome's webm ("unsupported file format") and used to
+  drop every take onto a cold Whisper (25 s); the MLX path is now only the fallback. CPU
+  rather than GPU because the fleet's big model saturates the GPU. A keep-hot ping every
+  15 s stops the weights being swapped out.
+- **Cleanup**: its own small model (`qwen3:4b-instruct-2507-q4_K_M`, 4k context) on its own
+  ollama, `com.codevoice.ollama` on :11435 (`OLLAMA_MAX_LOADED_MODELS=1` on the shared :11434
+  means a second model there would evict the big one). Kyle waits at most `CLEAN_BUDGET`
+  (3 s) for cleanup, then gets the raw text.
+- **Priority**: `qos.py` marks the STT/gateway threads user-interactive; the mini runs at
+  load average ~10-19 and this alone cut CPU transcription under load from 1.6-4 s to 0.4-1.2 s.
+- Uploads under 1 KB (empty/aborted recordings) get a 400; the page doesn't send them.
+- Check it: `python3 code-voice/bench_dictate.py --runs 5 --load 2`.
+
 Rollback: `launchctl bootout gui/$UID/com.codevoice.dictate` and
 `tailscale serve --set-path /dictate off`.
