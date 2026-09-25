@@ -39,6 +39,7 @@ async function start(){
 function stop(){clearInterval(timer);mr.stop();mr=null;$('rec').classList.remove('on');$('rec').textContent='Tap to record';if(wake){wake.release();wake=null}}
 async function send(){
   const blob=new Blob(chunks,{type:chunks[0]?.type||'audio/webm'});
+  if(blob.size<1024){$('status').textContent='Nothing recorded — tap and hold a moment longer.';return}
   const ext=(blob.type.includes('mp4')?'m4a':blob.type.includes('ogg')?'ogg':'webm');
   $('status').textContent='Transcribing '+Math.round(blob.size/1024)+' KB…';
   const fd=new FormData();fd.append('file',blob,'dictation.'+ext);fd.append('model','parakeet');fd.append('source','page');
