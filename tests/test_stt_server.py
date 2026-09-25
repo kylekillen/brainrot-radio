@@ -1,5 +1,4 @@
 import importlib.util
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -21,7 +20,7 @@ def test_tiny_upload_rejected_before_any_engine(monkeypatch):
         stt.transcribe_bytes(b"audio-bytes", "dashboard.webm")
 
 
-@pytest.mark.skipif(not Path(stt.FFMPEG).exists() and not shutil.which("ffmpeg"), reason="no ffmpeg")
+@pytest.mark.skipif(not Path(stt.FFMPEG).exists(), reason="no ffmpeg at the configured path")
 def test_webm_is_transcoded_to_wav_before_engine(tmp_path, monkeypatch):
     src = tmp_path / "clip.webm"
     subprocess.run([stt.FFMPEG, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequency=440:duration=1",
@@ -40,6 +39,7 @@ def test_webm_is_transcoded_to_wav_before_engine(tmp_path, monkeypatch):
     assert not Path(seen["path"]).exists()
 
 
+@pytest.mark.skipif(not Path(stt.FFMPEG).exists(), reason="no ffmpeg at the configured path")
 def test_cpu_failure_falls_back_to_mlx_on_the_wav(tmp_path, monkeypatch):
     src = tmp_path / "clip.webm"
     subprocess.run([stt.FFMPEG, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequency=440:duration=1",
