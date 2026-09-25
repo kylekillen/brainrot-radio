@@ -213,8 +213,8 @@ def main():
                 sys.stderr.write(f"external_writer: saved {len(covered['stories'])} covered stories\n")
             else:
                 sys.stderr.write(
-                    "external_writer: no parseable covered-stories trailer; relying on "
-                    "source archiving (Step 5 safety net) for dedup\n"
+                    "external_writer: no covered-stories trailer (none is requested any more); the "
+                    "ledger is written from the final script after publish (covered_guard.py)\n"
                 )
         except Exception as e:  # noqa: BLE001
             sys.stderr.write(f"external_writer: save_covered_stories failed (non-fatal): {e}\n")

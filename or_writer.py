@@ -29,8 +29,10 @@ import argparse
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
+import dedup_guard
 import or_complete
 
 ROOT = Path(__file__).resolve().parent
@@ -45,7 +47,10 @@ DEFAULT_MODEL = ""
 
 # Per-source truncation caps (chars) so the prompt stays bounded on a pay-per-token
 # model. The topic brief and build-pitch summary are the spine and go in whole.
-MAX_TRANSCRIPTS = 3
+# Was 3, taken alphabetically: on 2026-09-25 most items labelled '(transcript available)'
+# in the brief never reached the writer, which then invented their detail.
+MAX_TRANSCRIPTS = 16
+MIN_TRANSCRIPT_BYTES = 1000
 TRANSCRIPT_CAP = 8000
 MAX_ARTICLES = 6
 ARTICLE_CAP = 6000
@@ -83,6 +88,9 @@ def _gather_sources() -> dict:
     out["build_pitches"] = _read(pitch) if pitch.exists() else ""
 
     transcripts = sorted((TMP / "transcripts").glob("*.txt")) if (TMP / "transcripts").exists() else []
+    # A "transcript" under ~1KB is a failed fetch ("Music!", "Thank you."), not evidence —
+    # it only crowds real transcripts out of the cap and invites the writer to invent.
+    transcripts = [t for t in transcripts if t.stat().st_size >= MIN_TRANSCRIPT_BYTES]
     out["transcripts"] = [
         (t.name, _read(t, TRANSCRIPT_CAP)) for t in transcripts[:MAX_TRANSCRIPTS]
     ]
@@ -98,7 +106,35 @@ def _gather_sources() -> dict:
     out["recent_scripts"] = [(s.name, _read(s, RECENT_SCRIPT_CAP)) for s in recent]
     covered = sorted(SCRIPTS_DIR.glob(".covered-*.json"))[-MAX_COVERED:]
     out["covered"] = [(c.name, _read(c, COVERED_CAP)) for c in covered]
+    out["evidence_rules"] = _read(ROOT / ".claude" / "context" / "evidence-rules.md")
+    out["evidence_ledger"] = _evidence_ledger(out["topic_brief"])
+    out["aired_digest"] = dedup_guard.digest(datetime.now().strftime("%Y-%m-%d"), 7, SCRIPTS_DIR)
     return out
+
+
+_ITEM_RE = re.compile(r"^## (\d+)\. (.+)$", re.MULTILINE)
+_TYPE_RE = re.compile(r"^Type: (.+)$", re.MULTILINE)
+
+
+def _evidence_ledger(topic_brief: str) -> str:
+    """One line per brief item saying what evidence exists for it, so 'no transcript'
+    is an explicit, per-item fact in the prompt instead of a label the model may skip."""
+    lines = []
+    items = list(_ITEM_RE.finditer(topic_brief))
+    for i, m in enumerate(items):
+        end = items[i + 1].start() if i + 1 < len(items) else len(topic_brief)
+        t = _TYPE_RE.search(topic_brief, m.end(), end)
+        kind = t.group(1).strip() if t else "unknown"
+        if "no transcript" in kind:
+            verdict = "NO TRANSCRIPT — blurb only, at most 2-3 sentences, no elaboration"
+        elif "transcript available" in kind:
+            verdict = "transcript exists — usable ONLY if its text is inlined below"
+        elif "full text" in kind:
+            verdict = "full article text available"
+        else:
+            verdict = "headline/snippet only — treat as blurb"
+        lines.append(f"- #{m.group(1)} {m.group(2)[:90]} — {verdict}")
+    return "\n".join(lines)
 
 
 def _sources_block(src: dict, include_recent_scripts: bool) -> str:
@@ -110,6 +146,14 @@ def _sources_block(src: dict, include_recent_scripts: bool) -> str:
         parts.append(f"=== PODCAST TRANSCRIPT ({name}) ===\n{body}")
     for name, body in src["articles"]:
         parts.append(f"=== SUBSTACK ARTICLE ({name}) ===\n{body}")
+    if src.get("evidence_rules"):
+        parts.append("=== EVIDENCE RULES (mandatory) ===\n" + src["evidence_rules"])
+    if src.get("evidence_ledger"):
+        parts.append("=== EVIDENCE LEDGER — what you actually have for each brief item ===\n"
+                     + src["evidence_ledger"])
+    if src.get("aired_digest"):
+        parts.append("=== AIRED IN THE LAST 7 DAYS — segment openers per episode; do NOT re-air any of it ===\n"
+                     + src["aired_digest"])
     parts.append(
         "=== DEDUP — STORIES/FACTS ALREADY COVERED IN PREVIOUS EPISODES (do NOT repeat) ===\n"
         + "\n\n".join(f"-- {name} --\n{body}" for name, body in src["covered"])
@@ -135,7 +179,10 @@ SYSTEM = (
     "- No headings, no bullet points, no asterisks, no section labels in the body.\n"
     "- Conversational, substantive, specific. Quote real details/arguments from the "
     "provided sources. Engage at a practitioner/insider level, not summary filler.\n"
-    "- Do not invent sources, quotes, or a Build-Pitch. Use only what is provided."
+    "- Do not invent sources, quotes, or a Build-Pitch. Use only what is provided.\n"
+    "- An item with no transcript text provided is BLURB ONLY: two or three sentences "
+    "from the blurb itself, never elaborated. Never state a number, quote, name or "
+    "score you cannot point to in the provided text."
 )
 
 
@@ -170,12 +217,27 @@ Include:
   If there is no pitch or it says NO_VERIFIED_PITCH, skip it — do NOT invent one.
 
 Honor the dedup section: do not repeat any story, argument, quote, or fact already
-covered in previous episodes. Target 7000-9000 words for this half. Begin the output
-immediately with the first [BASIL] block — no preamble."""
+covered in previous episodes. Target 7000-9000 words for this half ONLY IF the provided
+sources support that much — otherwise write less; never pad with invented detail
+(EVIDENCE RULES). Begin the output immediately with the first [BASIL] block — no preamble."""
+
+
+def _first_half_repeat_notice(existing_script: str) -> str:
+    """Dedup check run BEFORE the back half is written: first-half blocks that already
+    aired in the last 7 days. Logged loudly and handed to the writer and to QC."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    flags = dedup_guard.format_flags(dedup_guard.find_repeats(
+        existing_script, dedup_guard.prior_scripts(today, 7, SCRIPTS_DIR)))
+    if not flags:
+        return ""
+    sys.stderr.write("or_writer: DEDUP — first half repeats earlier episodes:\n" + flags + "\n")
+    return ("\n=== FIRST-HALF BLOCKS THAT ALREADY AIRED THIS WEEK (QC will cut them; do not "
+            "build on, echo or call back to them) ===\n" + flags + "\n")
 
 
 def _pass2_prompt(src: dict, greeting: str, existing_script: str) -> str:
     return f"""{_sources_block(src, include_recent_scripts=False)}
+{_first_half_repeat_notice(existing_script)}
 
 === THE FIRST HALF OF TODAY'S EPISODE (already written — do NOT repeat any of it) ===
 {existing_script}
@@ -206,15 +268,11 @@ Cover, in order:
   the time of day.
 
 Honor the dedup section AND the first half above: never repeat a story/fact/quote.
-Target 7000-9000 words for this half. Use [BASIL]/[BROOKE]/[TRANSITION] only and
-alternate speakers.
+Target 7000-9000 words for this half ONLY IF the provided sources support that much —
+if they don't, write less and stop; never pad with invented detail (EVIDENCE RULES).
+Use [BASIL]/[BROOKE]/[TRANSITION] only and alternate speakers."""
 
-AFTER the outro and a final blank line, append a machine-readable trailer recording
-EVERY story covered across the WHOLE episode (both halves) so future episodes can
-dedup. Use exactly this format and nothing after it:
-{COVERED_BEGIN}
-{{"stories": ["kebab-case-slug-per-story"], "segments": {{"kebab-case-slug": "one-sentence summary of the specific facts/quotes/arguments used on air"}}, "podcast_guids": []}}
-{COVERED_END}"""
+
 
 
 _FENCE_RE = re.compile(r"^```[a-zA-Z]*\s*\n(.*?)\n```\s*$", re.DOTALL)
@@ -353,8 +411,8 @@ def main():
                 )
             else:
                 sys.stderr.write(
-                    "or_writer: no parseable covered-stories trailer; relying on "
-                    "source archiving (Step 5 safety net) for dedup\n"
+                    "or_writer: no covered-stories trailer (none is requested any more); the "
+                    "ledger is written from the final script after publish (covered_guard.py)\n"
                 )
         except Exception as e:  # noqa: BLE001
             sys.stderr.write(f"or_writer: save_covered_stories failed (non-fatal): {e}\n")

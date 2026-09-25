@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOME</key>
+		<string>/Users/kylekillen</string>
+		<key>PATH</key>
+		<string>/Users/kylekillen/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+	</dict>
+	<key>Label</key>
+	<string>com.mojo.brainrot-watch</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/kylekillen/brainrot-radio/watch-episode.sh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StartInterval</key>
+	<integer>600</integer>
+	<key>StandardErrorPath</key>
+	<string>/Users/kylekillen/brainrot-radio/logs/watch-stderr.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/kylekillen/brainrot-radio/logs/watch-stdout.log</string>
+	<key>WorkingDirectory</key>
+	<string>/Users/kylekillen/brainrot-radio</string>
+</dict>
+</plist>
