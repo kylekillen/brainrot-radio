@@ -29,4 +29,4 @@ for i in $(seq 1 90); do
 done
 curl -s 127.0.0.1:8766/health; echo; curl -s 127.0.0.1:8767/health; echo
 sleep 20  # let the first keep-hot cycle run, like a real idle gap
-python3 "$REPO/code-voice/bench_dictate.py" --runs 5 --load "${LOAD:-2}"
+{ date -u +%FT%TZ; python3 "$REPO/code-voice/bench_dictate.py" --runs 5 --load "${LOAD:-2}"; } | tee -a "$HOME/.observer/dictation/deploy-bench.log"
