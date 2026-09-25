@@ -15,6 +15,7 @@ Usage:
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import urllib.request
@@ -214,9 +215,19 @@ def load_covered_stories():
 
 
 def save_covered_stories(stories, segments=None, podcast_guids=None):
-    """Save covered stories after generating an episode."""
+    """Save covered stories after generating an episode.
+
+    COVERED_DEFER=1 (set by generate-episode.sh) parks the claim in
+    .tmp/covered-pending-DATE.json instead of the live ledger: the writers claim
+    coverage from their DRAFT, before QC cuts it, and the live ledger is hard-excluded
+    by tomorrow's ingest. covered_guard.py writes the real ledger from the final
+    script once the episode has aired.
+    """
     today = datetime.now().strftime("%Y-%m-%d")
-    covered_file = SCRIPTS_DIR / f".covered-{today}.json"
+    if os.environ.get("COVERED_DEFER") == "1":
+        covered_file = SCRIPTS_DIR.parent / ".tmp" / f"covered-pending-{today}.json"
+    else:
+        covered_file = SCRIPTS_DIR / f".covered-{today}.json"
 
     # Only load today's file for saving (not yesterday's)
     existing = {"stories": [], "segments": {}, "podcast_guids": [], "last_episode": None}

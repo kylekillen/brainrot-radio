@@ -227,8 +227,8 @@ def _write_pass(pass_no: int, script_path: Path, greeting: str, choice: dict) ->
                 sys.stderr.write(f"router_writer: saved {len(covered['stories'])} covered stories\n")
             else:
                 sys.stderr.write(
-                    "router_writer: no parseable covered-stories trailer; relying on "
-                    "source archiving (Step 5 safety net) for dedup\n"
+                    "router_writer: no covered-stories trailer (none is requested any more); the "
+                    "ledger is written from the final script after publish (covered_guard.py)\n"
                 )
         except Exception as e:  # noqa: BLE001
             sys.stderr.write(f"router_writer: save_covered_stories failed (non-fatal): {e}\n")

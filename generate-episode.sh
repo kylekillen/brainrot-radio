@@ -40,6 +40,18 @@ RESULT_LOG="$BRAINROT_DIR/logs/generate-$RUN_ID.log"
 CLAUDE="/Users/kylekillen/.local/bin/claude"
 TODAY=$(date '+%Y-%m-%d')
 
+# Covered ledger is written AFTER the episode airs, from the final script (covered_guard.py).
+# With this set, ingest.save_covered_stories() — which the writers call from their DRAFT —
+# only parks its claim in .tmp/covered-pending-DATE.json. See covered_guard.py.
+export COVERED_DEFER=1
+rm -f "$BRAINROT_DIR/.tmp/covered-pending-${TODAY}.json"
+
+# Run guard: a run that exits without declaring ok|standdown raises an alarm (EXIT trap),
+# and watch-episode.sh covers SIGKILL/hang via the state file. See run_guard.sh.
+export RG_RUN_ID="$RUN_ID" RG_DIR="$BRAINROT_DIR/.tmp"
+mkdir -p "$RG_DIR"
+. "$BRAINROT_DIR/run_guard.sh"
+
 # Code Voice: mute phone read-aloud for this non-interactive pipeline so the
 # 5:30 AM podcast generation never narrates its turns to Kyle's phone.
 export CODE_VOICE_MUTE=1
@@ -91,6 +103,10 @@ fi
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$RESULT_LOG"
+    # Also to stderr, so a launchd/recovery log shows the run's progress and its last
+    # words (recovery-20260925.log held one line for a run that logged ~60).
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >&2
+    rg_beat "$1"
 }
 
 # Run claude with a timeout. Args: timeout_seconds prompt_file step_name
@@ -108,6 +124,7 @@ run_claude_step() {
     while kill -0 $pid 2>/dev/null; do
         sleep 10
         elapsed=$((elapsed + 10))
+        rg_beat
         if [ $elapsed -ge $timeout ]; then
             kill -9 $pid 2>/dev/null
             log "Step [$step_name] TIMED OUT after ${timeout}s"
@@ -145,11 +162,14 @@ run_kimi_pass() {
     return 1
 }
 
+rg_start
+trap 'rg_on_exit || true' EXIT
 log "Episode generation starting (run=$RUN_ID)..."
 
 # ─── Guard: skip if today's episode already published ────────────────────────
 if [ -f "$BRAINROT_DIR/output/killen-time-${TODAY}.mp3" ]; then
     log "Episode already published for $TODAY, skipping"
+    rg_finish standdown
     exit 0
 fi
 
@@ -173,12 +193,13 @@ if [ -f "$LOCK" ]; then
     if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null \
        && [ -z "$(find "$LOCK" -mmin +180 2>/dev/null)" ]; then
         log "Another generation for $TODAY is already running (pid $LOCK_PID); standing down"
+        rg_finish standdown
         exit 0
     fi
     log "Stale lock for $TODAY (pid ${LOCK_PID:-none}); taking over"
 fi
 echo "$$" > "$LOCK"
-trap 'rm -f "$LOCK"' EXIT
+trap 'rg_on_exit || true; rm -f "$LOCK"' EXIT
 
 # ─── Budget guard: preserve the trading pool ─────────────────────────────────
 # If the shared Claude pool is under cap-pressure (a recent money-monitor cap-hit),
@@ -188,6 +209,7 @@ trap 'rm -f "$LOCK"' EXIT
 if [ -x "$BRAINROT_DIR/budget-guard.sh" ] && [ -z "${BUDGET_GUARD_OFF:-}" ]; then
     if ! "$BRAINROT_DIR/budget-guard.sh" check 2>>"$RESULT_LOG"; then
         log "BUDGET GUARD: shared pool under cap-pressure — standing down today's episode to preserve trading functions. (override with BUDGET_GUARD_OFF=1)"
+        rg_finish standdown
         exit 0
     fi
 fi
@@ -287,6 +309,19 @@ If a topic was covered in ANY previous episode, SKIP IT unless there are genuine
 (a price moved, a deal closed, someone resigned, new data was released — a new TAKE on the same facts is NOT new).
 When in doubt, SKIP. A fresh story is always better than a retread."
 fi
+
+# 7-day "what actually aired" digest + evidence rules, appended to the dedup context so
+# BOTH Claude passes get them (the external/router/fallback writers build the same text
+# inside or_writer.py). Rules file is the single source of truth for both paths.
+AIRED_DIGEST=$(python3 dedup_guard.py digest --today "$TODAY" 2>/dev/null || true)
+EVIDENCE_RULES=$(cat "$BRAINROT_DIR/.claude/context/evidence-rules.md" 2>/dev/null || true)
+DEDUP_CONTEXT="${DEDUP_CONTEXT}
+
+AIRED IN THE LAST 7 DAYS — segment openers per broadcast script; do NOT re-air any of it:
+${AIRED_DIGEST}
+
+${EVIDENCE_RULES}
+Items the topic brief labels '(no transcript)' are BLURB ONLY: two or three sentences from the blurb, no elaboration."
 
 SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 
@@ -428,6 +463,16 @@ PASS1_WORDS=$(wc -w < "$BRAINROT_DIR/$SCRIPT_FILE" | tr -d ' ')
 log "Pass 1 complete: $PASS1_WORDS words in $SCRIPT_FILE"
 
 # ─── Step 2b: Pass 2 — NFL/NBA + Entertainment + Economics/Culture + Outro ───
+# Dedup check BEFORE the back half: first-half blocks that already aired in the last 7 days.
+FIRST_HALF_REPEATS=$(python3 dedup_guard.py check "$SCRIPT_FILE" --today "$TODAY" 2>/dev/null || true)
+FIRST_HALF_BLOCK=""
+if [ -n "$FIRST_HALF_REPEATS" ]; then
+    log "DEDUP: first half repeats earlier episodes:"$'\n'"$FIRST_HALF_REPEATS"
+    FIRST_HALF_BLOCK="
+FIRST-HALF BLOCKS THAT ALREADY AIRED THIS WEEK (QC will cut them; do not build on, echo or call back to them):
+${FIRST_HALF_REPEATS}
+"
+fi
 cat > "$BRAINROT_DIR/.tmp/step2b-pass2.txt" <<PROMPT_EOF
 You are producing the SECOND HALF of a Killen Time episode. Your working directory is /Users/kylekillen/brainrot-radio.
 
@@ -435,7 +480,7 @@ Read CLAUDE.md for full editorial guidelines, voice format, and content directio
 
 The first half of the episode has already been written to: ${SCRIPT_FILE}
 READ IT FIRST so you know what topics and stories have already been covered in this episode.
-
+${FIRST_HALF_BLOCK}
 YOUR JOB: APPEND the second half to the EXISTING script file. Cover SPORTS (NFL-led, NBA winding down), Entertainment, Economics/Culture, an optional brief prediction-markets quick-hit, and write the outro. Do NOT rewrite or duplicate anything from the first half.
 
 Steps:
@@ -456,7 +501,7 @@ Steps:
    - Alternate speakers — never two consecutive same-speaker blocks
    - Target 7000-9000 words for this half
 
-7. After appending, save ALL covered stories from BOTH halves:
+7. After appending, record the covered stories from BOTH halves (this is parked as a draft claim; the real ledger is written from the FINAL script after QC and publish, so record only what you actually wrote):
    Use: from ingest import save_covered_stories; save_covered_stories(list_of_slugs, dict_of_summaries, podcast_guids=list_of_guids)
    Include ALL story slugs from both halves AND all podcast episode GUIDs referenced.
    The summaries dict MUST include the specific talking points, quotes, and arguments used for EVERY story.
@@ -506,6 +551,17 @@ if [ "${PODCAST_ENGINE:-claude}" != "gemini" ]; then
 # keeps only issues ≥2 agents agree on (MUST-FIX) vs single-agent ADVISORY, fixes
 # the MUST-FIX items, and prints `QC VERDICT: PASS`/`FAIL`. We read+follow the
 # file rather than rely on slash-command expansion so the daily run is robust.
+QC_DEDUP_FLAGS=$(python3 dedup_guard.py check "$NEW_SCRIPT" --today "$TODAY" 2>/dev/null || true)
+QC_DEDUP_BLOCK=""
+if [ -n "$QC_DEDUP_FLAGS" ]; then
+    log "DEDUP: draft blocks overlapping the last 7 days' broadcasts (handed to QC):"$'\n'"$QC_DEDUP_FLAGS"
+    QC_DEDUP_BLOCK="
+Deterministic dedup check (5-word-phrase overlap with the last 7 days' broadcast scripts)
+flagged these blocks. Agent A must verify each against the named earlier episode; a real
+re-air is MUST-FIX (cut or replace with fresh material):
+${QC_DEDUP_FLAGS}
+"
+fi
 cat > "$BRAINROT_DIR/.tmp/step3-qc.txt" <<PROMPT_EOF
 Read the file .claude/commands/qc-episode.md and follow its instructions exactly.
 Your working directory is /Users/kylekillen/brainrot-radio.
@@ -518,6 +574,11 @@ tags are the recurring two-pass defects.
 
 Launch the three skeptics in parallel as the command directs, synthesize, fix all
 MUST-FIX issues directly in the script file, and end with the QC VERDICT line.
+${QC_DEDUP_BLOCK}
+Sourcing rule for Agent C: any specific (number, quote, name, score, "the hosts argued")
+attached to a topic-brief item labelled "(no transcript)" — or whose text was never
+provided — is UNSOURCED and MUST-FIX (cut it back to the blurb). Also cut invented
+callbacks ("as we covered yesterday") that name a story absent from the last 7 days.
 PROMPT_EOF
 
 # QC GATE. The QC command emits a literal `QC VERDICT: PASS`/`FAIL` (see
@@ -593,7 +654,8 @@ OUTPUT_MP3="output/${SCRIPT_BASENAME}.mp3"
 
 log "Rendering TTS audio..."
 if ! python3 voice.py "$NEW_SCRIPT" >> "$RESULT_LOG" 2>&1; then
-    log "Voice render failed, aborting"
+    RENDER_WHY=$(tail -n 40 "$RESULT_LOG" | tr -d '\r' | grep -a -E "SCRIPT TOO SHORT|Word count:|Shortfall|Error|Traceback" | head -3 | tr '\n' ';' | cut -c1-300)
+    log "Voice render failed (${RENDER_WHY:-see run log}), aborting"
     exit 1
 fi
 log "TTS render complete"
@@ -624,6 +686,16 @@ if ! python3 publish.py "${PUB_ARGS[@]}" >> "$RESULT_LOG" 2>&1; then
     exit 1
 fi
 log "Publish complete"
+rg_finish ok
+
+# Covered ledger: written only now — after QC AND after the episode actually aired — and
+# from the FINAL script, so a rejected/cut/never-aired draft can never poison tomorrow's
+# story pool (2026-09-25). Non-fatal: the episode has shipped; a miss here is loud, not fatal.
+if python3 covered_guard.py commit "$NEW_SCRIPT" --date "$TODAY" >> "$RESULT_LOG" 2>&1; then
+    log "Covered ledger written from the final script"
+else
+    log "⚠️  Covered ledger write FAILED — tomorrow's dedup will lean on the 7-day script digest only. Run: python3 covered_guard.py commit $NEW_SCRIPT --date $TODAY"
+fi
 
 # ─── Step 5: Archive sources (safety net) ────────────────────────────────────
 log "Archiving used sources (safety net)..."

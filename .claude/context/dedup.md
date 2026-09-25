@@ -13,15 +13,24 @@ destroys listener trust.
    facts is NOT new. New developments mean: a price moved, a deal closed, someone
    resigned, new data was released. Read the "segments" dict in the covered JSON —
    if the underlying facts were already stated on-air, skip the topic entirely.
-4. **Save covered stories IMMEDIATELY after writing the script** (before
-   rendering), so the next episode knows what was covered even if this one hasn't
-   finished publishing. (Also protects against mid-episode context compaction.)
+4. **The covered ledger is written AFTER the episode airs, from the FINAL script.**
+   (Changed 2026-09-25. It used to be saved from the writer's draft, before QC; QC
+   then cut/rewrote the script and the ledger kept listing stories that never aired,
+   which tomorrow's ingest hard-excludes.) `generate-episode.sh` exports
+   `COVERED_DEFER=1`, so a writer's `save_covered_stories(...)` only parks a draft
+   claim in `.tmp/covered-pending-DATE.json`; after publish, `covered_guard.py commit`
+   REPLACES `scripts/.covered-DATE.json` with segments derived from the script's own
+   text and only the podcast guids the script demonstrably drew from. Nothing to do
+   by hand — unless an episode is published manually, then run
+   `python3 covered_guard.py commit scripts/killen-time-DATE.txt --date DATE`.
+   Independently, `dedup_guard.py` compares drafts against the last 7 days of
+   BROADCAST scripts (no ledger needed) before the back half is written and before QC.
 5. **Archive used source files** after writing. Move used transcripts and articles
    to `.tmp/used/` so the next episode's writer doesn't even see them.
 6. **Content summaries are mandatory.** When saving covered stories, include the
    specific talking points, quotes, and arguments used — not just a slug.
 
-## How to save (do this RIGHT AFTER writing the script)
+## How to save (legacy/manual — the pipeline now defers this, see rule 4)
 Inline Python via bash single-quotes breaks on apostrophes in string values —
 write to a `.py` file and execute it instead.
 
