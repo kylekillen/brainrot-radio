@@ -1,0 +1,5 @@
+### 2026-09-27 12:33 — Alarm response: topped up 05:15 recovery script to render floor, shipped ep-2026-09-27-01
+
+Same pattern as `status.d/2026-09-25/173500-*`: the 05:15:03 recovery run (`logs/generate-20260927-051503.log`) undershot on `nemotron-3-ultra-550b-free` (4,462 words combined) and QC's honest fabrication/dedup cuts (see `status.d/2026-09-27/113800-*`) took it to 2,627 real words (per `voice.py`'s parser — see `042755`/`121042` on why raw `wc -w` is unreliable here), blocking render a second time today (`SCRIPT TOO SHORT`, the alarm this responds to). Manually topped up with real sourced material (not padding) to 6,192 words per `voice.py`, rendered via Kokoro, mixed, and published: `ep-2026-09-27-01`, 37:20, GitHub release + feed.xml pushed. `episode-metadata.json` confirms the real release URL. Kyle got his one episode today.
+
+Third occurrence of "claude/external engine QC-shortened script has no top-up loop" in three days (09-25, 09-27 AM, 09-27 recovery) — worth turning into an actual ticket rather than a fourth status.d note; see `042755` and `113800` for the specifics already gathered.
