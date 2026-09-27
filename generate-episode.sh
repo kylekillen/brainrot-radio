@@ -224,6 +224,17 @@ if [ ! -f ".tmp/topic-brief.txt" ]; then
 fi
 log "Ingest complete"
 
+# ─── Step 1.05: X pulse (Kyle 2026-09-27) ────────────────────────────────────
+# What's trending on X (via the signed-in Chrome) + the fleet's recent X-feed
+# reads, appended to the topic brief so every writer engine sees it.
+# Non-fatal: a dead browser or empty window just yields a thinner section.
+if python3 x_pulse.py -o .tmp/x-pulse.md >> "$RESULT_LOG" 2>&1 && [ -s .tmp/x-pulse.md ]; then
+    cat .tmp/x-pulse.md >> .tmp/topic-brief.txt
+    log "X pulse appended to topic brief"
+else
+    log "X pulse unavailable (non-fatal)"
+fi
+
 # ─── Step 1.1: Scratch retention sweep ───────────────────────────────────────
 # Ingest just downloaded source MP3s into .tmp/podcasts/ (Whisper path) whose
 # transcripts are now cached in .tmp/transcripts/. Delete media scratch older
@@ -408,6 +419,7 @@ You are writing ONLY the first half. Another pass will write the second half (NB
 
 Steps:
 1. Read .tmp/topic-brief.txt for today's ranked stories
+   - The X PULSE section at its end shows what is trending on X and leads from accounts Kyle follows. Use it to judge which stories are today's MAJOR ones and dig deeper on those; follow its attribution rules.
 2. Read up to 3 podcast transcripts from .tmp/transcripts/ — PRIORITIZE the two anchor AI shows when fresh episodes exist: the AI Daily Brief (Nathaniel Whittemore) and Moonshots (Peter Diamandis). After those, pick what's most relevant to how people build with / run AI agents.
 3. Read Substack full articles in .tmp/articles/ — focus on AI/tech and agent-building/practitioner articles.
 4. Read .tmp/build-pitches.md if it exists — this is the verified output of the Claude Lab Build-Pitch Reporter (see step 6 for how to use it).
@@ -486,6 +498,7 @@ YOUR JOB: APPEND the second half to the EXISTING script file. Cover SPORTS (NFL-
 Steps:
 1. Read ${SCRIPT_FILE} — this is the first half you are continuing from. Note which stories were already covered.
 2. Read .tmp/topic-brief.txt for remaining stories not yet covered
+   - Check its X PULSE section (trending sports/entertainment/news on X + leads from accounts Kyle follows) for the day's big NFL, entertainment and culture stories; confirm before airing and follow its attribution rules.
 3. Read podcast transcripts from .tmp/transcripts/ — focus on NFL/football, NBA, entertainment, and economics podcasts
 4. Read Substack articles in .tmp/articles/ — focus on economics, culture, and entertainment articles
 5. Read scripts/.covered-*.json files for dedup against previous episodes
