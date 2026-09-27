@@ -47,9 +47,10 @@ HOW TO USE THIS SECTION (writer instructions, not source material):
 - TRENDING shows what is big on X right now. Use it to judge which of today's
   stories are the MAJOR ones, and to catch big stories the other sources miss
   (NFL results, entertainment news, AI launches). A trend label alone is not a
-  story: confirm it and get the substance (web search; for a specific post,
-  `python3 ~/model-router/bin/x-feed-read.py thread <status-url>` returns the
-  whole conversation) before putting it on air.
+  story: confirm it and get the substance — search the web, and open the post's
+  reply thread on x.com to read the whole conversation — before putting it on
+  air. This section is handed to external models as well as local ones, so it
+  names no internal tool, path or file.
 - FEED READS are digests of posts from accounts the listener follows, with
   quotes, handles and view counts. They are LEADS and quotable material.
   Attribute every quote to the person who posted it ("Bill Simmons posted…").
@@ -59,16 +60,66 @@ HOW TO USE THIS SECTION (writer instructions, not source material):
 - Posting times in the feed reads are approximate and in Mountain Time.
 """
 
+# Whole lines that are pure production bookkeeping: the collection window and
+# the provenance/colophon notes. The corpus writes them as "Window:",
+# "*Window:*" and "**Window:**", so the label is matched after markdown
+# emphasis, quoting and bullet markers are skipped.
+PROVENANCE = re.compile(
+    r"^[*_> \t]*(?:Window|Colophon|Provenance|Sources|Feed|Gap note|Method|"
+    r"Methodology|Burn flag|Verification|Not carried forward|Not forwarded|"
+    r"Not opened|Model-landscape)\b",
+    re.IGNORECASE,
+)
+
 # Sentences in a dispatch that talk about how the report was produced (or
 # about the listener's private system) rather than the news itself. Removed at
 # sentence level: the same line often carries real news after a meta clause.
 META = re.compile(
     r"dispatch|\bdesk\b|harvest|house (?:rule|memory)|KYLE[-_ ]QUEUE|\bKyle\b|"
-    r"this reading|this read\b|not pulled|not chased|follow list|follow next|"
-    r"our own miss|in[- ]window|pre-window|E1\d(?:/E1\d)?\b|tickler|fleet",
+    r"killen[- ]time|model-router|model-landscape|x-feed-read|workspace pin|"
+    r"this reading|this read\b|not pulled|not chased|not opened|unopened|"
+    r"follow list|follow next|our own miss|in[- ]window|this window|pre-window|"
+    r"E1\d(?:/E1\d)?\b|tickler|fleet|"
+    # the collection tool's own vocabulary: "five thread pulls, four web
+    # searches, three page fetches", "35 scrolls", "Forwarded to model-router",
+    # "Forwarded whole". Plain "carries it forward" / "move forward" stay.
+    r"(?:thread|web|page)\s*(?:pull|search|fetch)(?:s|es|ed)?\b|scrolls?\b|"
+    r"forward(?:ed|ing)\b|colophon|provenance|partial[- ]load|retry",
     re.IGNORECASE,
 )
-SENTENCE = re.compile(r"(?<=[.!?:;])\s+(?=[A-Z*\"\u201c(\[@_-])")
+# Splits on sentence enders, then optionally a closing quote/bracket: real
+# dispatches quote a post and then trail a note onto it ("…injury." Forwarded
+# to model-router."), and without the closer the note takes the quote with it.
+SENTENCE = re.compile(r"(?<=[.!?:;\"'\u201d)\]])\s+(?=[A-Z*\"\u201c(\[@_-])")
+
+# Belt and braces on top of META (GUARDRAILS 2026-09-24: no internal
+# repo/role/launchd names or file paths in anything a writer, or an external
+# model, can read): a private marker META has never seen costs its own
+# sentence, and a line that is nothing but one is dropped whole. AGENTS.md is
+# deliberately absent — "Claude Code adopts AGENTS.md" is real news in 09-19.
+PRIVATE = re.compile(
+    r"model-router|observer-system|killen[- ]time|x-feed-read|cdp_read|"
+    r"HANDOFF\.md|INBOX\.md|STATUS\.md|calibration\.md|"
+    r"launchd|LaunchAgent|\.observer/|~/?[A-Za-z0-9._-]+/|/Users/|/home/",
+    re.IGNORECASE,
+)
+
+# A parenthetical or a dash clause: where the view counts and "…this window"
+# notes sit inside a line whose news is worth keeping.
+CLAUSE = re.compile(r"\s*(?:\([^()]*\)|[—–-][^—–.]*)")
+
+
+def _keep(chunk: str) -> str | None:
+    """The chunk if it is clean, the chunk minus its meta clause if that is
+    what makes it dirty, else None. Never returns text that still trips META
+    or PRIVATE, so trimming cannot become a leak."""
+    if not (META.search(chunk) or PRIVATE.search(chunk)):
+        return chunk
+    trimmed = re.sub(r"\s{2,}", " ", CLAUSE.sub(" ", chunk)).strip(" \t:;,—-")
+    if trimmed and not (META.search(trimmed) or PRIVATE.search(trimmed)):
+        return trimmed
+    return None
+
 
 def read_trends(tabs=TABS, per_tab=PER_TAB) -> dict[str, list[str]]:
     sys.path.insert(0, str(CDP_DIR))
@@ -121,13 +172,15 @@ def scrub_dispatch(text: str) -> str:
             line = re.sub(r"^# .*?Dispatch No\. \d+\s*[—-]\s*", "# ", line)
             kept.append(line)
             continue
-        if line.lstrip().startswith("Window:"):
+        if PROVENANCE.match(line):  # "Window:", "*Window:*", "**Sources:**", "*Colophon…*"
             continue
-        if not META.search(line):
+        if not (META.search(line) or PRIVATE.search(line)):
             kept.append(line)
             continue
         prefix = re.match(r"^(\s*(?:>|[-*]|\d+\.)?\s*)", line).group(1)
-        sentences = [x for x in SENTENCE.split(line[len(prefix):]) if not META.search(x)]
+        # Sentence-level on both patterns, so a private marker META does not
+        # know about costs only its own sentence, not the news beside it.
+        sentences = [c for c in (_keep(x) for x in SENTENCE.split(line[len(prefix):])) if c]
         if sentences:
             kept.append(prefix + " ".join(sentences))
     return re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
@@ -155,7 +208,12 @@ def build(hours: float, trends: dict[str, list[str]] | None, trend_error: str | 
         used += 1
     if not used:
         parts.append("(none in window)")
-    return "\n".join(parts) + "\n"
+    text = "\n".join(parts) + "\n"
+    leak = PRIVATE.search(text)  # should be unreachable; say so loudly if it is
+    if leak:
+        print(f"x_pulse: WARNING private-system marker survived the scrub: "
+              f"{leak.group(0)!r}", file=sys.stderr)
+    return text
 
 
 def main() -> int:
@@ -170,8 +228,10 @@ def main() -> int:
         try:
             trends = read_trends()
         except Exception as e:  # browser down, X markup change: degrade, don't fail
-            err = f"{type(e).__name__}: {e}"[:300]
-            print(f"x_pulse: trending read failed: {err}", file=sys.stderr)
+            # Type only in the brief: the message carries local paths, and the
+            # brief is read by router-picked external models. Full text to log.
+            err = type(e).__name__
+            print(f"x_pulse: trending read failed: {type(e).__name__}: {e}", file=sys.stderr)
     files = recent_dispatches(a.hours)
     text = build(a.hours, trends, err, files)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
