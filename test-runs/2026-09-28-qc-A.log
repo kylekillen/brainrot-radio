@@ -1,0 +1,37 @@
+**QC of `2026-09-28-variant-A-copy.txt`: the 8 MUST-FIX items were fixed in the file and re-checked. The mechanical re-check shows no speaker collisions and no `---`. I did not re-read the edited passages against the sources.**
+
+The script is byte-identical to the already-aired `scripts/killen-time-2026-09-28.txt`. I edited only the variant copy, so the aired file still has these defects. As instructed, I did not count the 09-28 ledger entry as duplication.
+
+**MUST-FIX (fixed)**
+1. **Line 1:** "Last week it named Accenture" was wrong, because line 9 says it was flagged on the 19th. It now reads "Nine days ago". Agents A, B and C all flagged this.
+2. **Outro:** the forced thesis tying Accenture, the crosswalk and the fall-detection program together is replaced with one recap sentence. Agents B and C flagged it.
+3. **Moonshots attributions:** the script said it only attributes lines where Peter called on a person by name, then broke that rule. I checked the transcript. Lines that name no speaker now say "one panelist", "another" or "a third". Peter's liable line became "the point made on stage", and the Trump-post and White House lines no longer credit Peter. The Dave, Alex, Imad and Salim lines that the transcript does tie to a name are unchanged. Agents B and C flagged this.
+4. **MIT Technology Review liability item:**
+   - I cut the summer recap of the sandbox escape and the German wiki hack, which was stale.
+   - I dropped the made-up quoted phrase "agents did it".
+   - Agents A and C flagged this.
+5. **J-space item:**
+   - I removed the forced tie to the first story and the repeated "this is what verification looks like" moral.
+   - I removed "independent", which the source doesn't support.
+   - The item now opens on "the J-lens we've been tracking". Agents A and C flagged this.
+6. **Line 35/41:** the OpenAI breakout incidents were referenced before being introduced, so I glossed them. Agent B flagged this.
+7. **Simmons/Ringer overlap:** the claim that both shows cover Maye and the Raiders was false. It is now "Both shows lead with Denver's comeback." Agent B flagged this.
+8. **Attia quote:** "stupid bad pharma trick" belongs to Klickstein, not Attia, and "agrees" on Humira was wrong. Both are fixed. Agent C flagged this.
+
+I also changed "a code-review agent" in the Build Pitch to "customer-support agent". It echoed Kyle's private review lane.
+
+**ADVISORY (not fixed)**
+- **Build-Pitch overlap:** the pitch overlaps the 09-24 effort pitch and the 09-27 Zvi effort line. Only the low-first ladder is new.
+- **Missing callbacks:** the CLM-8B and NAZA items lack "we covered this" callbacks.
+- **Mixed-in sources:** the LessWrong AI-safety map item is out of place in Quick Hits.
+- **Repeated hedging:** the "I only have…" hedges repeat, and several cross-story links are forced.
+- **AI Daily Brief caveat:** the intro promises to say where each sourcing limit bites, but never mentions the AI Daily Brief again.
+- **Small inferences:** a few were made without sources, such as the writer's "casting problem" metaphor and "the season is weeks away".
+- **Unsourced glosses:** L97 defines "reference design" and L99 says a web payment idea "sat unused for decades". Neither is in the source.
+- **Seven small paraphrase drifts:** L11, L17, L37, L43, L51, L163 and L187. For example, L163 lists the wrong "buckets", and L187's AI-safety map is organized by embedding overlap, not citation count.
+- **Manifest gap:** the sources manifest doesn't list the files this variant cites. A QC that trusts it would wrongly call those segments ungrounded.
+
+I also logged a status.d note that this test variant is the aired script.
+
+QC VERDICT: PASS
+

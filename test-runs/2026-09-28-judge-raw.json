@@ -1,0 +1,116 @@
+{
+ "role": "killen-time",
+ "model": "space-bunny-free",
+ "ok": true,
+ "reply": "{\"SOURCING\": {\"X\": 5, \"Y\": 2}, \"SUBSTANCE\": {\"X\": 5, \"Y\": 2}, \"PITCH\": {\"X\": 5, \"Y\": 2}, \"FLOW\": {\"X\": 4, \"Y\": 2}, \"REASON\": \"X attributes nearly every claim to a named source, quotes sparingly and correctly, flags its own limits ('that's all I have of it', 'I can't tell you who said what') and never invents a callback, and it converts the material into practitioner-level insight with cross-story synthesis, a fully sourced build pitch pitched in general terms with concrete numbers and honest caveats, and a coherent episode held together by a returning 'who checks the work' theme \u2014 losing a point only on sheer length and an inventory-style open; Y is largely headline paraphrase, internally contradicts itself (an invented 'Heifetz thinks Drake Maye is broken' and a conflated Week 2/Week 3 blurb), adds unsourced specifics such as a $4/$20 price, repeats the same football description twice back-to-back, drops the hosts' chemistry, ends with a doubled [BASIL] sign-off, and its build pitch describes Kyle's own sweeper and build-pitches folder instead of the technique.\"}",
+ "error": "",
+ "footer": "\ud83d\udcb8 $0.0000 this dispatch \u00b7 OpenCode Zen: $0.00 of $0 remaining",
+ "task_id": "87f505d6de5e46d19f282d6d563a3487",
+ "error_kind": "",
+ "receipts": {
+  "iterations": 7,
+  "tool_calls": [
+   {
+    "name": "fs_list",
+    "ok": true,
+    "chars": 3002
+   },
+   {
+    "name": "fs_read",
+    "ok": true,
+    "chars": 14028
+   },
+   {
+    "name": "context_read",
+    "ok": true,
+    "chars": 212109
+   },
+   {
+    "name": "fs_list",
+    "ok": true,
+    "chars": 580
+   },
+   {
+    "name": "role_read",
+    "ok": true,
+    "chars": 4806
+   },
+   {
+    "name": "role_read",
+    "ok": true,
+    "chars": 64
+   },
+   {
+    "name": "fs_list",
+    "ok": true,
+    "chars": 782
+   },
+   {
+    "name": "run_command",
+    "ok": true,
+    "chars": 990
+   },
+   {
+    "name": "run_command",
+    "ok": true,
+    "chars": 362
+   },
+   {
+    "name": "turn_finalize",
+    "ok": true,
+    "chars": 457
+   }
+  ],
+  "output_item_types": [
+   "assistant",
+   "tool",
+   "tool",
+   "assistant",
+   "tool",
+   "tool",
+   "assistant",
+   "tool",
+   "tool",
+   "assistant",
+   "tool",
+   "tool",
+   "assistant",
+   "tool",
+   "assistant",
+   "tool",
+   "assistant"
+  ],
+  "nudges": 0,
+  "ended_by": "final",
+  "context_window": 1048576,
+  "max_output_tokens": 524288,
+  "prompt_fit": {
+   "window": 1048576,
+   "reserve": 65536,
+   "input_budget": 951583,
+   "est_input_before": 43778,
+   "est_input": 43778,
+   "max_out_sent": 65536,
+   "actions": [],
+   "overflow_retries": 0,
+   "est_system": 1420,
+   "est_tool_schemas": 2095,
+   "est_history": 21047,
+   "est_tool_results": 19216,
+   "est_total": 43778
+  },
+  "redaction": {
+   "total": 19,
+   "counts": {
+    "account": 1,
+    "amount": 15,
+    "email": 3
+   }
+  }
+ },
+ "reroutes": [],
+ "cost_usd": 0.0,
+ "prompt_tokens": 234570,
+ "completion_tokens": 8235,
+ "duration_ms": 249038
+}

@@ -79,4 +79,116 @@ format's variance is itself part of what the expansion pass buys.
 
 ## Results
 
-*(appended by `bin/test-single-pass.py --stage report`)*
+**VERDICT: FAIL.** Five of the seven criteria missed. B does not replace the
+two-pass format as tested.
+
+| criterion | | evidence |
+|---|---|---|
+| 1. B has 0 seam/leak defects | **FAIL** | 1 hit — `private_system`, L31: *"logged in the build-pitches folder for Kyle to greenlight"* |
+| 2. B gets no QC FAIL | **FAIL** | production QC returned `QC VERDICT: FAIL` |
+| 3. B includes a Build Pitch of the Day | PASS | 397-word dedicated block, sourced to Opus 5.5 / Anthropic docs / Artificial Analysis / Berman |
+| 4. B is 3,000–4,000 spoken words | **FAIL** | **1,648** spoken words — asked for 3,000+, wrote 45% of the floor |
+| 5. B's writer tokens ≤ 60% of A's | PASS | B **27,534 measured** vs A **~381,757 estimated** = **7%** |
+| 6. Judge: B ≥ A on sourcing | **FAIL** | B **2** vs A **5** |
+| 7. Judge: B ≥ A on substance | **FAIL** | B **2** vs A **5** |
+
+Judge, all four axes: **A 5 / 5 / 5 / 4, B 2 / 2 / 2 / 2** (sourcing, substance,
+pitch, flow). Full reason in `2026-09-28-single-pass-metrics.json` → `judge.reason`.
+
+### The numbers
+
+| | A (control) | B (variant) |
+|---|---|---|
+| spoken words | **9,596** | **1,648** |
+| writer | Claude Sonnet, 2 agentic passes, 1M ctx | Glimmer 30B local, 1 pass, 32,768 ctx |
+| writer tokens | ~381,757 (**estimate**) | **27,534 measured** (20,689 in + 6,845 out) |
+| source bundle read | 60,137 tok (all 16 transcripts, 6 articles) | 20,689 tok (3 transcripts, 2 articles, brief whole) |
+| wall clock | 8 min (04:07→04:15) | 11 min |
+| QC | PASS (on a **second** pass — see below) | **FAIL** |
+| seam/leak defects | 0 | 1 |
+| speaker collisions | 0 | 1 |
+
+A's token figure is an **estimate**, as the criteria allowed: the pipeline logs
+no writer tokens, so it is the corpus A's two passes read (1,313,076 chars over
+34 files, ×2 passes) at B's measured 3.85 chars/input-token, plus A's 9,804
+output words at B's measured 4.15 tokens/word. It is labelled `ESTIMATE`
+everywhere. The *direction* is not in doubt — B used 7% of A's writer tokens —
+but the exact ratio rests on that estimate.
+
+### What actually failed, separated from what only looks like it did
+
+Most of B's QC FAIL is a **replay artifact**, not a format defect: 09-28 had
+already aired, so an episode written from 09-28's brief necessarily re-covers
+09-28's stories, and the dedup ledger flags 15 of them — the whole AI/Tech
+block, the entire build pitch, Sports, Entertainment. That is the experiment's
+construction, not the writer's fault, and the same artifact inflates A's QC
+verdict in the other direction. Stripping it out, the real defects are:
+
+- **Two private-system leaks.** L31 names the build-pitches folder and Kyle's
+  greenlight step; L27 says *"in the sweeper"*, naming `pr-review-sweeper.py`.
+  The first is **instructed by the production pass-1 prompt itself**, which
+  tells the writer to say the pitch "is logged in the build-pitches folder so
+  Kyle can point an agent at it and greenlight the build" — and then QC deletes
+  that exact sentence as a MUST-FIX. **That is a standing contradiction in the
+  daily pipeline, not a single-pass defect**, and it burns a writer edit every
+  episode. It should be fixed in the prompt.
+- **A speaker collision** at L59/L61 (consecutive `[BASIL]`, a doubled
+  sign-off) — the exact defect class the two-pass join is blamed for, produced
+  here without any pass join at all.
+- **One sourcing overreach**: a named analysis attributed to a named reporter
+  (Cheng Ting-Fang / Nikkei) that the truncated blurb does not contain.
+- **Length discipline**: told 3,000–4,000, delivered 1,648.
+
+The judge, blind, independently reached the same three conclusions: *"Y is
+largely headline paraphrase, internally contradicts itself … adds unsourced
+specifics such as a $4/$20 price, repeats the same football description twice
+back-to-back … ends with a doubled [BASIL] sign-off, and its build pitch
+describes Kyle's own sweeper and build-pitches folder instead of the
+technique."* Two independent graders, one scripted, agreed on the substance.
+
+### Two findings that outlive this test
+
+**1. A's 09-28 QC evidence was thinner than it looked.** Re-running the
+production QC on the already-aired 09-28 script — a *second* pass, with fresh
+eyes — returned PASS but found **8 MUST-FIX items** and fixed them in the copy:
+a misattributed quote ("stupid bad pharma trick" is Klickstein's, not Attia's),
+a wrong-date claim ("Last week it named Accenture" when the script itself says
+it was flagged on the 19th), broken Moonshots attributions (lines credited to
+Peter that the transcript does not tie to him), a stale sandbox-escape recap, a
+false claim that two Ringer shows overlap, and a build-pitch line echoing Kyle's
+private review lane. This is the direct evidence behind the Round 3 note about
+missing final-script QC evidence: the pipeline's single QC pass is not a
+sufficient gate, on the two-pass format as much as on any other.
+
+**2. The control is 9,596 words, and the format's variance is the story.**
+09-25 6,206 · 09-26 8,877 · 09-27 6,192 · 09-28 9,596. There is no stable
+"~6,000-word episode"; there is a two-pass format that lands anywhere from 6k
+to 9.6k depending on how much the second pass's sources support. The premise
+this test was asked to re-test was itself shaky, and that is worth knowing
+independently of the verdict.
+
+### What this does NOT show
+
+The confound stated up front, in numbers: B's writer saw **20,689 tokens**; A's
+saw **60,137**. B's lane is a 32,768-token local 30B model; A's is a 1M-context
+Sonnet. So this result is *"a one-pass 32K-context free local model loses to
+the two-pass Sonnet format"*, and it cannot tell you whether one pass would
+lose to **two** passes at equal input budget and equal model. Re-running B on a
+long-context writer is the obvious next measurement, and the harness takes it
+as `--date` + `KT_TEST_WRITER` with no code change.
+
+The judge also deserves a caveat: the free judge lanes are thin. Two died
+mid-test (`muse-spark-1.3-free` is registered in `external_models.py` but the
+OpenCode provider has retired it; `orcarouter-hy3-free` is capacity-limited),
+so the judge that scored this run is `space-bunny-free`. It is a different
+model from the writer, as required — but it is the same model the harness
+operator was running, and a 5/2 spread on a quality rubric deserves a second
+opinion from a stronger judge before it changes anything.
+
+### Verdict against the frozen criteria
+
+**FAIL.** Keep the two-pass format. Three of the failures are fixable outside
+the format question — the prompt/QC contradiction on the build-pitch line, the
+sourcing overreach, the speaker collision — and they are worth fixing in the
+daily pipeline regardless of what happens to single-pass writing.
+

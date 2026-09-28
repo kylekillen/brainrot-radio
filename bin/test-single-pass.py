@@ -266,9 +266,10 @@ def stage_qc(date, metrics):
         )
         print(f"[qc] variant {key} …", flush=True)
         t0 = time.time()
+        # Same invocation generate-episode.sh uses for a QC step.
         proc = subprocess.run(
-            ["claude", "-p", "--model", "sonnet", "--permission-mode",
-             "acceptEdits", prompt],
+            ["claude", "--dangerously-skip-permissions", "--model", "sonnet",
+             "-p", prompt],
             cwd=str(LIVE), capture_output=True, text=True, timeout=5400)
         blob = proc.stdout or ""
         m = re.findall(r"QC VERDICT:\s*(PASS|FAIL)", blob)
@@ -412,7 +413,11 @@ def stage_scan(date, metrics):
             else:
                 prev, transition_run = None, transition_run + 1
         metrics["seam"][key] = {
-            "defects": len(hits),
+            # "defects" = the four classes the test names: half references, pass
+            # numbers, repeated segments, fleet-internal names/state. Structure
+            # is reported separately because production QC owns it.
+            "defects": len(hits) + len(repeats),
+            "pattern_hits": len(hits),
             "hits": hits,
             "repeated_blocks": repeats,
             "speaker_collisions": collisions,
@@ -455,8 +460,11 @@ def _summon(model, prompt, timeout=2400):
     for line in reversed(proc.stdout.splitlines()):
         line = line.strip()
         if line.startswith("{") and line.endswith("}"):
-            return json.loads(line)
-    return {"ok": False, "error": f"unparsable dispatch output: {proc.stdout[-500:]}"}
+            data = json.loads(line)
+            data["model"] = model        # the cache must say which lane produced it
+            return data
+    return {"ok": False, "model": model,
+            "error": f"unparsable dispatch output: {proc.stdout[-500:]}"}
 
 
 def stage_judge(date, metrics):
@@ -468,9 +476,15 @@ def stage_judge(date, metrics):
     first, second = order
     text = {"A": a, "B": b}
     prompt = JUDGE_PROMPT.format(x=text[first], y=text[second])
+    raw_path = TEST_DIR / f"{date}-judge-raw.json"
     print(f"[judge] {JUDGE}  blind order: X={first} Y={second} (seed {seed})", flush=True)
-    res = _summon(JUDGE, prompt)
-    (TEST_DIR / f"{date}-judge-raw.json").write_text(json.dumps(res, indent=1)[:20000])
+    # A successful dispatch is cached: re-scoring a variant must not re-spend the
+    # judge's tokens, and the labels are the whole point of the stage.
+    res = json.loads(raw_path.read_text()) if raw_path.exists() else {}
+    reused = bool(res.get("ok"))
+    if not reused:
+        res = _summon(JUDGE, prompt)
+        raw_path.write_text(json.dumps(res, indent=1)[:20000])
     if not res.get("ok"):
         metrics["judge"] = {"ok": False, "lane": JUDGE, "error": res.get("error")}
         sys.exit(f"JUDGE LANE ERROR: {res.get('error')}")
@@ -478,16 +492,18 @@ def stage_judge(date, metrics):
     m = re.search(r"\{.*\}", blob, re.S)
     try:
         scores = json.loads(m.group(0))
+        # The reply is keyed X/Y — the blinded labels — not the variant names.
+        got = {k: int(scores[k]["X"]) for k in ("SOURCING", "SUBSTANCE", "PITCH", "FLOW")}
+        other = {k: int(scores[k]["Y"]) for k in ("SOURCING", "SUBSTANCE", "PITCH", "FLOW")}
     except Exception as e:                                    # noqa: BLE001
-        metrics["judge"] = {"ok": False, "lane": JUDGE, "error": f"unparsable JSON: {e}",
+        metrics["judge"] = {"ok": False, "lane": JUDGE, "error": f"unparsable scores: {e}",
                             "raw": blob[:2000]}
         sys.exit(f"JUDGE LANE ERROR: unparsable score JSON: {e}\n{blob[:800]}")
-    got = {k: int(scores[k][first]) for k in ("SOURCING", "SUBSTANCE", "PITCH", "FLOW")}
     metrics["judge"] = {
-        "ok": True, "lane": JUDGE, "seed": seed,
+        "ok": True, "lane": res.get("model", JUDGE), "seed": seed,
+        "reused_cached_dispatch": reused,
         "blind_order_XY": [first, second],
-        "by_variant": {first: got, second: {k: int(scores[k][second])
-                                            for k in ("SOURCING", "SUBSTANCE", "PITCH", "FLOW")}},
+        "by_variant": {first: got, second: other},
         "reason": scores.get("REASON", ""),
         "prompt_tokens": res.get("prompt_tokens"),
         "completion_tokens": res.get("completion_tokens"),
@@ -507,11 +523,14 @@ def stage_report(date, metrics):
     # A's writer tokens are not logged anywhere in the pipeline; estimate them
     # from the corpus A's two passes read, at B's MEASURED token rates.
     est = estimate_writer_A(date, metrics)
-    out_per_word = (b_tok / b_words) if b_words else 0
+    # Rates from B's MEASURED counts. Output rate must use completion tokens
+    # only — dividing the prompt+completion total by words inflates the estimate.
+    out_per_word = ((w.get("completion_tokens") or 0) / b_words) if b_words else 0
     in_per_char = ((w.get("prompt_tokens") or 0) / w["prompt_chars"]) if w.get("prompt_chars") else 0
     a_tok = round(est["writer_input_chars"] * in_per_char
                   + (est["pass1_words"] + est["pass2_words"]) * out_per_word) or None
-    est["tokens_estimate"] = a_tok
+    est.update({"tokens_estimate": a_tok, "chars_per_input_token": round(1 / in_per_char, 3) if in_per_char else None,
+                "tokens_per_output_word": round(out_per_word, 3)})
     metrics["writer_estimate_A"] = est
 
     seam_b, seam_a = metrics.get("seam", {}).get("B", {}), metrics.get("seam", {}).get("A", {})
