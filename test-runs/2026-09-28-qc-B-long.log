@@ -1,0 +1,75 @@
+# QC report: `2026-09-28-variant-B-copy-long.txt`
+
+I edited nothing and wrote no files. The 09-28 ledger entry was ignored as a duplicate source, as instructed.
+
+Mechanics are clean. The day of week is right (Monday). Speakers alternate across all 12 `[TRANSITION]` joins, there are no `---` dividers and no bad tags, and the intro's promises are all delivered in order.
+
+## MUST-FIX
+
+Items 1–4 are flagged by more than one agent. Items 5 and 6 are single-agent findings but fatal.
+
+1. **Ungrounded Anthropic prompting-guide segment (lines 149–185, 5, 105, 183, 367).** Agents B and C both flagged this. It is also a repeat, per A.
+   - The brief has only the URL and "73 points / 63 comments". Every quote and habit is unsourced: effort, the checklist and continuation cap, the four early-stop shapes, time signals, the progress reminder, the paste-tag IDs.
+   - Line 149's "I read the whole thing" is false.
+   - A adds that lines 153, 155–161 and 181 repeat 09-24.
+2. **Unsourced Simon Willison keynote (lines 119–139, 223).** Only the brief's first sentence exists. The Claws, Mac Minis, pelican, token caps, GPT-6 Luna at $0.004 vs Fable at $3.30, Deep Blue, StrongDM and LeMond material is all unsourced. Line 223 reuses the Luna/Fable figures.
+3. **Unsourced Felix Rieseberg essay (lines 141–145, 267).** The bundle has only a title and HN counts. The Blender quote, the QA-threads quote, the Baudelaire line and "Felix works on Claude's desktop tooling" are all unsourced.
+4. **MIT Technology Review liability article (lines 79–91, 25, 83, 193).** The bundle has only about 600 characters, and most specifics are unsourced. Line 79 is also stale background that already aired 09-20 through 09-27.
+   - Unsourced: RubyGems, the four Claude exercises, the CA/NY/IL thresholds, the Arnold, Arbel and Weil quotes, Delangue's "This is illegal", the state AGs, Hawley, METR/Redwood, SB 1047/SB 53, and the CFAA intent point.
+   - Lines 25, 83 and 193 assert dependent claims as fact.
+5. **Internal fleet state on air (GUARDRAILS.md, "Never include internal fleet state" plus the 09-24 private-system row).**
+   - Line 223: "logged in the build-pitches folder for Kyle… point an agent at it and greenlight the build".
+   - Line 225: "Kyle, if you're listening".
+   - Lines 209 and 219: "the verified pitch file" and "the pitch file is careful".
+   - Line 131: "a show that's run by an AI pipeline".
+   - Line 143: "three skeptics and a synthesizer… some shows use to check their own scripts".
+   - Line 183: "including us".
+6. **Repeated content (A; C confirms parts).**
+   - The Build Pitch (209–225) repeats the 09-24 effort-dial pitch, including the Opus 5.5 pricing and the Artificial Analysis figures.
+   - Economist "Intelligence" items already aired 09-24: housing (317), Australia's social-media ban (319) and Fauda (291). Le Pen and the German elections in 319 are 5–7 days old, and the Lucas Museum in 291 is 6 days old.
+   - Innermost Loop items that aired 09-24: Muse on glasses and the $1,299 VR glasses (97), the Claude gene-editing discovery (99), the $10.3T build-out figure (313), and Gemini 4 (93).
+7. **Sourcing rule: specifics attached to "(no transcript)" items (lines 237–249).** The brief gives only titles and blurbs for the football and NBA items.
+   - Line 237: Geno on the Raiders and Purdy in the Cardinals game are inference.
+   - Line 239: "where Cousin Sal sets and they guess" and calling "Bleakest 0-3" a segment.
+   - Line 241: the 0-3 playoff rate and the "fantasy people are punished for overreacting" claims.
+   - Line 243: "two independent shows" (both are Ringer shows) and "the Patriots game was a bad one for him".
+   - Line 247: "a rebuilding team, a young roster".
+   - Line 249: the Nets' draft-pick history.
+   - The title, score, blurb quotes and game list in 229–235 and 239 are sourced.
+8. **Other unsourced specifics and misquotes.**
+   - Nvidia (189): "DPUs", "tracing… enforcing policy", and "more than a hundred partners including Anthropic, Microsoft, Mistral". Line 191's below-the-agent reading is inference.
+   - Cloudflare (199): "reserved in the spec for decades".
+   - Line 17: Alex's t-shirt remark is misattributed. In the transcript it is his own "P doom less than zero" slogan, not Jensen's line.
+   - Line 47: "Manus" is not in the transcript, which renders it "Monas".
+   - Lines 91, 111 and 115: speaker attributions for unattributed text.
+   - Line 321: the rail-and-postal quote is not the source wording.
+   - Line 317: the "financial engineering… carry isn't there" link is forced.
+   - Line 221: "most orchestration setups… never pass an effort level" is a generalization of Kyle's own runner.
+   - C reports the developer's name in the source is "Lazzari", not "Lasry" (lines 293–299). I did not check this myself.
+9. **Invented or wrong callbacks.**
+   - Line 45, "we covered the Muse launch itself back on Thursday": C says only features and glasses aired on 09-24, not the launch. A calls it accurate. The two agents disagree, so it is a callback to soften.
+   - Line 127, "our honorable mentions": no such section exists.
+   - Line 191, "two segments ago": it was three.
+   - Line 17, "a week from now": both models are on air in this same episode.
+
+## ADVISORY
+
+- B: Line 105 promises "what we owe people downstream", which the next block never delivers.
+- B: The Odd Lots material is previewed and then re-introduced (293 vs 297–301).
+- B: Line 5's "most airtime" claim is false by word count.
+- B: Line 367 credits the prompting guide with the boundary idea, which belongs to Nvidia.
+- B: The Economist "last Thursday" / "same show" / "this morning" framing in 317–325 is inconsistent.
+- B: Line 203 announces Engram and then defers it.
+- B: Line 75, "tomorrow's post", is ambiguous.
+- B: Line 61, "Second AI segment", reads as a production label.
+- A: Lines 29 and 13 (Trump-Xi "concrete output") sit against Friday's "meager" read with no reconciliation.
+- A: Lines 251–255 re-narrate the Baku crash background from 09-27. Only the apology is new.
+- A: Four Odd Lots live-show segments aired in five days.
+- A: Line 287, "trended all weekend", is unsourced.
+- C: About 20 smaller embellishments, mostly in the entertainment and economics sections (49, 45, 19, 41, 265–291, 311–313, 327, 353–355).
+- C: OpenAI's "paused training" and "fifty-three leaked images" may have aired on 09-26 (lines 1 and 77). A did not flag this, so it is unconfirmed.
+
+The MUST-FIX lines add up to roughly 5,000 words of the script.
+
+QC VERDICT: FAIL
+

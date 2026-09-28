@@ -1,0 +1,502 @@
+{
+ "date": "2026-09-28",
+ "stages": [
+  "judge",
+  "qc",
+  "report",
+  "scan",
+  "write"
+ ],
+ "writer": {
+  "lane": "claude:sonnet",
+  "band": "short",
+  "cwd": "/Users/kylekillen/.observer/agents/kt-podcast/worktrees/sonnet-onepass/test-runs/2026-09-28-sonnet-bundle",
+  "prompt_chars": 4426,
+  "context_window": 1000000,
+  "script": "test-runs/2026-09-28-sonnet-short.txt",
+  "ok": true,
+  "seconds": 119.8,
+  "input_tokens": 24,
+  "cache_creation_input_tokens": 115968,
+  "cache_read_input_tokens": 1075289,
+  "output_tokens": 14919,
+  "tokens_total": 1206200,
+  "tokens_basis": "MEASURED (claude CLI --output-format json usage)",
+  "cost_usd": 0.8281678,
+  "session_id": "65b4c310-bee7-4220-b2a4-238f27c12d29",
+  "num_turns": 18,
+  "spoken_words": 3116
+ },
+ "seam": {
+  "A": {
+   "defects": 0,
+   "pattern_hits": 0,
+   "hits": [],
+   "repeated_blocks": [],
+   "speaker_collisions": 0,
+   "back_to_back_transitions": 0,
+   "invalid_tags": [],
+   "em_dash_dividers": 0
+  },
+  "B": {
+   "defects": 3,
+   "pattern_hits": 3,
+   "hits": [
+    {
+     "rule": "private_system",
+     "line": 61,
+     "match": "build-pitches folder",
+     "context": "new system. [BROOKE] And plainly: this one's logged in the build-pitches folder, dated today, so Kyle can point an agent at it and greenlig"
+    },
+    {
+     "rule": "private_system",
+     "line": 61,
+     "match": "point an agent at",
+     "context": "ogged in the build-pitches folder, dated today, so Kyle can point an agent at it and greenlight the build if he likes it. [TRANSITION]"
+    },
+    {
+     "rule": "private_system",
+     "line": 61,
+     "match": "greenlight the build",
+     "context": "s folder, dated today, so Kyle can point an agent at it and greenlight the build if he likes it. [TRANSITION] [BASIL] Sports. NFL first. T"
+    }
+   ],
+   "repeated_blocks": [],
+   "speaker_collisions": 0,
+   "back_to_back_transitions": 0,
+   "invalid_tags": [],
+   "em_dash_dividers": 0
+  }
+ },
+ "qc": {
+  "B": {
+   "verdict": "FAIL",
+   "defect_split": {
+    "must_fix_items": 10,
+    "dedup_only": 2,
+    "real_defects": 8,
+    "items": [
+     {
+      "section": "L61, private system on air.",
+      "text": "\"logged in the build-pitches folder\u2026 so Kyle can point an agent at it and greenlight the build\" leaks the internal folder name and workflow. Agents B and C both flagged it.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "L53\u201359, Build Pitch repeats 09-24.",
+      "text": "The effort-default pitch already aired on 09-24 (ledger slug `build-pitch-opus55-effort-default-2026-09-24`). It comes back with no callback.",
+      "dedup_only": true,
+      "finding": 2
+     },
+     {
+      "section": "L87, Economist housing line repeats 09-24.",
+      "text": "It re-airs the 09-24 housing segment (09-24 script L183). Agents A and C both flagged it.",
+      "dedup_only": true,
+      "finding": 3
+     },
+     {
+      "section": "L1, \"half of AI Twitter is furious about it.\"",
+      "text": "Nothing in the sources says this; Zvi's piece never does. Agents B and C both flagged it.",
+      "dedup_only": false,
+      "finding": 4
+     },
+     {
+      "section": "L97, German election.",
+      "text": "\"A German election has the chancellor calling the results a disaster\" comes from a week-old blurb and is mischaracterized. Agents B and C both flagged it.",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "L67, Simmons/Cousin Sal.",
+      "text": "The Raiders \"undefeated\" and \"most preseason lists didn't see coming\" claims, \"bleakest 0-3 teams,\" Dallas as \"a disaster,\" and \"standings already strange\" are all specifics on \"(no transcript)\" items.",
+      "dedup_only": false,
+      "finding": 6
+     },
+     {
+      "section": "L75, Call of the Wild.",
+      "text": "\"Public-domain title, rights conversation is easy\u2026 path of least resistance for the first wave\" is speculation stated as fact. The Deadline blurb is truncated and says nothing about rights.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "L77, Engram.",
+      "text": "\"Treats the model's breakage as a texture, which is how a lot of good instruments get invented\" is not in the truncated blurb.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "L15, Threads/Muse.",
+      "text": "\"Reality check\u2026 fair summary\u2026 fast adoption, unearned trust\" is built from a title only; the brief has no post content.",
+      "dedup_only": false,
+      "finding": 9
+     },
+     {
+      "section": "L71 \u2192 L75, consecutive BROOKE blocks across a [TRANSITION].",
+      "text": "Merge the pair, or flip L75 and L77.",
+      "dedup_only": false,
+      "finding": 10
+     }
+    ],
+    "findings_total": 10,
+    "findings_dedup_only": 2,
+    "findings_real": 8,
+    "stated_by_qc": null,
+    "incomplete": false,
+    "note": "a finding filed under a freshness/dedup block is a replay artifact; every other block is a real defect"
+   }
+  },
+  "A": {
+   "verdict": "FAIL",
+   "defect_split": {
+    "must_fix_items": 6,
+    "dedup_only": 0,
+    "real_defects": 6,
+    "items": [
+     {
+      "section": "Attia segment, ~line 167:",
+      "text": "`\"It's a stupid bad pharma trick,\" Attia says.`",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Attia segment, ~line 167:",
+      "text": "The transcript puts the line inside Klickstein's Acthar Gel story. Attia's turn starts at the \"Yeah.\" right after it.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Attia segment, ~line 167:",
+      "text": "Fix: attribute it to Klickstein, or drop the attribution.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Moonshots, ~line 49:",
+      "text": "the \"data centers are least reversible\u2026 once the ground is broken\" line is pinned to Dave.",
+      "dedup_only": false,
+      "finding": 2
+     },
+     {
+      "section": "Moonshots, ~line 49:",
+      "text": "That turn is unlabeled in the transcript, and Peter never calls on Dave.",
+      "dedup_only": false,
+      "finding": 2
+     },
+     {
+      "section": "Moonshots, ~line 49:",
+      "text": "Fix: \"one panelist.\"",
+      "dedup_only": false,
+      "finding": 2
+     }
+    ],
+    "findings_total": 2,
+    "findings_dedup_only": 0,
+    "findings_real": 2,
+    "stated_by_qc": null,
+    "incomplete": false,
+    "note": "a finding filed under a freshness/dedup block is a replay artifact; every other block is a real defect"
+   }
+  }
+ },
+ "qc_real_defects": 8,
+ "dedup_only_defects": 2,
+ "dedup_note": "QC raised 10 findings \u2014 2 dedup-replay artifacts, 8 real (8 individual defects). Same rule applied to A.",
+ "band": "short",
+ "verdict": "FAIL",
+ "generated_utc": "2026-09-28T22:03:41.972277+00:00",
+ "A": {
+  "script": "scripts/killen-time-2026-09-28.txt",
+  "spoken_words": 9596,
+  "writer": "claude sonnet, two agentic passes (production, as aired)",
+  "writer_tokens": 10907026,
+  "writer_tokens_basis": "MEASURED \u2014 summed from the 09-28 claude session transcripts' own per-message usage",
+  "writer_tokens_detail": {
+   "tokens_total": 10907026,
+   "input_tokens": 10777861,
+   "output_tokens": 129165,
+   "sessions": [
+    {
+     "session": "dd611efd-abe4-4470-a8a9-827400c61c65",
+     "pass": "pass 1",
+     "input_tokens": 6595518,
+     "output_tokens": 74300,
+     "total": 6669818
+    },
+    {
+     "session": "8839685c-8ac2-4cf8-8702-eec3184cde19",
+     "pass": "pass 2",
+     "input_tokens": 4182343,
+     "output_tokens": 54865,
+     "total": 4237208
+    }
+   ],
+   "source": "MEASURED \u2014 ~/.claude/projects session transcripts",
+   "note": "summed over the writer passes only; the build-pitch reporter and QC sessions are excluded"
+  },
+  "qc": "FAIL",
+  "seam_defects": 0,
+  "build_pitch": true,
+  "build_pitch_evidence": {
+   "words": 1210,
+   "terms": [
+    "low",
+    "max",
+    "price"
+   ],
+   "sources": [
+    "anthropic"
+   ],
+   "text": "AI and Technology. Start with Zvi's post, \"The Quest for Embedded Evaluators.\" Background: Dario Amodei's essay \"We Must Pace the Frontier\" committed Anthropic to embedded evaluators, outsiders placed inside the company with employee-level access, so they could provide an outside perspective and reports on what's happening. Zvi's opening line is the whole problem: \"There is only one problem. Who w"
+  }
+ },
+ "B": {
+  "script": "test-runs/2026-09-28-sonnet-short.txt",
+  "spoken_words": 3116,
+  "writer": "claude sonnet, ONE pass",
+  "writer_tokens": 1206200,
+  "writer_tokens_basis": "MEASURED (claude CLI --output-format json usage)",
+  "writer_detail": {
+   "lane": "claude:sonnet",
+   "band": "short",
+   "cwd": "/Users/kylekillen/.observer/agents/kt-podcast/worktrees/sonnet-onepass/test-runs/2026-09-28-sonnet-bundle",
+   "prompt_chars": 4426,
+   "context_window": 1000000,
+   "script": "test-runs/2026-09-28-sonnet-short.txt",
+   "ok": true,
+   "seconds": 119.8,
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 115968,
+   "cache_read_input_tokens": 1075289,
+   "output_tokens": 14919,
+   "tokens_total": 1206200,
+   "tokens_basis": "MEASURED (claude CLI --output-format json usage)",
+   "cost_usd": 0.8281678,
+   "session_id": "65b4c310-bee7-4220-b2a4-238f27c12d29",
+   "num_turns": 18,
+   "spoken_words": 3116,
+   "tool_use": {
+    "by_tool": {
+     "Bash": 8,
+     "Read": 5,
+     "Write": 1,
+     "Edit": 3
+    },
+    "web_fetches": 0
+   }
+  },
+  "qc": "FAIL",
+  "seam_defects": 3,
+  "b_only_seam_defects": 3,
+  "build_pitch": true,
+  "build_pitch_evidence": {
+   "words": 303,
+   "terms": [
+    "effort",
+    "low",
+    "medium",
+    "max",
+    "escalat",
+    "ladder"
+   ],
+   "sources": [
+    "opus 5.5",
+    "anthropic",
+    "artificial analysis"
+   ],
+   "text": "Build Pitch of the Day. Today's is: stop running every agent at default effort. Claude models now have an effort dial, from low up through max, and Anthropic's own docs tell builders to sweep it per workload, and to use a \"run cheap first, re-run failures harder\" ladder. The published numbers on coding tasks with Opus 5.5: medium effort costs about seventy percent of high for roughly two and a hal"
+  }
+ },
+ "judges": {
+  "space-bunny-free": {
+   "ok": true,
+   "seed": 911980333,
+   "reused_cached_dispatch": true,
+   "blind_order_XY": [
+    "B",
+    "A"
+   ],
+   "by_variant": {
+    "B": {
+     "SOURCING": 3,
+     "SUBSTANCE": 4,
+     "PITCH": 4,
+     "FLOW": 5
+    },
+    "A": {
+     "SOURCING": 5,
+     "SUBSTANCE": 5,
+     "PITCH": 5,
+     "FLOW": 4
+    }
+   },
+   "reason": "X is tight, well-threaded and genuinely builder-facing, but it repeatedly promotes paraphrase into quotation marks (Mostaque on bad infrastructure, Blundin on data centers, the invented 'utility AI versus the frontier AI' line, McBride on zoning), misattributes the fifteen-percent stock drop to Diamandis, and adds unsourced specifics \u2014 a named CNBC reporter, 'seventy-some points' in a prompting guide, Craig Heifetz's Maye verdict, an 'undefeated' Raiders team that contradicts the 0-3 framing, 'this month' for an August arXiv paper \u2014 while its build pitch ends by pointing at Kyle's own build-pitches folder, and it spots.Callbacks to yesterday's show land as unnarrated recaps rather than woven-in continuity; Y is exemplary on provenance, flagging its own limits before the show starts ('no speaker labels, so I'm attributing lines only where Peter called on a person by name', 'I only have the title and the point count', 'I only read the abstract'), attributing unconfirmed numbers to the man who said them, and never quoting a document it didn't have \u2014 and it converts the same material into more actionable substance (Weil's insurance-disclosure trick, Drake Thomas's boring-vs-cracked evaluators, the deleted-system-prompt pruning pass, the 17%-fall-detection failure, the Humira patent thicket) with a build pitch pitched cleanly in general terms, giving up only some momentum to a much longer middle and a laundry-list lightning round that dilutes the episode's pacing.",
+   "prompt_tokens": 19724,
+   "completion_tokens": 6255
+  },
+  "opus": {
+   "ok": true,
+   "seed": 3272605552,
+   "reused_cached_dispatch": true,
+   "blind_order_XY": [
+    "A",
+    "B"
+   ],
+   "by_variant": {
+    "A": {
+     "SOURCING": 4,
+     "SUBSTANCE": 5,
+     "PITCH": 5,
+     "FLOW": 4
+    },
+    "B": {
+     "SOURCING": 3,
+     "SUBSTANCE": 4,
+     "PITCH": 3,
+     "FLOW": 4
+    }
+   },
+   "reason": "X attributes its claims carefully and flags each source limit, and it goes deep on Zvi, Moonshots, the Claude Code harness, Odd Lots and Attia with a well-sourced, general build pitch; it is long and pads the sports and entertainment sections with headline copy, and 'Jev' reads like a transcription slip. Y is tighter and turns the news into useful practices for builders, but it overstates or adds details the sources may not support (the fall becomes 'insurance stocks', the Raiders become 'undefeated', a Craig Heifetz attribution, Norris 'regretted' his comments, a German election aside), and its build pitch names Kyle's own build-pitches folder, which breaks the rule against describing the listener's private setup.",
+   "prompt_tokens": null,
+   "completion_tokens": null
+  }
+ },
+ "judge_disagreements": [
+  {
+   "axis": "SOURCING",
+   "variant": "A",
+   "space-bunny-free": 5,
+   "opus": 4
+  },
+  {
+   "axis": "PITCH",
+   "variant": "B",
+   "space-bunny-free": 4,
+   "opus": 3
+  },
+  {
+   "axis": "FLOW",
+   "variant": "B",
+   "space-bunny-free": 5,
+   "opus": 4
+  }
+ ],
+ "dedup_replay_note": "QC raised 10 findings \u2014 2 dedup-replay artifacts, 8 real (8 individual defects). Same rule applied to A.",
+ "checks": [
+  {
+   "criterion": "B has 0 seam/leak defects not also in A",
+   "pass": false,
+   "evidence": "B 3 vs A 0 -> 3 B-only"
+  },
+  {
+   "criterion": "B gets no QC FAIL beyond dedup-replay items",
+   "pass": false,
+   "evidence": "QC verdict FAIL, 8 real (non-dedup) MUST-FIX"
+  },
+  {
+   "criterion": "B includes a Build Pitch of the Day",
+   "pass": true,
+   "evidence": "303-word block, sources ['opus 5.5', 'anthropic', 'artificial analysis']"
+  },
+  {
+   "criterion": "B is within its length band (3000-4000 spoken words)",
+   "pass": true,
+   "evidence": "3116 spoken words"
+  },
+  {
+   "criterion": "B writer tokens <= 60% of A's (both MEASURED)",
+   "pass": true,
+   "evidence": "B 1,206,200 vs A 10,907,026 = 11%"
+  },
+  {
+   "criterion": "BOTH judges score B >= A on SOURCING",
+   "pass": false,
+   "evidence": "space-bunny-free: B 3 / A 5; opus: B 3 / A 4"
+  },
+  {
+   "criterion": "BOTH judges score B >= A on SUBSTANCE",
+   "pass": false,
+   "evidence": "space-bunny-free: B 4 / A 5; opus: B 4 / A 5"
+  }
+ ],
+ "judge": {
+  "ok": true,
+  "lanes": [
+   "space-bunny-free",
+   "opus"
+  ],
+  "by_lane": {
+   "space-bunny-free": {
+    "ok": true,
+    "seed": 911980333,
+    "reused_cached_dispatch": true,
+    "blind_order_XY": [
+     "B",
+     "A"
+    ],
+    "by_variant": {
+     "B": {
+      "SOURCING": 3,
+      "SUBSTANCE": 4,
+      "PITCH": 4,
+      "FLOW": 5
+     },
+     "A": {
+      "SOURCING": 5,
+      "SUBSTANCE": 5,
+      "PITCH": 5,
+      "FLOW": 4
+     }
+    },
+    "reason": "X is tight, well-threaded and genuinely builder-facing, but it repeatedly promotes paraphrase into quotation marks (Mostaque on bad infrastructure, Blundin on data centers, the invented 'utility AI versus the frontier AI' line, McBride on zoning), misattributes the fifteen-percent stock drop to Diamandis, and adds unsourced specifics \u2014 a named CNBC reporter, 'seventy-some points' in a prompting guide, Craig Heifetz's Maye verdict, an 'undefeated' Raiders team that contradicts the 0-3 framing, 'this month' for an August arXiv paper \u2014 while its build pitch ends by pointing at Kyle's own build-pitches folder, and it spots.Callbacks to yesterday's show land as unnarrated recaps rather than woven-in continuity; Y is exemplary on provenance, flagging its own limits before the show starts ('no speaker labels, so I'm attributing lines only where Peter called on a person by name', 'I only have the title and the point count', 'I only read the abstract'), attributing unconfirmed numbers to the man who said them, and never quoting a document it didn't have \u2014 and it converts the same material into more actionable substance (Weil's insurance-disclosure trick, Drake Thomas's boring-vs-cracked evaluators, the deleted-system-prompt pruning pass, the 17%-fall-detection failure, the Humira patent thicket) with a build pitch pitched cleanly in general terms, giving up only some momentum to a much longer middle and a laundry-list lightning round that dilutes the episode's pacing.",
+    "prompt_tokens": 19724,
+    "completion_tokens": 6255
+   },
+   "opus": {
+    "ok": true,
+    "seed": 3272605552,
+    "reused_cached_dispatch": true,
+    "blind_order_XY": [
+     "A",
+     "B"
+    ],
+    "by_variant": {
+     "A": {
+      "SOURCING": 4,
+      "SUBSTANCE": 5,
+      "PITCH": 5,
+      "FLOW": 4
+     },
+     "B": {
+      "SOURCING": 3,
+      "SUBSTANCE": 4,
+      "PITCH": 3,
+      "FLOW": 4
+     }
+    },
+    "reason": "X attributes its claims carefully and flags each source limit, and it goes deep on Zvi, Moonshots, the Claude Code harness, Odd Lots and Attia with a well-sourced, general build pitch; it is long and pads the sports and entertainment sections with headline copy, and 'Jev' reads like a transcription slip. Y is tighter and turns the news into useful practices for builders, but it overstates or adds details the sources may not support (the fall becomes 'insurance stocks', the Raiders become 'undefeated', a Craig Heifetz attribution, Norris 'regretted' his comments, a German election aside), and its build pitch names Kyle's own build-pitches folder, which breaks the rule against describing the listener's private setup.",
+    "prompt_tokens": null,
+    "completion_tokens": null
+   }
+  },
+  "disagreements": [
+   {
+    "axis": "SOURCING",
+    "variant": "A",
+    "space-bunny-free": 5,
+    "opus": 4
+   },
+   {
+    "axis": "PITCH",
+    "variant": "B",
+    "space-bunny-free": 4,
+    "opus": 3
+   },
+   {
+    "axis": "FLOW",
+    "variant": "B",
+    "space-bunny-free": 5,
+    "opus": 4
+   }
+  ]
+ }
+}

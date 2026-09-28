@@ -1,0 +1,180 @@
+{
+ "bundle": "test-runs/2026-09-28-sonnet-bundle",
+ "reconstructed_from": "pass-1 session dd611efd-abe4-4470-a8a9-827400c61c65 tool calls, 2026-09-28 04:07Z",
+ "transcripts_from": ".tmp/used/ (archived post-broadcast; byte sizes match pass 1's own ls -la exactly)",
+ "note": "09-28's own script is deliberately ABSENT so the writer cannot read the control.",
+ "files": [
+  {
+   "path": ".claude/context/architecture.md",
+   "bytes": 3337,
+   "sha256": "27e0b94dc68cdc90"
+  },
+  {
+   "path": ".claude/context/dedup.md",
+   "bytes": 3567,
+   "sha256": "dfd0fd696ec61733"
+  },
+  {
+   "path": ".claude/context/editorial-voice.md",
+   "bytes": 3053,
+   "sha256": "0f62f4abc47ac7a9"
+  },
+  {
+   "path": ".claude/context/evidence-rules.md",
+   "bytes": 1735,
+   "sha256": "c31129fd9b207d2f"
+  },
+  {
+   "path": ".claude/context/publishing.md",
+   "bytes": 1720,
+   "sha256": "ef00052aff73bbe7"
+  },
+  {
+   "path": ".claude/context/scoring.md",
+   "bytes": 785,
+   "sha256": "a6b1eb9a50373cf4"
+  },
+  {
+   "path": ".tmp/articles/freddie_deboer_all-in-your-head-you-be-my-people-power.txt",
+   "bytes": 11178,
+   "sha256": "1a476292fffbd5ee"
+  },
+  {
+   "path": ".tmp/articles/innermost_loop_welcome-to-september-27-2026.txt",
+   "bytes": 9345,
+   "sha256": "aa8d0342832d82a4"
+  },
+  {
+   "path": ".tmp/articles/the_zvi_the-quest-for-embedded-evaluators.txt",
+   "bytes": 18547,
+   "sha256": "e8b47db4d400350b"
+  },
+  {
+   "path": ".tmp/build-pitches.md",
+   "bytes": 2344,
+   "sha256": "7154882c73a44343"
+  },
+  {
+   "path": ".tmp/opus55.txt",
+   "bytes": 30278,
+   "sha256": "10f26c6ad2a0dd7e"
+  },
+  {
+   "path": ".tmp/topic-brief.txt",
+   "bytes": 45877,
+   "sha256": "6bcbe2bbffd61301"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_3465cd2a-b9f3-11f1-af0b-f3e876079719.txt",
+   "bytes": 38674,
+   "sha256": "7988d90f12b8b269"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_378518b4-a65a-11f1-9855-af691879cc4c.txt",
+   "bytes": 31,
+   "sha256": "192d7f9c7753856a"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_50ccae82-2c74-11f1-8711-678a084fc4d2.txt",
+   "bytes": 1,
+   "sha256": "5c62e091b8c0565f"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_6aba32b170b66274d96fb345.txt",
+   "bytes": 27658,
+   "sha256": "a8b59259de4fb81d"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_7a3568d9-8263-4e3a-8f8f-b4d00139959f.txt",
+   "bytes": 40403,
+   "sha256": "24df0dbdb0f733b5"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_92ef0298-bb20-11f1-a481-af313e8e65b2.txt",
+   "bytes": 17,
+   "sha256": "845a37caf50dbe47"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_982695aa-badf-11f1-9093-e3267f060ab3.txt",
+   "bytes": 9227,
+   "sha256": "8dedb19996c10f43"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_b709637a-7772-4ee6-b2d5-5fb6fc18b662.txt",
+   "bytes": 36546,
+   "sha256": "d2cd16f105683a82"
+  },
+  {
+   "path": ".tmp/transcripts/podcast_d86f541d-9341-4833-b84a-29e85df6d174.txt",
+   "bytes": 1033,
+   "sha256": "57812ce958bcc2f9"
+  },
+  {
+   "path": "CLAUDE.md",
+   "bytes": 5790,
+   "sha256": "510a72d49e4e53d0"
+  },
+  {
+   "path": "GUARDRAILS.md",
+   "bytes": 4567,
+   "sha256": "e6998a08c6fba7da"
+  },
+  {
+   "path": "scripts/.covered-2026-09-20.json",
+   "bytes": 13068,
+   "sha256": "8ade18b0a52fc723"
+  },
+  {
+   "path": "scripts/.covered-2026-09-21.json",
+   "bytes": 9733,
+   "sha256": "d59e99c6852f6f2c"
+  },
+  {
+   "path": "scripts/.covered-2026-09-22.json",
+   "bytes": 14468,
+   "sha256": "f4fea90f6b573026"
+  },
+  {
+   "path": "scripts/.covered-2026-09-24.json",
+   "bytes": 25078,
+   "sha256": "7f028303cbd2e2f1"
+  },
+  {
+   "path": "scripts/.covered-2026-09-25.json",
+   "bytes": 8916,
+   "sha256": "2873441b0d28ae29"
+  },
+  {
+   "path": "scripts/.covered-2026-09-26.json",
+   "bytes": 11893,
+   "sha256": "9e38ab685b5d7892"
+  },
+  {
+   "path": "scripts/.covered-2026-09-27.json",
+   "bytes": 9118,
+   "sha256": "f999c2acefed03a1"
+  },
+  {
+   "path": "scripts/killen-time-2026-09-24.txt",
+   "bytes": 98482,
+   "sha256": "868a52c24ec96227"
+  },
+  {
+   "path": "scripts/killen-time-2026-09-25.txt",
+   "bytes": 38013,
+   "sha256": "84065a36519f6b57"
+  },
+  {
+   "path": "scripts/killen-time-2026-09-26.txt",
+   "bytes": 53281,
+   "sha256": "e442647758f38cbd"
+  },
+  {
+   "path": "scripts/killen-time-2026-09-27.txt",
+   "bytes": 38936,
+   "sha256": "de04caa20ee8435c"
+  }
+ ],
+ "total_files": 34,
+ "total_bytes": 616699
+}
