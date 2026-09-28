@@ -73,9 +73,15 @@
    "em_dash_dividers": 0
   },
   "B": {
-   "defects": 1,
-   "pattern_hits": 1,
+   "defects": 2,
+   "pattern_hits": 2,
    "hits": [
+    {
+     "rule": "internal_name",
+     "line": 27,
+     "match": "sweeper",
+     "context": "he winning default and a low-first escalation ladder in the sweeper. It\u2019s tuning inside the Anthropic pool, different from last"
+    },
     {
      "rule": "private_system",
      "line": 31,
@@ -101,7 +107,7 @@
   "tokens_per_output_word": 4.154
  },
  "verdict": "FAIL",
- "generated_utc": "2026-09-28T19:24:24.940789+00:00",
+ "generated_utc": "2026-09-28T19:26:30.678124+00:00",
  "A": {
   "script": "scripts/killen-time-2026-09-28.txt",
   "spoken_words": 9596,
@@ -131,7 +137,7 @@
   "writer_tokens": 27534,
   "writer_tokens_basis": "MEASURED (ollama prompt_eval_count + eval_count)",
   "qc": "FAIL",
-  "seam_defects": 1,
+  "seam_defects": 2,
   "build_pitch": true,
   "build_pitch_evidence": {
    "words": 397,
@@ -155,7 +161,7 @@
   {
    "criterion": "B has 0 seam/leak defects",
    "pass": false,
-   "evidence": "1 hits (private_system)"
+   "evidence": "2 hits (internal_name, private_system)"
   },
   {
    "criterion": "B gets no QC FAIL",

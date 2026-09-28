@@ -84,7 +84,7 @@ two-pass format as tested.
 
 | criterion | | evidence |
 |---|---|---|
-| 1. B has 0 seam/leak defects | **FAIL** | 1 hit — `private_system`, L31: *"logged in the build-pitches folder for Kyle to greenlight"* |
+| 1. B has 0 seam/leak defects | **FAIL** | 2 hits — L27 `internal_name` (*"in the sweeper"*, i.e. `pr-review-sweeper.py`) and L31 `private_system` (*"logged in the build-pitches folder for Kyle to greenlight"*) |
 | 2. B gets no QC FAIL | **FAIL** | production QC returned `QC VERDICT: FAIL` |
 | 3. B includes a Build Pitch of the Day | PASS | 397-word dedicated block, sourced to Opus 5.5 / Anthropic docs / Artificial Analysis / Berman |
 | 4. B is 3,000–4,000 spoken words | **FAIL** | **1,648** spoken words — asked for 3,000+, wrote 45% of the floor |
@@ -105,7 +105,7 @@ pitch, flow). Full reason in `2026-09-28-single-pass-metrics.json` → `judge.re
 | source bundle read | 60,137 tok (all 16 transcripts, 6 articles) | 20,689 tok (3 transcripts, 2 articles, brief whole) |
 | wall clock | 8 min (04:07→04:15) | 11 min |
 | QC | PASS (on a **second** pass — see below) | **FAIL** |
-| seam/leak defects | 0 | 1 |
+| seam/leak defects | 0 | 2 |
 | speaker collisions | 0 | 1 |
 
 A's token figure is an **estimate**, as the criteria allowed: the pipeline logs

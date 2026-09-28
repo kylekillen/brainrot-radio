@@ -311,9 +311,9 @@ SEAM_PATTERNS = [
     # the show's public name and is allowed; the repo is not.
     ("internal_name", r"observer-system|brainrot-radio|killen-time-podcast|"
                       r"\.observer/|status\.d|handoff\.md|inbox\.md|calibration\.md|"
-                      r"launchd|launchctl|LaunchAgent|\bplist\b|\.venv|"
-                      r"kt-podcast|fleet-optimizer|model-router|spotify-markets|"
-                      r"\bkillen-time\b(?! update)|"
+                      r"launchd|launchctl|LaunchAgent|\bplist\b|\.venv|\bsweeper\b|"
+                      r"\bworktree\b|kt-podcast|fleet-optimizer|model-router|"
+                      r"spotify-markets|\bkillen-time\b(?! update)|"
                       r"\bblocked on\b[^.]{0,40}\b(role|agent|model|lane|task|router|fleet|pipeline)\b|"
                       r"\btickler\b|\btasks?\.db\b|\bINBOX\b"),
     ("internal_metric", r"\b(our|my) (agents|roles|daemons?|workers?|repos?|registry|ledger)\b|"
