@@ -18,6 +18,10 @@ if [ -f "$OUTPUT_FILE" ]; then
     SCRIPT_FILE="$BRAINROT_DIR/scripts/killen-time-${TODAY}.txt"
     WORDS=$(wc -w < "$SCRIPT_FILE" 2>/dev/null | tr -d ' ')
     log "OK: Episode published ($WORDS words)"
+
+    # Check build-pitch verdict status (non-fatal)
+    python3 "$BRAINROT_DIR/bin/verify-pitches.py" >> "$LOGFILE" 2>&1
+
     exit 0
 fi
 

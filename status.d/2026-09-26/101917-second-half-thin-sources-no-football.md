@@ -1,0 +1,2 @@
+### 2026-09-26 04:19 — 09-26 second half written from thin sources: no NFL text, one transcript
+The 09-26 feed had no football podcasts and only the a16z transcript (already used by the first half), so the second half is ~3,200 words instead of 7,000-9,000, with NBA/entertainment items kept to blurb level. The top-up step should add real football (Ringer Fantasy, Fantasy Footballers, Barnwell) if those shows land later; the covered claim is parked in .tmp/covered-pending-2026-09-26.json (COVERED_DEFER), not the live ledger.
