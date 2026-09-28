@@ -1,0 +1,2 @@
+### 2026-09-28 15:08 — New Hire variant-A QC: Build Pitch re-runs the 09-24 effort-dial pitch
+Freshness skeptic found the single-pass script's Build Pitch repeats 09-24's (effort levels, cost-per-task chart), plus Muse App Store #1 (aired 09-19) and plugin eval (09-15/16). Topic-brief labels every item "Age: today", so age labels can't catch this; only the ledger and prior scripts can. QC still in progress (sourcing agent pending).
