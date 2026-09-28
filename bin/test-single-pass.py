@@ -137,20 +137,75 @@ Write ONLY the script text. No preamble, no markdown fences, no commentary.
 """
 
 
+# The free local writer lane has a 32,768-token resident context (checked live
+# against /api/ps) and Glimmer tokenises this bundle at a MEASURED 3.635
+# chars/token. The production Claude writer has 1M. A's full source bundle is
+# 219,574 chars (~60k tokens) and does not fit, so B reads a capped slice of the
+# SAME files. This is a measured property of the lane, not a choice, and it is
+# reported as a caveat on the result: part of any B<A gap is input budget.
+CAPS = {"transcripts": (3, 2500), "articles": (2, 1800), "covered": (3, 1000),
+        "recent_scripts": (2, 800), "evidence_rules": 2000, "evidence_ledger": 3000,
+        "aired_digest": 1500}
+OUTPUT_RESERVE_TOK = 9000   # ~4.8k for 3,500 spoken words + thinking
+
+
+def compact_sources(src):
+    """Same files as or_writer._gather_sources returns, capped to fit the writer
+    lane's context. The topic brief and the build-pitch file go in WHOLE — they
+    are the spine and the pitch is a pass/fail criterion. Kept here rather than
+    edited into or_writer so the daily pipeline's prompts are not touched."""
+    out = dict(src)
+    for key, val in CAPS.items():
+        if isinstance(val, int):                     # a single text blob
+            out[key] = src[key][:val]
+            continue
+        n, cap = val
+        out[key] = [(name, body[:cap] + (f"\n[... {len(body) - cap} more chars]"
+                                         if len(body) > cap else ""))
+                    for name, body in list(src.get(key, []))[:n]]
+    return out
+
+
+CHARS_PER_TOKEN = 3.635       # measured on muse-glimmer:30b-mlx, 2026-09-28
+
+
+def ctx_tokens():
+    """The context the writer lane currently has loaded, or None."""
+    try:
+        import urllib.request
+        with urllib.request.urlopen(f"{OLLAMA}/api/ps", timeout=10) as r:
+            models = json.load(r).get("models", [])
+        return models[0].get("context_length") if models else None
+    except Exception:                                          # noqa: BLE001
+        return None
+
+
 def stage_write(date, writer, metrics):
-    src = writer._gather_sources()
+    full = writer._gather_sources()
+    src = compact_sources(full)
     if not src["topic_brief"]:
         sys.exit("no .tmp/topic-brief.txt — nothing to write from")
-    greeting = "This is a morning episode."
-    prompt = single_pass_prompt(writer, src, greeting)
-    metrics["writer"] = {"lane": f"ollama:{WRITER}", "prompt_chars": len(prompt)}
-    print(f"[write] {WRITER}  prompt={len(prompt):,} chars", flush=True)
+    prompt = single_pass_prompt(writer, src, "This is a morning episode.")
+    ctx = ctx_tokens() or 32768
+    est_in = len(prompt) / CHARS_PER_TOKEN
+    if est_in + OUTPUT_RESERVE_TOK > ctx:
+        sys.exit(f"WRITER LANE ERROR: prompt ~{est_in:,.0f} tok + "
+                 f"{OUTPUT_RESERVE_TOK:,} output exceeds the lane's {ctx:,}-token "
+                 f"context — lower CAPS in bin/test-single-pass.py")
+    metrics["writer"] = {
+        "lane": f"ollama:{WRITER}", "prompt_chars": len(prompt),
+        "context_tokens": ctx, "prompt_tokens_est": round(est_in),
+        "full_bundle_chars": len(full["topic_brief"]) + sum(
+            len(b) for _, b in full["transcripts"] + full["articles"]),
+    }
+    print(f"[write] {WRITER}  prompt={len(prompt):,} chars (~{est_in:,.0f} tok, "
+          f"ctx {ctx:,})", flush=True)
 
-    body = ""
     t0 = time.time()
     payload = json.dumps({
         "model": WRITER, "prompt": prompt, "stream": False, "think": True,
-        "options": {"num_ctx": 131072, "num_predict": 24000, "temperature": 0.7},
+        "options": {"num_ctx": ctx, "num_predict": 8000, "temperature": 0.7},
+        "keep_alive": "2h",
     })
     try:
         import urllib.request
@@ -162,6 +217,7 @@ def stage_write(date, writer, metrics):
         metrics["writer"]["error"] = f"{type(e).__name__}: {e}"
         sys.exit(f"WRITER LANE ERROR: {type(e).__name__}: {e}")
     if not data.get("done"):
+        metrics["writer"]["error"] = str(data.get("error"))
         sys.exit(f"WRITER LANE ERROR: not done: {data.get('error')}")
 
     body = writer._clean_script(data.get("response", ""))
@@ -228,25 +284,43 @@ def stage_qc(date, metrics):
 
 # ------------------------------------------------------------------ scan ---
 
+# Seam/leak scan. Two classes, and each pattern has to be the DEFECT rather than
+# ordinary English — a scanner that fires on the show's own name ("the Killen Time
+# Update", which is public by design) or on a podcast called "Locked On" reports
+# noise and makes "0 defects" meaningless. Calibration on the 09-28 control below.
 SEAM_PATTERNS = [
-    ("half_reference", r"\bthis half\b|\bfirst half\b|\bsecond half\b|\bback half\b|"
-                       r"\bthe other half\b|\bfirst section\b|\bsecond section\b"),
+    # 1. Editorial scaffolding left over from the two-pass construction. Tuned on
+    #    the 09-25…09-28 control set so it fires on the two real seams (09-25 L3
+    #    "In the second half:", 09-27 L145 "out of this half") and NOT on ordinary
+    #    English — 09-26 L166 "the first half of the review" and 09-27 L45 "the
+    #    other half of Naam's case" are prose about a film and about a case.
+    ("half_reference", r"\bthis half\b|\bin the (first|second|back) half\b|"
+                       r"\bthe (first|second|back) half of (the|this) "
+                       r"(show|episode|morning|update|hour)\b|"
+                       r"\bthe other half of (the|this) (show|episode|morning|update)\b|"
+                       r"\b(covered|came up|talked about|we said|we discussed) "
+                       r"(it|that|this) (in|back in) the (first|second|back) half\b"),
     ("pass_number", r"\bpass (one|two|1|2)\b|\bthe first pass\b|\bthe second pass\b|"
-                    r"\bpass-1\b|\bpass-2\b|\bpass 1\b|\bpass 2\b"),
+                    r"\bpass-1\b|\bpass-2\b"),
     ("production_meta", r"\bthe draft\b|\bfirst draft\b|\brevised version\b|"
                         r"\bwe('ll| will) (expand|top up|top-up|pad)\b|"
-                        r"\bword (count|target)s?\b|\bthis segment\b|\bas (I|we) (mentioned|said) (earlier|above)\b"),
+                        r"\bword (count|target)s?\b|"
+                        r"\bas (I|we) (mentioned|said) (earlier|above)\b"),
+    # 2. GUARDRAILS "Never include internal fleet state". "killen time update" is
+    # the show's public name and is allowed; the repo is not.
     ("internal_name", r"observer-system|brainrot-radio|killen-time-podcast|"
                       r"\.observer/|status\.d|handoff\.md|inbox\.md|calibration\.md|"
-                      r"launchd|launchctl|LaunchAgent|plist|\.venv|"
-                      r"\bkt-podcast\b|\bfleet-optimizer\b|\bmodel-router\b|\bCOS\b|"
-                      r"\bassay\b|\bkillen-time\b|\bkillen time\b|\bspotify-markets\b|"
-                      r"\blocked on\b|\bblocked by\b|\bqueued for\b|\btask id\b|\btickler\b"),
+                      r"launchd|launchctl|LaunchAgent|\bplist\b|\.venv|"
+                      r"kt-podcast|fleet-optimizer|model-router|spotify-markets|"
+                      r"\bkillen-time\b(?! update)|"
+                      r"\bblocked on\b[^.]{0,40}\b(role|agent|model|lane|task|router|fleet|pipeline)\b|"
+                      r"\btickler\b|\btasks?\.db\b|\bINBOX\b"),
     ("internal_metric", r"\b(our|my) (agents|roles|daemons?|workers?|repos?|registry|ledger)\b|"
                         r"\bI (dispatched|queued|greenlighted)\b|\bthe observer\b"),
     ("private_system", r"\bgreenlight the build\b|\bpoint an agent at\b|"
                        r"\bfleet budget\b|\bburn budget\b|\bcredit balance\b|"
-                       r"\bfree lane\b|\brouter lane\b|\bthe pause flag\b|\bbuild-pitches folder\b"),
+                       r"\bfree lane\b|\brouter lane\b|\bthe pause flag\b|"
+                       r"\bbuild-pitches folder\b"),
 ]
 VALID_TAGS = {"BASIL", "BROOKE", "TRANSITION"}
 # The 09-28 pitch is the "effort dial" one. A pitch counts as present only if a
@@ -508,6 +582,13 @@ STAGES = ["manifest", "write", "qc", "scan", "judge", "report"]
 
 
 def main():
+    # or_writer/dedup_guard use PEP 604 unions (3.10+). Re-exec into the repo's
+    # own venv rather than failing with a confusing TypeError on the system 3.9.
+    if sys.version_info < (3, 10):
+        vpy = LIVE / "venv" / "bin" / "python"
+        if vpy.exists():
+            os.execv(str(vpy), [str(vpy), os.path.abspath(__file__), *sys.argv[1:]])
+        sys.exit("need Python 3.10+ and no repo venv found at " + str(vpy))
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--date", required=True, help="YYYY-MM-DD of the aired episode to replay")
