@@ -1,0 +1,382 @@
+# Brainrot Radio — Topic Brief
+# Generated: 2026-09-28 04:01
+# Top 40 stories — sorted by RECENCY FIRST, then weighted score as tiebreaker
+
+# Topic mix: ai_and_tech=16, culture_and_ideas=8, entertainment_and_media=7, economics_and_policy=3, health_and_longevity=2, nfl=1, nba=1, f1=1, agentic_systems=1
+
+## 1. [Podcast] AI Can Write Code. Why Isn’t Software Better?
+Source: The a16z Show | Topic: ai_and_tech | Age: today | Score: 6.733
+Weights: feed=1.8 × topic=2.0 × recency=0.998 × keyword=1.25
+Type: podcast (transcript available)
+Link: https://a16z.simplecast.com/episodes/ai-can-write-code-why-isnt-software-better-je38wEkC
+
+Where the fuck is all the automation? AI is so unbelievably smart, and yet it's so useless at all other stuff. It doesn't matter how much AI coding agents you use, the software actually isn't getting better. Maybe you're writing it faster. It's like arguably getting worse. OpenAI has been trying to automate customer service since 2020. What I want instead is smart software. I want to expand what software itself can do, such that things that should be automatable can then be automatable. My favorite thing that you guys say is we built prod, not god. So good. Because if we had any other kind of like big lab leader, even if they had Joy, they would cover that thing. And then your view is so different. You're like, no, we're gonna create a way better world. For nuanced reasons, I don't think we are on the path of RSI. In the Saspocalypse story, um AI can write software, but what if the bigger opportunity is putting intelligence inside the software itself? In this episode, Ben Horowitz and Martin Casado sit down with types
+
+---
+
+## 2. Nvidia launches the Open Agent Safety Platform, a reference design to stop AI agents from escaping, made up of OpenShell for CPUs and Sentry for network chips (Kif Leswing/CNBC)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 4.674
+Weights: feed=2.0 × topic=2.0 × recency=0.935 × keyword=1.25
+Link: https://www.techmeme.com/260928/p7#a260928p7
+
+Kif Leswing / CNBC : Nvidia launches the Open Agent Safety Platform, a reference design to stop AI agents from escaping, made up of OpenShell for CPUs and Sentry for network chips — Nvidia is rolling out a new software platform to allow AI developers to set safeguards for agents and prevent them from breaking out of containment.
+
+---
+
+## 3. Alexandr Wang says Meta built Muse "to help people build the world they want", offering "every person on earth ... a second mind beyond their own" (Alexandr Wang/@alexandr_wang)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.924
+Weights: feed=2.0 × topic=2.0 × recency=0.981 × keyword=1.0
+Link: https://www.techmeme.com/260928/p9#a260928p9
+
+Alexandr Wang / @alexandr_wang : Alexandr Wang says Meta built Muse “to help people build the world they want”, offering “every person on earth ... a second mind beyond their own” — Here's to the wanting. Here's to the dreaming. Here's to everyone. https://x.com/...
+
+---
+
+## 4. The Dutch government is testing DAWO, a NixOS-based digital work environment covering the OS, office suite, and more, after Microsoft cut off the ICC in 2025 (Sourav Rudra/It's FOSS)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.812
+Weights: feed=2.0 × topic=2.0 × recency=0.953 × keyword=1.0
+Link: https://www.techmeme.com/260928/p8#a260928p8
+
+Sourav Rudra / It's FOSS : The Dutch government is testing DAWO, a NixOS-based digital work environment covering the OS, office suite, and more, after Microsoft cut off the ICC in 2025 — Eight municipalities are already testing DAWO, the government's NixOS-powered work environment.
+
+---
+
+## 5. [Podcast] Foiled plot: did Iran plan British base attack?
+Source: The Intelligence (The Economist) | Topic: economics_and_policy | Age: today | Score: 3.785
+Weights: feed=1.8 × topic=1.5 × recency=0.935 × keyword=1.0
+Type: podcast (transcript available)
+Link: https://shows.acast.com/theintelligencepodcast/episodes/foiled-plot-did-iran-plan-british-base-attack
+
+Play Big meet, little meat: the Trump-Xi summit 27:13 | Friday, September 25, 2026 Not much of real substance appears to have emerged from the get-together. But our correspondent says there are clues of how both sides view an evolving relationship. Tommy Robinson, a British far-right influencer, is increasingly well known to MAGA types in America; we examine his rise to prominence. And remembering Bob Mackie, daring dressmaker to the stars. Watch extended clips from Insider hereGuests and host:Simon Rabinovich, Beijing bureau chiefGeorgia Banjo, Britain correspondentAnn Wroe, obituaries editorJason Palmer, co-host of “The Intelligence”Topics covered: Xi Jinping, Donald Trump, trade war, diplomacyTommy Robinson, American politics, TexasBob Mackie, fashionListen to what matters most, from global politics and business to science and technology—subscribe to The Economist. Play Home disadvantage: risks in housing markets 23:10 | Thursday, September 24, 2026 Rich-world house prices survived the last fit of interest-rate rises; our correspondent lays out why they may not this time. Nine months after Australia banned social media for under-16s, we ask if anything has changed. And a critical look at Israel’s hit show “Fauda” as it tackles the atrocities of October 7th. Guests and host:Callum Williams, senior economics writerJosh Spencer, Asia news editorAndrew Miller, special correspondentJason Palmer, co-host of “The Intelligence”Topics covered: housing markets, bond yields, interest ratesAustralia, social media bans“Fauda”, October 7thListen to what matters most, from global politics and business to science and technology—subscribe to The Economist. Play National front-runner: who can beat Le Pen? 19:48 | Wednesday, September 23, 2026 Marine Le Pen, party leader of France’s populist-right National Rally, starts her fourth presidential bid with a commanding lead. The country’s political centre is broad, fragmented—and flagging. A buffer zone against so-called infiltrators in India’s West Bengal state is making life miserable also for Indian citizens. And how Argentina’s supply of horses and cowboys led to world dominance in polo. Guests and host:Sophie Pedder, Paris bureau chief Kira Huju, Asia correspondentHamish Clayton, culture writerRosie Blau, co-host of “The Intelligence”Jason Palmer, co-host of “The Intelligence”Topics covered: French politics, Marine Le PenIndia, West Bengal, Bangladesh, Hindu nationalismArgentina, poloListen to what matters most, from global politics and business to science and technology—subscribe to The Economist. Play The mob rule: criminality consumes South Africa 20:48 | Tuesday, September 22, 2026 An illicit shadow economy, rampant extortion and the capture of the criminal justice system: mafia members and tactics are eating away at the state. Oura seems to have captured the market for smart rings; we ask whether it can keep its lead finger-tight. And our correspondent finds convention upended, for good and bad, at the Lucas Museum of Narrative Art.Guests and host:John McDermott, chief Africa correspondentShera Avi-Yonah, business correspondentAlexandra Suich Bass, culture editorJason Palmer, co-host of “The Intelligence”Topics covered: South Africa, organised crime, criminal justicewearable tech, Oura ringsLucas MuseumListen to what matters most, from global politics and business to science and technology—subscribe to The Economist. Play Centre punch: Germany’s state-election shocker 21:06 | Monday, September 21, 2026 Two more state-election results reveal surging support for both the far-right AfD and the populist-left Die Linke parties. Chancellor Friedrich Merz himself described the outcome as a disaster; what will it mean for him? Our correspondent looks into why there is so much enthusiasm for African stocks. And what the science says about blue-light exposure and sleep. Guests and host:Tom Nuttall, Berlin bureau chiefỌrẹ Ogunbiyi, Africa correspondentSam Wikeley, science correspondentRosie Blau, 
+
+---
+
+## 6. [Podcast] Why Building a Crosswalk in LA Is Kafkaesque
+Source: Odd Lots | Topic: economics_and_policy | Age: today | Score: 3.563
+Weights: feed=2.0 × topic=1.5 × recency=0.792 × keyword=1.0
+Type: podcast (transcript available)
+Link: https://omny.fm/shows/odd-lots/why-building-a-crosswalk-in-la-is-kafkaesque
+
+1 00:00:02,750 --> 00:00:07,690 Speaker 1: Bloomberg Audio Studios Podcasts Radio News. 2 00:00:09,980 --> 00:00:21,380 Speaker 2: Music Hello, and welcome to another live episode of the 3 00:00:21,540 --> 00:00:22,720 Speaker 2: Odd Lots podcast. 4 00:00:22,860 --> 00:00:23,920 Speaker 3: I'm Joe Wiesenthal. 5 00:00:24,100 --> 00:00:25,040 Speaker 4: And I'm Tracy Alloway. 6 00:00:25,239 --> 00:00:28,760 Speaker 2: So we're here at the Vermont Theater in Hollywood. And 7 00:00:28,800 --> 00:00:31,520 Speaker 2: of course, you talk about Hollywood, but you also have 8 00:00:31,540 --> 00:00:34,060 Speaker 2: to talk about the real estate industry. We know this 9 00:00:34,080 --> 00:00:36,840 Speaker 2: has always been a hub of booming real estate industry. 10 00:00:36,880 --> 00:00:40,210 Speaker 2: But what do the changes in economic development and the 11 00:00:40,250 --> 00:00:42,370 Speaker 2: housing market, how does it manifest itself here? 12 00:00:42,690 --> 00:00:42,990 Speaker 5: That's right. 13 00:00:43,030 --> 00:00:44,330 Speaker 3: So we have a real treat for you. 14 00:00:44,370 --> 00:00:47,350 Speaker 4: We're going to be speaking to an absolute legend in 15 00:00:47,390 --> 00:00:50,839 Speaker 4: the world of residential real estate, someone who actually called 16 00:00:50,920 --> 00:00:54,780 Speaker 4: the subprime bubble before 2008, and maybe even more importantly, 17 00:00:55,120 --> 00:00:59,010 Speaker 4: called the bottom of the housing market after 2008. And 18 00:00:59,030 --> 00:01:00,890 Speaker 4: then we're also going to be speaking to a relative 19 00:01:01,010 --> 00:01:04,630 Speaker 4: newcomer in the world of commercial property, someone who's doing 20 00:01:04,690 --> 00:01:07,450 Speaker 4: new things in L.A. and trying to develop basically a 21 00:01:07,490 --> 00:01:08,069 Speaker 4: new neighborhood. 22 00:01:08,310 --> 00:01:12,289 Speaker 2: So enjoy our conversation with the legend Bill McBride of 23 00:01:12,350 --> 00:01:17,819 Speaker 2: Calculated Risk, as well as Zach Lazzari, real estate developer, founder. 24 00:01:17,580 --> 00:01:21,120 Speaker 3: Of The Western Company. Thank you both so much. Zach, 25 00:01:21,140 --> 00:01:23,840 Speaker 3: what do you what do you do? What's your job? 26 00:01:23,940 --> 00:01:25,690 Speaker 5: I'm a real estate professional. 27 00:01:25,970 --> 00:01:26,830 Speaker 3: Okay, what does that mean? 28 00:01:26,870 --> 00:01:28,670 Speaker 2: Because there are a lot of people who could say 29 00:01:28,730 --> 00:01:29,309 Speaker 2: those words. 30 00:01:30,830 --> 00:01:33,770 Speaker 1: So my goal with the Western Company, the goal that 31 00:01:33,790 --> 00:01:37,370 Speaker 1: we have is that being able to say I'm a 32 00:01:37,490 --> 00:01:41,589 Speaker 1: real estate professional is more exciting than it normally is. 33 00:01:42,209 --> 00:01:46,190 Speaker 1: So I come from a theater and acting background. And 34 00:01:46,230 --> 00:01:49,190 Speaker 1: what I noticed was the developments that I was seeing 35 00:01:49,250 --> 00:01:50,670 Speaker 1: in Los Angeles moved here in about 2014. 36 00:01:50,650 --> 00:01:50,890 Speaker 6: Okay. 37 00:01:53,020 --> 00:01:54,720 Speaker 5: You'd have a really exciting neighborhood. 38 00:01:54,380 --> 00:01:56,620 Speaker 1: Pop up in Silver Lake or Echo Park or Highland Park. 39 00:01:57,000 --> 00:02:00,070 Speaker 1: And then whenever scaffolding would go up for a new building, 40 00:02:00,630 --> 00:02:04,230 Speaker 1: there's generally a, oh, oh no, what's that going to be? 41 00:02:04,950 --> 00:02:07,650 Speaker 1: And that's not the reaction that you should have when 42 00:02:07,690 --> 00:02:09,010 Speaker 1: a new building is being built. 43 00:02:09,240 --> 00:02:11,860 Speaker 5: There should be some excitement. What is that going to be? 44 00:02:12,340 --> 00:02:16,859 Speaker 1: What kind of new creative spirit is going to enter 45 00:02:17,020 --> 00:02:19,950 Speaker 1: 
+
+---
+
+## 7. NXP and TSMC affiliate Vanguard inaugurate their joint advanced chip fab in Singapore, targeting mass production in early 2027 and eyeing a second facility (Cheng Ting-Fang/Nikkei Asia)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.529
+Weights: feed=2.0 × topic=2.0 × recency=0.882 × keyword=1.0
+Link: https://www.techmeme.com/260928/p6#a260928p6
+
+Cheng Ting-Fang / Nikkei Asia : NXP and TSMC affiliate Vanguard inaugurate their joint advanced chip fab in Singapore, targeting mass production in early 2027 and eyeing a second facility — SINGAPORE — TSMC affiliate Vanguard International Semiconductor (VIS) inaugurated its first advanced chipmaking plant in Singa
+
+---
+
+## 8. Hundreds of people attended a pro-AI party in DC on September 26, in what the organizers called a counterprogram to the "bipartisan psychosis" over data centers (The Washington Sun)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.429
+Weights: feed=2.0 × topic=2.0 × recency=0.857 × keyword=1.0
+Link: https://www.techmeme.com/260928/p5#a260928p5
+
+The Washington Sun : Hundreds of people attended a pro-AI party in DC on September 26, in what the organizers called a counterprogram to the “bipartisan psychosis” over data centers — Hundreds gathered at a bitcoin-themed bar in D.C. to counterprogram the national backlash against data centers and AI.
+
+---
+
+## 9. A profile of South Korea Deputy PM Bae Kyung-hoon, an AI evangelist and a former AI researcher leading lavishly funded programs to make AI ubiquitous nationwide (Daniel Tudor/Financial Times)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.237
+Weights: feed=2.0 × topic=2.0 × recency=0.809 × keyword=1.0
+Link: https://www.techmeme.com/260928/p4#a260928p4
+
+Daniel Tudor / Financial Times : A profile of South Korea Deputy PM Bae Kyun
+
+---
+
+## 10. [Podcast] Denver Robs LA, Drake Maye-Day, Dallas Disaster, Purdy is a PROBLEM, and the Undefeated Raiders
+Source: The Ringer Fantasy Football Show | Topic: nfl | Age: today | Score: 3.161
+Weights: feed=2.5 × topic=1.1 × recency=0.958 × keyword=1.0
+Type: podcast (no transcript)
+Link: 
+
+MAYE-DAY! MAYE-DAY! Heifetz thinks Drake Maye is broken. Jaylen Waddle is breaking DK. The Chargers have ruined Craig’s life. . Brock Purdy is a PROBLEM. Geno Smith is so back. It’s so over for the Bucs. Kyle Pitts is the TE60 on the season. Lock in for Danny, Danny, and Craig running through all of the Sunday games from Week 2. (00:00) Intro (01:34) SNF: Broncos steal 30-26 comeback win over Rams (15:25) Winners and Losers (56:43) PROBLEM of the Day (01:12:12) It’s So Over. We’re So Back. (01:2
+
+---
+
+## 11. Q&A with Cloudflare CEO Matthew Prince on bot traffic potentially reaching 1000x human traffic, reviving HTTP 402 to charge bots, blocking Google, and more (Nilay Patel/The Verge)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 3.114
+Weights: feed=2.0 × topic=2.0 × recency=0.779 × keyword=1.0
+Link: https://www.techmeme.com/260928/p3#a260928p3
+
+Nilay Patel / The Verge : Q&A with Cloudflare CEO Matthew Prince on bot traffic potentially reaching 1000x human traffic, reviving HTTP 402 to charge bots, blocking Google, and more — Cloudflare's mission to remake the business of the web for the AI age — Today, I'm talking with Matthew Prince, who is CEO of Cloudflare.
+
+---
+
+## 12. [Podcast] The Real Reason the Black Family Fell Apart
+Source: Conversations with Coleman | Topic: culture_and_ideas | Age: today | Score: 2.773
+Weights: feed=2.0 × topic=1.3 × recency=0.889 × keyword=1.0
+Type: podcast (no transcript)
+Link: 
+
+Delano Squires spent 15 years working in D.C. government, including a stint in the city’s office of gun violence prevention, where he noticed the same story on repeat: Young black men were both victims and perpetrators of some of the worst crimes in the city. In his new book, The Vanishing Black Family, he argues that family structure, not policing, incarceration, or education policy, is the most consequential and least discussed driver of racial inequality in America today. Squires makes the ca
+
+---
+
+## 13. A look at OpenAI-backed Red Queen Bio, an AI biosecurity startup that raised $36M to design antibody drugs against pathogens, including AI-enabled bioweapons (Georgia Wells/Wall Street Journal)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 2.693
+Weights: feed=2.0 × topic=2.0 × recency=0.612 × keyword=1.1
+Link: https://www.techmeme.com/260928/p2#a260928p2
+
+Georgia Wells / Wall Street Journal : A look at OpenAI-backed Red Queen Bio, an AI biosecurity startup that raised $36M to design antibody drugs against pathogens, including AI-enabled bioweapons — Red Queen Bio is using artificial intelligence to design antibody drugs for novel pathogens—before future AI systems create them
+
+---
+
+## 14. Prompting Claude Opus 5.5
+Source: Hacker News | Topic: ai_and_tech | Age: today | Score: 2.601
+Weights: feed=1.5 × topic=2.0 × recency=0.754 × keyword=1.15
+Link: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5
+
+Article URL: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5 Comments URL: https://news.ycombinator.com/item?id=49874728 Points: 73 # Comments: 63
+
+---
+
+## 15. Engram is a sampler that turns broken AI hallucinations into music
+Source: The Verge AI | Topic: ai_and_tech | Age: today | Score: 2.597
+Weights: feed=1.3 × topic=2.0 × recency=0.999 × keyword=1.0
+Link: https://www.theverge.com/ai-artificial-intelligence/1001193/engram-sampler-ai-hallucinations-music
+
+Music startup Thoughtful Things has just launched the Kickstarter campaign for its first instrument, Engram . It's a sampler and groovebox that uses AI to mangle incoming audio and even hallucinate completely new sounds. This isn't Suno in a box, though. This isn't a "push-button, get-song" device, aimed at creating s
+
+---
+
+## 16. Maybe don't let Muse run your Facebook Marketplace account
+Source: Hacker News | Topic: ai_and_tech | Age: today | Score: 2.452
+Weights: feed=1.5 × topic=2.0 × recency=0.817 × keyword=1.0
+Link: https://www.threads.com/@matt.j.robb/post/DdxwAJnDhNy
+
+Article URL: https://www.threads.com/@matt.j.robb/post/DdxwAJnDhNy Comments URL: https://news.ycombinator.com/item?id=49875006 Points: 34 # Comments: 25
+
+---
+
+## 17. Who’s liable when AI agents go rogue?
+Source: MIT Technology Review | Topic: ai_and_tech | Age: today | Score: 2.41
+Weights: feed=1.2 × topic=2.0 × recency=0.803 × keyword=1.25
+Link: https://www.technologyreview.com/2026/09/28/1145197/whos-liable-when-ai-agents-go-rogue/
+
+MIT Technology Review Explains : Let our writers untangle the complex, messy world of technology to help you understand what’s coming next. You can read more from the series here . Over the past few months, a cascade of cyberattacks by AI agents has stunned the world. In July, OpenAI disclosed that a swarm of its agents had escaped their sandbox and hacked into the AI platform Hugging Face to cheat on a cybersecurity test. Recently, external researchers discovered that OpenAI agents had hijacked a German wiki site and the coding platform <a href="https://www.reuters.com/legal/litigation/openai-agents
+
+---
+
+## 18. The US DHS says it will "revolutionize" its FOIA process by using AI to handle certain types of requests and recommend what information should be redacted (Nate Jones/Washington Post)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 2.16
+Weights: feed=2.0 × topic=2.0 × recency=0.54 × keyword=1.0
+Link: https://www.techmeme.com/260928/p1#a260928p1
+
+Nate Jones / Washington Post : <SPAN STYLE="font
+
+---
+
+## 19. Made by Mechanical Means
+Source: Hacker News | Topic: ai_and_tech | Age: today | Score: 2.146
+Weights: feed=1.5 × topic=2.0 × recency=0.715 × keyword=1.0
+Link: https://felixrieseberg.com/made-by-mechanical-means/
+
+Article URL: https://felixrieseberg.com/made-by-mechanical-means/ Comments URL: https://news.ycombinator.com/item?id=49874551 Points: 16 # Comments: 4
+
+---
+
+## 20. [Podcast] What Humans, Animals and Plants Tell Us About Consciousness | Michael Pollan
+Source: Huberman Lab | Topic: health_and_longevity | Age: today | Score: 1.71
+Weights: feed=1.2 × topic=1.2 × recency=0.792 × keyword=1.0
+Type: podcast (transcript available)
+Link: https://www.hubermanlab.com/episode/what-humans-animals-and-plants-tell-us-about-consciousness-michael-pollan
+
+Behind the Scenes Michael Pollan is a renowned author, journalist and professor at UC Berkeley. He is best known for his influential works on how humans and plants have shaped each other at the level of food, medicine, health, and culture. In this episode we discuss consciousness—what it is and how the recognition between our self vs others contributes to-- but also can impair, certain aspects of conscious experience. We discuss psychedelics, the microbiome, caffeine, and how the unconscious dialogue between our body and brain impacts our thoughts and feelings. Pollan offers a hopeful perspective on how our relationship with plants and animals – including other humans, can lead us to a healthier, and far richer experience of life. Articles What Is It Like to Be a Bat? ( The Philosophical Review ) Plants respond to leaf vibrations caused by insect herbivore chewing ( Oecologia ) Tuned in: plant roots use sound to locate water ( Oecologia ) A cellular platform for the development of synthetic living machines ( Science Robotics ) Chimpanzees: Self-Recognition ( Science ) A gut bacterial pathway metabolizes aromatic amino acids into nine circulating metabolites ( Nature ) The physiological basis of psychological disgust and moral judgments ( Journal of Personality and Social Psychology ) Awe, the diminished self, and collective engagement: Universals and cultural variations in the small self ( Journal of Personality and Social Psychology ) Books Second Nature: A Gardener's Education by Michael Pollan A World Appears: A Journey into Consciousness by Michael Pollan The Varieties of Religious Experience: A Study in Human Nature by William James The Botany of Desire: A Plant's-Eye View of the World by Michael Pollan How to Change Your Mind: What the New Science of Psychedelics Teaches Us About Consciousness, Dying, Addiction, Depression, and Transcendence by Michael Pollan Awe: The New Science of Everyday Wonder and How It Can Transform Your Life by Dacher Keltner The Doors of Perception by Aldous Huxley The Omnivore's Dilemma: A Natural History of Four Meals by Michael Pollan Food Politics: How the Food Industry Influences Nutrition and Health by Marion Nestle Fast Food Nation: The Dark Side of the All-American Meal by Eric Schlosser Diet for a New America: How Your Food Choices Affect Your Health, Happiness and the Future of Life on Earth by John Robbins Natural Intelligence & the Logic of Consciousness by Antonio Damasio This Is Your Mind on Plants by Michael Pollan Other Resources Wendell Berry ( Poetry Foundation ) The Berry Center Wendell Berry ( Library of America ) Power Steer by Michael Pollan ( The New York Times ) Make America Healthy Again (MAHA) Multidisciplinary Association for Psychedelic Studies (MAPS) COMPASS Pathways Weston A. Price Foundation Huberman Lab Episodes Mentioned Raising a Dog & Mastering Calm Assertive Energy | Cesar Millan Dr. Lisa Feldman Barrett: How to Understand Emotions People Mentioned Wendell Berry : poet, essayist, environmental activist Henry David Thoreau : writer, philosopher, naturalist Ralph Waldo Emerson : essayist, philosopher, transcendentalist John Muir : naturalist, writer, conservationist René Descartes : philosopher, mathematician William James : philosopher, psychologist Michael Levin : professor of biology, Tufts University Justin Sonnenburg : professor of microbiology and immunology, Stanford University Antonio Damasio : professor of neuroscience, psychology and philosophy, USC Dornsife Mark Solms : professor of psychology, University of Cape Town Edward Chang : professor of neurological surgery, UCSF Christof Koch : neuroscientist, Meritorious Investigator, Allen Institute Henri Bergson : philosopher Aldous Huxley : author, philosopher Qiufu Ma : professor of neurobiology, Westlake University Alison Gopnik : professor of psychology, UC Berkeley Norbert Wiener : mathematician, cybernetics Susumu Tonegawa : neuroscientist/geneticist Mark Mayford : professor of neuroscience, UC Irvi
+
+---
+
+## 21. [Podcast] Drake Mayday, a Raiders Revival, Bleakest 0-3 Teams, MLB Playoffs, and Guess the Lines With Cousin Sal
+Source: The Bill Simmons Podcast | Topic: entertainment_and_media | Age: today | Score: 1.59
+Weights: feed=1.8 × topic=1.0 × recency=0.736 × keyword=1.0
+Type: podcast (no transcript)
+Link: 
+
+The Ringer’s Bill Simmons is joined by Cousin Sal to react to the Rams-Broncos 'SNF' game before recapping the rest of the matchups of Week 3 and going on to Guess the Lines for Week 4. (0:00) Intro (1:08) Rams-Broncos (7:34) Ravens-Cowboys and Patriots-Jaguars (27:14) Raiders-Saints and Texans-Colts (33:45) Chargers-Bills and Seahawks-Commanders (39:49) Vikings-Bucs and Cardinals-49ers (46:31) Chiefs-Dolphins and Bengals-Steelers (52:57) Panthers-Browns (54:45) Guess the Lines Week 4 (01:20:10)
+
+---
+
+## 22. [Podcast] Brooklyn Nets Season Preview
+Source: The Athletic NBA Daily | Topic: nba | Age: today | Score: 1.257
+Weights: feed=1.5 × topic=0.7 × recency=0.998 × keyword=1.0
+Type: podcast (no transcript)
+Link: https://shows.acast.com/the-athletic-nba-daily/episodes/brooklyn-nets-season-preview
+
+Andrew Schlecht is joined by Erik Slater, from the Locked On Nets podcast, to preview the Brooklyn Nets season, which young players to watch, and their future. Host: Andrew Schlecht With: Erik Slater Producer: Andrew Schlecht Audio/Video: Alex Oliver Hosted on Acast. See acast.com/privacy for more information.
+
+---
+
+## 23. Why do models *really* fail on HLE tasks?
+Source: LessWrong (Community) | Topic: culture_and_ideas | Age: today | Score: 1.25
+Weights: feed=1.0 × topic=1.3 × recency=0.801 × keyword=1.2
+Link: https://www.lesswrong.com/posts/osDXBjpPyXHYbMxSm/why-do-models-really-fail-on-hle-tasks
+
+I recently attended Generality Labs ' Inspect Evals Data Viz Hackathon, and spent the day using Inspect AI and its offspring, Scout, with a simple goal in mind - generate a new plot of a new or existing benchmark. Many thanks to the organisers and to my team mates, Jeff Mohl and Valerie Griffiths (the Overfit and Overcaffeinated team), for a fantastic time, learning some new tricks on using the Inspect suite. Here I'm presenting the two (!) plots we got in the span of ~ 6 hours (more like 4 hours as it took us a while to agree on what we actually want to spend the day on - arguably a harder
+
+---
+
+## 24. Bundesrepublik Deutschland
+Source: Marginal Revolution (Tyler Cowen) | Topic: economics_and_policy | Age: today | Score: 1.201
+Weights: feed=1.5 × topic=1.5 × recency=0.534 × keyword=1.0
+Link: https://marginalrevolution.com/marginalrevolution/2026/09/bundesrepublik-deutschland.html?utm_source=rss&utm_medium=rss&utm_campaign=bundesrepublik-deutschland
+
+At times we forget what an amazing wonder the Bundesrepublik Deutschland was. At the end of the World War II, Germany was one of the sickest and cruelest human societies in history, ever. Not too many years later, it was one of the best and most successful societies ever. By the 1980s, living standards had caught up to the United States, with the provision of public goods sometimes superior. The country was fully democratic, pro-Western, and largely pro-American. Their rail system and postal service were amongst the best ever created. For thinkers of note there were Hans Blumenberg, Habermas, Peter Weiss, Gadamer, late Heidegger and late Carl Schmitt, Reinhart Koselleck, the underrated <a href="https://www.amazon.com/Male-Fantasies-Vol-History-Literature/dp/0816614490/ref=sr_1_1?crid=1GHWN88NQKIU1&dib=eyJ2IjoiMSJ9.aQG--ZFQmvxu4h5m5Y40Hc4-j-JPCRGaFFQXauNqxLqK4PSADlnzsnGJKopK_AzKaQCz-sMtozQq3FpQ0fEv1nzgge-6j4dhVypiLtoBR-o.xJdamJp-FlAOrYF4jy1xQJYtYTE8PsxEa_1
+
+---
+
+## 25. [Podcast] #409 ‒ Inside modern drug development: the science, economics, and regulatory hurdles behind bringing new medicines to patients | Lloyd Klickstein, M.D., Ph.D.
+Source: The Peter Attia Drive | Topic: health_and_longevity | Age: today | Score: 1.165
+Weights: feed=1.2 × topic=1.2 × recency=0.513 × keyword=1.05
+Type: podcast (transcript available)
+Link: https://peterattiamd.com/lloydklickstein2/?utm_source=podcast-feed&amp;utm_medium=referral&amp;utm_campaign=260928-pod-lloydklickstein2&amp;utm_content=260928-pod-lloydklickstein2-podfeed
+
+Hey everyone, welcome to the Drive Podcast. I'm your host, Peter Attia. This podcast, my website, and my weekly newsletter all focus on the goal of translating the science of longevity into something accessible for everyone. Our goal is to provide the best content in health and wellness, and we've established a great team of analysts to make this happen. It is extremely important to me to provide all of this content without relying on paid ads. To do this, our work is made entirely possible by our members, and in return, we offer exclusive member-only content and benefits above and beyond what is available for free. If you want to take your knowledge of this space to the next level, it's our goal to ensure members get back much more than the price of the subscription. If you want to learn more about the benefits of our premium membership, head over to peterateamd.com forward slash subscribe. My guest this week is Dr. Lloyd Clickstein, a physician, scientist, rheumatologist, and drug developer who has spent more than two decades helping discover and develop new medicines. After beginning his career as a physician scientist at Harvard Medical School and the Brigham and Women's Hospital, Lloyd joined Novartis, where he helped pioneer translational medicine and led the company's new indication discovery unit, identifying entirely new disease and therapeutic opportunities. He later held leadership roles at several biotechnology companies, including Versantis Bio, where he led the development of BEMA before the company was acquired by Eli Lilly. Today he serves as the CEO of Coslap Therapeutics. I wanted to have Lloyd on because very few people have had a front row seat to every stage of modern drug development, from identifying the unmet medical need to the discovery of new therapeutic targets, to navigating clinical trials, regulatory approval, and even commercialization. While we use BEMA as a case study throughout this conversation, the real goal is to pull back the curtain on how new medicines are actually created, why the process takes so long and costs so much, and how scientists decide which areas are worth pursuing in the first place. In the episode, we talk about how new drugs are discovered, developed, and ultimately brought to patients, the science and economics behind choosing which diseases and therapeutic targets to pursue, the differences between small molecules, biologics, gene therapy, and other drug platforms, why drug development takes so long, costs billions of dollars, and so often fails, the story behind this one particular drug from its discovery at Novartis to its development as a therapy for muscle loss and obesity, what clinical trials, FDA approval, and patent protection actually involve, and how the next generation of obesity and muscle preserving therapies may reshape the treatment of metabolic disease. So without further delay, please enjoy my conversation with Dr. Lloyd Clipstein. Lloyd, thanks so much for coming out to Austin. Great to see you again in person. It's been uh probably six, seven, maybe eight years since we were last year. It might well be that long, yes. Yeah. So look, for for folks who don't know you as as well as as some of us do, tell us just a little bit about your background. You're a physician and a scientist, but talk a little bit about how those two paths came together. Right. So my original plan when I finished college was to go to medical school, following is basically the family business. But between college and medical school, I worked in a laboratory at Brigham and Women's Hospital in Boston and found two things. One that I love doing science, and two that I was pretty good at it. And I ended up doing an MD PhD degree. And that is the training not required, but helpful for becoming a physician scientist. And uh from there I did medicine training. I was a rheumatology training, and I practiced rheumatology for maybe 10 years, and also had an NIH funded research lab doing ver
+
+---
+
+## 26. [Podcast] James Sexton, Rick Glassman, Matt McCusker - Mostly Wise #4 - #1156
+Source: Modern Wisdom | Topic: culture_and_ideas | Age: today | Score: 1.136
+Weights: feed=1.3 × topic=1.3 × recency=0.56 × keyword=1.0
+Type: podcast (no transcript)
+Link: 
+
+In the fourth episode of Mostly Wise, we explore: If there is any sexual tension between clients and divorce lawyers. Why Rick can't hook up with someone he isn't in love with. Where all the hot goth girls up and disappeared to. The craziest clauses found in James' clients' prenuptial agreements. How to talk to your partner about gaining weight. Gen Z's big problem with being the most sexless generation. And much more... Guests James Sexton is a New York-based divorce attorney and author, known 
+
+---
+
+## 27. HLD Talent Signs Content Creator Heather Bowling
+Source: Deadline Hollywood | Topic: entertainment_and_media | Age: today | Score: 0.941
+Weights: feed=1.0 × topic=1.0 × recency=0.941 × keyword=1.0
+Link: https://deadline.com/2026/09/hld-talent-signs-heather-bowling-1237113705/
+
+EXCLUSIVE: GK Barry agency HLD Talent has signed content creator and By Babes co-founder Heather Bowling. The social media star, business owner and neurodiversity advocate is joining up with the likes of Barry, Mariam Musa and Shakira Khan at the London-based HLD, which is lead by creators agent Hannah Holland. She is known as a […]
+
+---
+
+## 28. ‘Harry Potter’ Producer David Barron Backs AI Adaptation Of ‘The Call Of The Wild’
+Source: Deadline Hollywood | Topic: entertainment_and_media | Age: today | Score: 0.849
+Weights: feed=1.0 × topic=1.0 × recency=0.849 × keyword=1.0
+Link: https://deadline.com/2026/09/harry-potter-david-barron-backs-ai-the-call-of-the-wild-1237115076/
+
+EXCLUSIVE: David Barron, the British film producer with credits on six Harry Potter films, is entering the generative artificial intelligence space. Barron has agreed to produce an AI adaptation of Jack London’s 1903 novel The Call of the Wild, which is written and directed by Simon Rumley (Crushed, Red White & Blue). The film will be generated […]
+
+---
+
+## 29. Is the J-Space a global workspace for multi-hop reasoning? An investigation in open-weight models
+Source: LessWrong (Community) | Topic: culture_and_ideas | Age: today | Score: 0.826
+Weights: feed=1.0 × topic=1.3 × recency=0.553 × keyword=1.15
+Link: https://www.lesswrong.com/posts/pnDjvdo6cX2H7Ddsy/is-the-j-space-a-global-workspace-for-multi-hop-reasoning-an
+
+TLDR: In their J-lens paper, Anthropic suggests that the J-space is a global workspace that the model reasons within, and supports evidence for this hypothesis on Claude models in a variety of settings. I replicated the multi-hop reasoning experiment on Qwen3.6-27B and Gemma 3 27B-it and found that counterfactual answer swaps outperformed intermediate swaps in three of four experimental conditions. This does not provide evidence to support Anthropic's global workspace hypothesis in open-weight models and instead suggests that J-lens is more useful for probing intermediate variables rather than steering outputs. A few months ago, Anthropic published Verbalizable Representations Form a Global Workspace in Language Models<
+
+---
+
+## 30. AI safety field *visual* impact analysis
+Source: LessWrong (Community) | Topic: culture_and_ideas | Age: today | Score: 0.819
+Weights: feed=1.0 × topic=1.3 × recency=0.573 × keyword=1.1
+Link: https://www.lesswrong.com/posts/fqpSosGwSt3uiZq35/ai-safety-field-visual-impact-analysis
+
+I made a terrain style visualisation of AI safety impact of around 3,466 works organised by citation count! The data was extracted from Arxiv and LessWrong posts based on a dictionary of keywords that appear in AI safety works. Additionally, I think its important to see how the field has “evolved” over time so I added a time functionality to slide and see the hills forming. The map is based on how particular works overlap based on embedding space level clustering organised across 18 sub-fields. The height is based on the citation count for that particular area which is log-compressed and summed across the neighbourhood, so a hill is tall because of volume and <span style="white-space
+
+---
+
+## 31. Lightdox Acquires Rights To ‘My Home Of Wind And Sand’ Before Zurich Film Festival World Premiere
+Source: Deadline Hollywood | Topic: entertainment_and_media | Age: today | Score: 0.817
+Weights: feed=1.0 × topic=1.0 × recency=0.817 × keyword=1.0
+Link: https://deadline.com/2026/09/my-home-of-wind-and-sand-lightdox-sales-acquisition-1237115070/
+
+EXCLUSIVE: Lightdox has acquired world sales rights to the documentary My Home of Wind and Sand ahead of its world premiere Tuesday at the Zurich Film Festival. Filmmaker Patrick Wally spent over a decade on his film, a portrait of women’s rights, human rights and climate activist Najla Mohamed Lamin, who was born in a […]
+
+---
+
+## 32. Pacing the Frontier is not the actual goal for AI labs
+Source: LessWrong (Community) | Topic: culture_and_ideas | Age: today | Score: 0.727
+Weights: feed=1.0 × topic=1.3 × recency=0.559 × keyword=1.0
+Link: https://www.lesswrong.com/posts/Nm4ewbYovtjq69dvH/pacing-the-frontier-is-not-the-actual-goal-for-ai-labs
+
+In his latest post about pacing the frontier , Dario writes: But over the last few months, I have become convinced that fully addressing the risks requires even more prudence — not just investing in risk prevention, but pacing the rate of capabilities advancement so that risk prevention has time to keep up. We must slow the pace at which we improve the capabilities of AI models. Progress will still seem fast, and we must make wise use of the time we gain. Two things have convinced me. My first concern is that, since roughly this summer, AI has been advancing drasti
+
+---
+
+## 33. Dialogue with Eliezer Yudkowsky on FOOM
+Source: LessWrong (Community) | Topic: culture_and_ideas | Age: today | Score: 0.718
+Weights: feed=1.0 × topic=1.3 × recency=0.552 × keyword=1.0
+Link: https://www.lesswrong.com/posts/AobGnBCsheYrTDEEG/dialogue-with-eliezer-yudkowsky-on-foom
+
+On the Hanson–Yudkowsky debate, local vs. global intelligence explosions, “content vs. architecture,” and what the old arguments predicted about modern AI This began as a Twitter/X thread after I read and tweeted about the Hanson–Yudkowsky AI–Foom Debate. Eliezer Yudkowsky joined the thread to object to my interpretation of the debate, and we ended up having the exchange reproduced below. I’ve preserved the dialogue verbatim, except for paragraphing, fixing obvious [typos] and expanding links. I’ve removed unrelated replies and moved a few pieces of context into bracketed editorial notes. Nothing has been rewritten for substance. Context <span styl
+
+---
+
+## 34. Why did it get Sparser?
+Source: LessWrong (Community) | Topic: culture_and_ideas | Age: today | Score: 0.718
+Weights: feed=1.0 × topic=1.3 × recency=0.553 × keyword=1.0
+Link: https://www.lesswrong.com/posts/X9SeoYXCXSx4domNv/why-did-it-get-sparser
+
+I think that Polysemanticity in artificial neural networks could be the key to making better and smaller models. I having been working on a little project on trying to induce Polysemanticity at a small scale to compare performance, my first approach was to make the bias more adaptable, I called this the Flexbias, however I got a sparser neural network. What is the flex bias? I used a standard transformer architecture including the MLP, Since i wanted to change how the information is processed I altered how the traditional MLP works by changing how the bias is obtained. Normal bias : mjx-container[jax="CHTML"] { line-he
+
+---
+
+## 35. Norris apologises to Colapinto for race ban demand
+Source: The Race | Topic: f1 | Age: today | Score: 0.638
+Weights: feed=0.8 × topic=0.8 × recency=0.996 × keyword=1.0
+Link: https://www.the-race.com/formula-1/norris-apologises-colapinto-for-race-ban-demand-f1-baku-crash/
+
+Lando Norris says he has apologised to Franco Colapinto after saying he should receive a race ban for taking Norris and Pierre Gasly out of Formula 1's Azerbaijan Grand Prix. Fresh from being wiped out in Baku by Colapinto on the first safety car restart, when the Alpine driver misjudged his braking point for the first corner, Norris told media right after the race that whoever caused the pile-up deserved a race ban. He also referred to "some drivers that shouldn't be in Formula 1". But on Monday morning Norris posted an Instagram story revealing he'd apologised to Colapinto for his comments. "Tough weekend overall in Baku and of course a disappointing and early end to the race," said Norris. "After the race, I sent Franco a messa
+
+---
+
+## 36. ‘The Assassin(s)’ Tops Korea’s Chuseok Holiday Box Office With 1.5 Million Admissions
+Source: Deadline Hollywood | Topic: entertainment_and_media | Age: today | Score: 0.62
+Weights: feed=1.0 × topic=1.0 × recency=0.62 × keyword=1.0
+Link: https://deadline.com/2026/09/lee-min-ho-the-assassins-chuseok-holiday-box-office-korea-1237115024/
+
+Hur Jin-ho’s historical thriller The Assassin(s) topped the Korean box office over the Chuseok holiday weekend pulling in more than 1.5 million admissions since its release on September 23. Fresh from its world premiere at Toronto International Film Festival, the film has grossed $11.3M (KRW15.3BN) from 1,546,614 admissions over the first five days of release, […]
+
+---
+
+## 37. MTV Video Music Awards: Taylor Swift’s Record, Madonna’s Domination, Snoop Dogg’s Dig, and More Memorable Moments
+Source: The Hollywood Reporter | Topic: entertainment_and_media | Age: today | Score: 0.592
+Weights: feed=1.0 × topic=1.0 × recency=0.592 × keyword=1.0
+Link: https://www.hollywoodreporter.com/music/music-news/2026-mtv-vmas-best-moments-1236713378/
+
+From performances to tributes, a roundup of the show's highlights.
+
+---
+
+## 38. ‘NAZA’ Premieres in the U.S., Seeking Change and Stoking Controversy
+Source: The Hollywood Reporter | Topic: entertainment_and_media | Age: today | Score: 0.55
+Weights: feed=1.0 × topic=1.0 × recency=0.55 × keyword=1.0
+Link: https://www.hollywoodreporter.com/news/politics-news/naza-premieres-united-states-theaters-release-date-1236713360/
+
+The Israeli-army whistleblower doc arrives on these shores via the NYFF, leaving a cloud of explosive smoke in its wake.
+
+---
+
+## 39. Citrix confirms two critical NetScaler zero-day RCE vulnerabilities are being exploited in attacks, says it has released security updates to fix the flaws (Lawrence Abrams/BleepingComputer)
+Source: Techmeme | Topic: ai_and_tech | Age: today | Score: 1.87
+Weights: feed=2.0 × topic=2.0 × recency=0.467 × keyword=1.0
+Link: https://www.techmeme.com/260927/p15#a260927p15
+
+Lawrence Abrams / BleepingComputer : Citrix confirms two critical NetScaler zero-day RCE vulnerabilities are being exploited in attacks, says it has released security updates to fix the flaws — Update: Article rewritten with official confirmation from Citrix. — Citrix has confirmed that two critical Net
+
+---
+
+## 40. 2026 in LLMs (so far)
+Source: Simon Willison's Weblog | Topic: agentic_systems | Age: today | Score: 1.799
+Weights: feed=2.2 × topic=2.5 × recency=0.311 × keyword=1.05
+Link: https://simonwillison.net/2026/Sep/27/2026-in-llms-so-far/
+
+On Friday I gave the closing keynote at the WeAreDevelopers World Congress North America in San Jose. I tied together the key trends from the past year into a chronological exploration of everything that happened in 2026. The video is on YouTube ; here are my annotated slides and notes to accompany the talk. And as an annotated presentation : <img loading="lazy" src="https://static.simonwillison.net/static/2026/2026-in-llms/simon-willison-2026-in-llms-png.001.webp" alt="2026 in LLMs (so far) Simon Willison WeAreDevelopers World Congress North Amer
+
+---
+
+## Honorable Mentions (lower-ranked but available)
+- [1.799] 2026 in LLMs (so far) (Simon Willison's Weblog, agentic_systems)
+- [1.634] Ramona Optics, which makes microscopes that use AI to take and analyze large volumes of images of samples, raised a $25M Series A (Zachery Eanes/Axios) (Techmeme, ai_and_tech)
+- [1.571] S3 Is the Future, S3 Is the Past (Simon Willison's Weblog, agentic_systems)
+- [1.521] AlphaSense: mentions of open models in US earnings calls and conferences rose 6x YoY in August and September; open models hit 56% of Vercel tokens in August (Financial Times) (Techmeme, ai_and_tech)
+- [1.428] NYC-based Precision Neuroscience, which develops brain-computer interfaces, raised a $250M Series D at a $1B+ valuation, taking its total funding to $430M (Lauren Hirsch/New York Times) (Techmeme, ai_and_tech)
