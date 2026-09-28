@@ -1,0 +1,39 @@
+All three skeptics are in. Synthesizing the verdict.
+
+## QC Synthesis — `test-runs/2026-09-28-single-pass.txt`
+
+**Baseline:** 2026-09-28 already aired (`scripts/killen-time-2026-09-28.txt`); judged as a same-day dedup violation, not a fresh re-air.
+
+### MUST-FIX
+
+**Dedup (Agent A — each independently a "duplicated story," unambiguously fatal on its own):**
+15 story beats in this script are verbatim/near-verbatim repeats of what aired hours earlier in `killen-time-2026-09-28.txt`:
+- L6 Nvidia Open Agent Safety Platform · L8 Meta Muse/Alexandr Wang quote · L10 Dutch DAWO · L12 Cloudflare/Matthew Prince · L14 Red Queen Bio · L16 Engram/Thoughtful Things · L18 pro-AI DC party · **L21–32, the entire featured Build Pitch of the Day segment** (effort-dial pitch — same numbers, same Berman/Artificial-Analysis/arXiv sourcing, already aired as the day's actual featured beat) · L34 Ringer Fantasy Football · L36 Bill Simmons podcast · L38 Nets preview · L41 David Barron/*Call of the Wild* · L43 *The Assassin(s)* box office · L45 MTV VMAs + *NAZA* · L55 MIT Tech Review "liable when AI agents go rogue."
+
+That's essentially the whole AI/Tech block, the featured beat, Sports, and Entertainment. Agent A: *"roughly a third of runtime would be stories listeners already heard."*
+
+**Coherence (Agent B, corroborated by the automated seam scanner):**
+- **L59/L61** — consecutive `[BASIL]`/`[BASIL]` blocks, no speaker between them. Fix by merging, never flipping a tag.
+- **L31** — "logged in the **build-pitches folder** for **Kyle** to greenlight" — names an internal repo path and Kyle's private workflow. Locked GUARDRAILS violation (`tests/test_no_private_system_on_air.py`), also independently flagged by `bin/test-single-pass.py`'s seam scanner.
+- **L27** — "in **the sweeper**" — names an internal fleet component (`pr-review-sweeper.py`). Same guardrail class as above.
+- **L3** — "sitting in the queue" flagged by both B (internal-jargon risk) and C (fabricated backlog detail not in `build-pitches.md`) — two independent flags.
+
+**Sourcing (Agent C):**
+- **L48–52** — the entire "Bet on It" / Astral Codex Ten open-thread segment (EA character sketch, California ballot note, Oxford/UCD/UP meetup mentions) has **zero grounding in `topic-brief.txt`** — neither source appears anywhere in the 40-item brief or honorable mentions. Not a judgment call — this is invented sourcing wholesale.
+- **L8** — "Cheng Ting-Fang at Nikkei Asia notes the plant is a bet on keeping advanced packaging close to the demand centers" — fabricated analysis put in a named reporter's mouth; the source blurb is truncated mid-word before any such claim.
+- **L34, L38** — under the strict override (any specific attached to a `(no transcript)` item is unsourced regardless of blurb wording): Fantasy Football stats/names and the Nets preview's named hosts. (Both lines are also full dedup cuts above.)
+
+### ADVISORY
+- L27 "last week's rejected multi-provider idea" — internal decision history aired (moot, inside the segment being cut anyway).
+- L61 outro ties every story into one "containment vs. capability" thesis — `editorial-voice.md` explicitly discourages forced synthesis.
+- L18, L57 (Bae Kyung-hoon, DHS FOIA) — source blurbs are truncated, but the claims match the item's own headline; lower-priority trims.
+- Line 29/31 invented Build-Pitch sentences beyond `build-pitches.md` — moot, whole segment is a dedup cut.
+
+## Verdict
+
+Between the dedup wipeout (most of the episode already aired same-day, including the entire featured segment), two locked private-system leaks, a fabricated all-quote segment with no source in the brief, and a speaker collision, this script cannot air as written — it would need the AI/Tech, Sports, Entertainment, and featured-beat sections rebuilt from the handful of genuinely fresh items (Vanguard fab, Bae Kyung-hoon profile, DHS FOIA, Citrix NetScaler) plus a properly-sourced EA piece.
+
+I'm **not** editing `test-runs/2026-09-28-single-pass.txt` in place. It's frozen evidence for the New Hire single-pass-vs-two-pass test (`test-runs/2026-09-28-single-pass.md`), whose own frozen criteria treats "any QC FAIL" as a valid FAIL result for that test — patching the script to force a pass would corrupt the experiment it's feeding, not fix a production episode.
+
+**QC VERDICT: FAIL**
+

@@ -1,0 +1,136 @@
+{
+ "date": "2026-09-28",
+ "root": "/Users/kylekillen/brainrot-radio",
+ "files": [
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/topic-brief.txt",
+   "bytes": 45877,
+   "sha256": "6bcbe2bbffd61301"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/build-pitches.md",
+   "bytes": 2344,
+   "sha256": "7154882c73a44343"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/covered-pending-2026-09-28.json",
+   "bytes": 5786,
+   "sha256": "b097f92dec8b1b8d"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_42ad03ca-b9f4-11f1-8b86-ff5be5ba67c3.txt",
+   "bytes": 38102,
+   "sha256": "cdaee39cff339826"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_6ab7d6d8dff17d90e9be218f.txt",
+   "bytes": 21374,
+   "sha256": "8600f92f241a5a83"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_6aba8f686ffb28f8d6613eee.txt",
+   "bytes": 22224,
+   "sha256": "0cfe8f8c75dfb580"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_8a396cdc-d01d-4adf-805b-480e36b08924.txt",
+   "bytes": 28462,
+   "sha256": "c494ef283241fa35"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_b27f54c6-92cc-42ff-8fb3-a330e579e8bb.txt",
+   "bytes": 20631,
+   "sha256": "0eeaeac7ba219f62"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_d850de68-b6e3-4c36-bce9-680b9af9edce.txt",
+   "bytes": 55097,
+   "sha256": "5895b8b5162c4922"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_ff47ae9d-d253-425e-8f04-5731da428dfc.txt",
+   "bytes": 31762,
+   "sha256": "dc090bdcd695f2c4"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/transcripts/podcast_substackpost217156794.txt",
+   "bytes": 30418,
+   "sha256": "b06f2b6fae6213cf"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/articles/astral_codex_ten_open-thread-453.txt",
+   "bytes": 2938,
+   "sha256": "a78b87b8d3d092c4"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/articles/bet_on_it_ea-the-good-the-bad-and-the-buggy.txt",
+   "bytes": 6025,
+   "sha256": "ac44db07c07780a2"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/articles/event_horizon_episode-34-the-future-of-prediction-markets-with-publics-leif-abraham.txt",
+   "bytes": 15128,
+   "sha256": "85e63eb0f366923e"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/articles/slow_boring_feed-the-lizard.txt",
+   "bytes": 13862,
+   "sha256": "acbb9bd53a78f06e"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/.tmp/articles/the_zvi_what-also-happened-notonlyhuggingface.txt",
+   "bytes": 44589,
+   "sha256": "5a71c23881005097"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-21.json",
+   "bytes": 9733,
+   "sha256": "d59e99c6852f6f2c"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-22.json",
+   "bytes": 14468,
+   "sha256": "f4fea90f6b573026"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-24.json",
+   "bytes": 25078,
+   "sha256": "7f028303cbd2e2f1"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-25.json",
+   "bytes": 8916,
+   "sha256": "2873441b0d28ae29"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-26.json",
+   "bytes": 11893,
+   "sha256": "9e38ab685b5d7892"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-27.json",
+   "bytes": 9118,
+   "sha256": "f999c2acefed03a1"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/.covered-2026-09-28.json",
+   "bytes": 13547,
+   "sha256": "980dc051474041ec"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/killen-time-2026-09-27.txt",
+   "bytes": 38936,
+   "sha256": "de04caa20ee8435c"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/killen-time-2026-09-28.txt",
+   "bytes": 57725,
+   "sha256": "778ef67482404b74"
+  },
+  {
+   "path": "/Users/kylekillen/brainrot-radio/scripts/killen-time-gemini-2026-06-19.txt",
+   "bytes": 47979,
+   "sha256": "e7c112f6fa95ea79"
+  }
+ ]
+}

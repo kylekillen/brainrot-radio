@@ -25,3 +25,7 @@ assets/episode-artwork/
 
 # Episode metadata (per-user)
 episode-metadata.json
+
+# Episode-format test artifacts: variant B's script IS the evidence, but a
+# copy of an already-aired script is not (scripts/ is generated per-user).
+test-runs/*-variant-A-copy.txt

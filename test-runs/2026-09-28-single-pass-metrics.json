@@ -1,0 +1,197 @@
+{
+ "date": "2026-09-28",
+ "stages": [
+  "judge",
+  "manifest",
+  "qc",
+  "report",
+  "scan",
+  "write"
+ ],
+ "writer": {
+  "lane": "ollama:muse-glimmer:30b-mlx",
+  "prompt_chars": 79658,
+  "context_tokens": 32768,
+  "prompt_tokens_est": 21914,
+  "full_bundle_chars": 136887,
+  "ok": true,
+  "seconds": 653.9,
+  "prompt_tokens": 20689,
+  "completion_tokens": 6845,
+  "script": "test-runs/2026-09-28-single-pass.txt"
+ },
+ "qc": {
+  "A": {
+   "verdict": "PASS",
+   "seconds": 540.4,
+   "exit": 0,
+   "script": "/Users/kylekillen/wt/brainrot-single-pass/test-runs/2026-09-28-variant-A-copy.txt"
+  },
+  "B": {
+   "verdict": "FAIL",
+   "seconds": 378.8,
+   "exit": 0,
+   "script": "/Users/kylekillen/wt/brainrot-single-pass/test-runs/2026-09-28-single-pass.txt"
+  }
+ },
+ "judge": {
+  "ok": true,
+  "lane": "space-bunny-free",
+  "seed": 2625950774,
+  "reused_cached_dispatch": true,
+  "blind_order_XY": [
+   "A",
+   "B"
+  ],
+  "by_variant": {
+   "A": {
+    "SOURCING": 5,
+    "SUBSTANCE": 5,
+    "PITCH": 5,
+    "FLOW": 4
+   },
+   "B": {
+    "SOURCING": 2,
+    "SUBSTANCE": 2,
+    "PITCH": 2,
+    "FLOW": 2
+   }
+  },
+  "reason": "X attributes nearly every claim to a named source, quotes sparingly and correctly, flags its own limits ('that's all I have of it', 'I can't tell you who said what') and never invents a callback, and it converts the material into practitioner-level insight with cross-story synthesis, a fully sourced build pitch pitched in general terms with concrete numbers and honest caveats, and a coherent episode held together by a returning 'who checks the work' theme \u2014 losing a point only on sheer length and an inventory-style open; Y is largely headline paraphrase, internally contradicts itself (an invented 'Heifetz thinks Drake Maye is broken' and a conflated Week 2/Week 3 blurb), adds unsourced specifics such as a $4/$20 price, repeats the same football description twice back-to-back, drops the hosts' chemistry, ends with a doubled [BASIL] sign-off, and its build pitch describes Kyle's own sweeper and build-pitches folder instead of the technique.",
+  "prompt_tokens": 234570,
+  "completion_tokens": 8235
+ },
+ "seam": {
+  "A": {
+   "defects": 0,
+   "pattern_hits": 0,
+   "hits": [],
+   "repeated_blocks": [],
+   "speaker_collisions": 0,
+   "back_to_back_transitions": 0,
+   "invalid_tags": [],
+   "em_dash_dividers": 0
+  },
+  "B": {
+   "defects": 2,
+   "pattern_hits": 2,
+   "hits": [
+    {
+     "rule": "internal_name",
+     "line": 27,
+     "match": "sweeper",
+     "context": "he winning default and a low-first escalation ladder in the sweeper. It\u2019s tuning inside the Anthropic pool, different from last"
+    },
+    {
+     "rule": "private_system",
+     "line": 31,
+     "match": "build-pitches folder",
+     "context": "ing the agent graph. [BASIL] That\u2019s why it\u2019s logged in the build-pitches folder for Kyle to greenlight. If the shadow bake-off confirms the"
+    }
+   ],
+   "repeated_blocks": [],
+   "speaker_collisions": 1,
+   "back_to_back_transitions": 0,
+   "invalid_tags": [],
+   "em_dash_dividers": 0
+  }
+ },
+ "writer_estimate_A": {
+  "writer_input_chars": 1313076,
+  "writer_input_files": 34,
+  "pass1_words": 6341,
+  "pass2_words": 3463,
+  "source": "ESTIMATE",
+  "tokens_estimate": 381757,
+  "chars_per_input_token": 3.85,
+  "tokens_per_output_word": 4.154
+ },
+ "verdict": "FAIL",
+ "generated_utc": "2026-09-28T19:26:30.678124+00:00",
+ "A": {
+  "script": "scripts/killen-time-2026-09-28.txt",
+  "spoken_words": 9596,
+  "writer": "claude sonnet, two passes (production, as aired)",
+  "writer_tokens": 381757,
+  "writer_tokens_basis": "ESTIMATE \u2014 not logged",
+  "qc": "PASS",
+  "seam_defects": 0,
+  "build_pitch": true,
+  "build_pitch_evidence": {
+   "words": 1210,
+   "terms": [
+    "low",
+    "max",
+    "price"
+   ],
+   "sources": [
+    "anthropic"
+   ],
+   "text": "AI and Technology. Start with Zvi's post, \"The Quest for Embedded Evaluators.\" Background: Dario Amodei's essay \"We Must Pace the Frontier\" committed Anthropic to embedded evaluators, outsiders placed inside the company with employee-level access, so they could provide an outside perspective and reports on what's happening. Zvi's opening line is the whole problem: \"There is only one problem. Who w"
+  }
+ },
+ "B": {
+  "script": "test-runs/2026-09-28-single-pass.txt",
+  "spoken_words": 1648,
+  "writer": "ollama:muse-glimmer:30b-mlx, one pass",
+  "writer_tokens": 27534,
+  "writer_tokens_basis": "MEASURED (ollama prompt_eval_count + eval_count)",
+  "qc": "FAIL",
+  "seam_defects": 2,
+  "build_pitch": true,
+  "build_pitch_evidence": {
+   "words": 397,
+   "terms": [
+    "effort",
+    "low",
+    "medium",
+    "max",
+    "escalat",
+    "ladder"
+   ],
+   "sources": [
+    "opus 5.5",
+    "anthropic",
+    "artificial analysis"
+   ],
+   "text": "Agents and Building With AI is our featured beat today. The through-line is cost per successful task and how effort controls are being treated as first-class knobs. Anthropic\u2019s own docs now say to sweep effort per workload and use a \u201crun cheap first, re-run failures harder\u201d ladder. That\u2019s the line that keeps showing up in the operator notes. The Build Pitch of the Day is stop running every fleet w"
+  }
+ },
+ "checks": [
+  {
+   "criterion": "B has 0 seam/leak defects",
+   "pass": false,
+   "evidence": "2 hits (internal_name, private_system)"
+  },
+  {
+   "criterion": "B gets no QC FAIL",
+   "pass": false,
+   "evidence": "QC verdict FAIL"
+  },
+  {
+   "criterion": "B includes a Build Pitch of the Day",
+   "pass": true,
+   "evidence": "397-word block, sources ['opus 5.5', 'anthropic', 'artificial analysis']"
+  },
+  {
+   "criterion": "B is 3000-4000 spoken words",
+   "pass": false,
+   "evidence": "1648 spoken words"
+  },
+  {
+   "criterion": "B writer tokens <= 60% of A's (A = ESTIMATE)",
+   "pass": true,
+   "evidence": "B 27,534 measured vs A ~381,757 estimated = 7%"
+  },
+  {
+   "criterion": "Judge scores B >= A on SOURCING",
+   "pass": false,
+   "evidence": "B 2 vs A 5"
+  },
+  {
+   "criterion": "Judge scores B >= A on SUBSTANCE",
+   "pass": false,
+   "evidence": "B 2 vs A 5"
+  }
+ ]
+}
