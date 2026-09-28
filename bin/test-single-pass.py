@@ -441,16 +441,47 @@ def b_script(date):
 
 def stage_qc(date, metrics):
     """The production QC, run on both variants exactly as generate-episode.sh
-    runs it (same command file, same 3 skeptics, same synthesis)."""
+    runs it (same command file, same 3 skeptics, same synthesis).
+
+    REPORT ONLY, on a copy. Production QC ends by rewriting the script, and
+    then reports PASS on its own rewrite — which is the right thing for the
+    daily show and the wrong measurement for this test. Asked to edit, QC cut
+    B-long from 13,615 to 8,476 spoken words and returned PASS: the verdict
+    would have described QC's surgery, not the writer's episode. The criteria
+    ask what the WRITER produced, so QC is told not to touch either script, and
+    the copy is there only so an edit cannot reach the evidence or the control.
+    """
     variants = {
         "A": (LIVE / "scripts" / f"killen-time-{date}.txt",
               TEST_DIR / f"{date}-variant-A-copy.txt"),
-        "B": (b_script(date), None),
+        "B": (b_script(date), TEST_DIR / f"{date}-variant-B-copy{SUFFIX}.txt"),
     }
-    metrics["qc"] = {}
+    # Merge, never wipe: a run scoped to one variant (KT_TEST_QC_ONLY) must not
+    # erase the other's result, or the report silently loses a verdict.
+    metrics.setdefault("qc", {})
+    only = {k.strip() for k in os.environ.get("KT_TEST_QC_ONLY", "").split(",") if k.strip()}
     for key, (src, copy) in variants.items():
+        if only and key not in only:
+            continue
         if not src.exists():
             metrics["qc"][key] = {"error": f"missing {src}"}
+            continue
+        # A's QC is the control's and does not vary with the band, so a second
+        # band must not re-pay for it. A cached log is reused, but only if it was
+        # produced report-only — an edit-enabled QC log records PASS on QC's own
+        # rewrite, which is a different measurement. The sidecar records which.
+        log_path = TEST_DIR / f"{date}-qc-{key}{SUFFIX}.log"
+        marker = log_path.with_suffix(log_path.suffix + ".reportonly")
+        if key == "A" and log_path.exists() and marker.exists() \
+                and log_path.stat().st_size > 500:
+            blob = log_path.read_text(errors="replace")
+            m = re.findall(r"QC VERDICT:\s*(PASS|FAIL)", blob)
+            split = classify_qc_defects(blob)
+            metrics["qc"][key] = {
+                "verdict": m[-1] if m else "NO-VERDICT", "reused_cached_qc": True,
+                "qc_on": str(copy), "defect_split": split,
+            }
+            print(f"[qc] variant A: {metrics['qc'][key]['verdict']} (cached)", flush=True)
             continue
         target = copy or src
         if copy:
@@ -458,7 +489,16 @@ def stage_qc(date, metrics):
         prompt = (
             f"Read the file .claude/commands/qc-episode.md and follow its "
             f"instructions exactly.\nYour working directory is {LIVE}.\n"
-            f"The script to QC is: {target}\n\n"
+            f"The script to QC is: {target}\n"
+            f"REPORT ONLY — DO NOT EDIT THE SCRIPT. This is the New Hire format "
+            f"test: the script is the frozen evidence of what the writer produced, "
+            f"and a QC rewrite would hide exactly what is being measured. Write "
+            f"your full findings to status.d/ as your own Stop hook requires (a "
+            f"scratch finding file is expected and welcome — it is read back and "
+            f"appended to this run's log), but do not touch the script and do not "
+            f"modify any other existing file. Then print the complete QC report "
+            f"including every MUST-FIX, and END WITH THE QC VERDICT LINE. The "
+            f"verdict must describe the script as written.\n\n"
             f"Sourcing rule for Agent C: any specific (number, quote, name, score, "
             f'"the hosts argued") attached to a topic-brief item labelled "(no '
             f'transcript)" — or whose text was never provided — is UNSOURCED and '
@@ -469,20 +509,51 @@ def stage_qc(date, metrics):
         )
         print(f"[qc] variant {key} …", flush=True)
         t0 = time.time()
+        # A claude session's Stop hook makes it write its findings to status.d/,
+        # so a report-only QC can come back with its MUST-FIX list in a file
+        # rather than on stdout. Snapshot status.d first, then fold in anything
+        # the run adds — otherwise the record of what QC found is simply lost.
+        sd = LIVE / "status.d"
+        before = {p: p.stat().st_mtime for p in sd.rglob("*.md")} if sd.is_dir() else {}
+        t_start = time.time()
         # Same invocation generate-episode.sh uses for a QC step.
         proc = subprocess.run(
             ["claude", "--dangerously-skip-permissions", "--model", "sonnet",
              "-p", prompt],
             cwd=str(LIVE), capture_output=True, text=True, timeout=5400)
         blob = proc.stdout or ""
+        if sd.is_dir():
+            added = [p for p in sd.rglob("*.md")
+                     if before.get(p) != p.stat().st_mtime
+                     and p.stat().st_mtime >= t_start - 5]
+            if added and "MUST-FIX" not in blob:
+                blob += ("\n\n=== QC findings the Stop hook wrote to status.d/ ===\n"
+                         + "\n\n".join(f"--- {p.name} ---\n{p.read_text(errors='replace')}"
+                                       for p in sorted(added)))
         m = re.findall(r"QC VERDICT:\s*(PASS|FAIL)", blob)
+        split = classify_qc_defects(blob)
         metrics["qc"][key] = {
             "verdict": m[-1] if m else "NO-VERDICT",
             "seconds": round(time.time() - t0, 1),
             "exit": proc.returncode,
+            "qc_on": str(target),
+            "defect_split": split,
             "script": str(target.relative_to(LIVE)) if str(target).startswith(str(LIVE)) else str(target),
         }
+        if key == "B":
+            # The report reads these; the criteria treat dedup-replay items as
+            # artifacts and every other MUST-FIX as a real defect.
+            metrics["qc_real_defects"] = split["real_defects"]
+            metrics["dedup_only_defects"] = split["dedup_only"]
+            metrics["dedup_note"] = (
+                f"{date} already aired, so the ledger flags re-covered beats: "
+                f"{split['dedup_only']} of {split['must_fix_items']} MUST-FIX items "
+                f"are dedup-replay artifacts; {split['real_defects']} are real. "
+                f"The same rule is applied to A.")
         (TEST_DIR / f"{date}-qc-{key}{SUFFIX}.log").write_text(blob + "\n" + proc.stderr)
+        log_path.with_suffix(log_path.suffix + ".reportonly").write_text(
+            "report-only QC: the script was not edited, so the verdict describes "
+            "what the writer produced\n")
         print(f"[qc] variant {key}: {metrics['qc'][key]['verdict']}", flush=True)
 
 
@@ -658,6 +729,123 @@ def measure_writer_A_real(date):
 def b_tok_total(metrics):
     w = metrics.get("writer", {})
     return (w.get("prompt_tokens") or 0) + (w.get("completion_tokens") or 0)
+
+
+DEDUP_CUE = re.compile(r"\bdedup\b|already aired|re-?air|re-?covered|"
+                       r"listeners already heard|stale|duplicat|repeated content|"
+                       r"freshness", re.I)
+# QC files findings under skeptic-themed labels. A finding under any of these is
+# a real defect whatever the replay; only the dedup/freshness label is an
+# artifact of writing from a date that already aired.
+REAL_SECTION = re.compile(r"unsourc|coheren|sourcing|structur|leak|internal|"
+                          r"format|tag|transition|attribution|quote", re.I)
+
+
+def _qc_items(body: str) -> list:
+    """Pull the MUST-FIX findings out of a QC synthesis, keeping their labels.
+
+    QC writes one of two shapes: a `### MUST-FIX` section of bullets, or — when
+    it has edited the script — a "Must-fix, and what I did" list. Both are
+    parsed, and each finding keeps the label of the block it sits in, because
+    the label is what distinguishes a replay artifact from a real defect.
+    """
+    items, current, in_must = [], None, False
+    for raw in body.splitlines():
+        s = raw.strip()
+        if not s:
+            continue
+        if re.match(r"^#{1,6}\s", s) or re.match(r"^\*\*[^*]+\*\*:?\s*$", s):
+            label = re.sub(r"^#{1,6}\s*", "", s).strip("* ").rstrip(":")
+            low = label.lower()
+            if "must-fix" in low or "must fix" in low:
+                in_must, current = True, "MUST-FIX"
+            elif "advisory" in low:
+                in_must, current = False, "ADVISORY"
+            elif in_must:
+                current = label
+            continue
+        if not in_must:
+            continue
+        # QC labels a finding three ways: a bolded run at the head of a bullet
+        # ("- **Stale or duplicated (Agent A):**"), a numbered bolded item
+        # ("6. **Repeated content (A).**"), and a bare bolded paragraph. Any of
+        # them sets the label its following bullets inherit.
+        m = re.match(r"^(?:[-*]\s+|\d+\.\s+)\*\*(.+?)\*\*:?\s*(.*)$", s)
+        if m:
+            current = m.group(1)
+            rest = m.group(2)
+            if not rest:
+                continue
+            s = f"- {rest}"
+        elif re.match(r"^[-*]\s", s):
+            pass
+        else:
+            m2 = re.match(r"^\*\*(.+?)\*\*:?\s*(.+)$", s)
+            if m2:
+                current = m2.group(1)
+                s = f"- {m2.group(2)}"
+            elif not s.startswith("-"):
+                continue
+        items.append({"section": current or "MUST-FIX", "text": s.lstrip("-* ")[:300]})
+    return items
+
+
+def classify_qc_defects(log_text: str) -> dict:
+    """Split a QC synthesis into dedup-replay items and real defects.
+
+    The 09-28 rerun replays a date that already aired, so anything written from
+    09-28's brief necessarily re-covers 09-28 and the ledger flags the beats.
+    That is an artifact of the replay, not a property of the format, and the
+    criteria say to ignore it — for A and B alike. So the findings are counted
+    twice: everything, and everything that is not a freshness/dedup finding.
+
+    A finding is a replay artifact when the block it was filed under is about
+    freshness or duplication; anything filed under sourcing, coherence,
+    attribution, leaks or structure is a real defect regardless of the replay.
+    The raw log is committed next to this so the split can be checked by hand.
+    """
+    # Drop only the verdict LINE, never everything after it: a claude session's
+    # Stop hook can push the findings to a status.d file that gets appended
+    # below the verdict, and splitting on the verdict would discard exactly the
+    # findings this is here to count.
+    body = re.sub(r"^\s*QC VERDICT:.*$", "", log_text, flags=re.M)
+    items = _qc_items(body)
+    # QC groups its findings: a numbered finding carries several sub-defects.
+    # Both are counted, because "one finding" and "eleven unsourced claims" are
+    # different questions and the report needs each.
+    finding_no, seen = 0, {}
+    for it in items:
+        sect = it["section"] or ""
+        it["dedup_only"] = bool(DEDUP_CUE.search(sect)) and not REAL_SECTION.search(sect)
+        key = (sect, it["dedup_only"])
+        if key not in seen:
+            seen[key] = len(seen) + 1
+        finding_no = seen[key]
+        it["finding"] = finding_no
+    dedup_only = sum(1 for it in items if it["dedup_only"])
+    # Some QC runs report in prose ("found two MUST-FIX items") instead of a
+    # list. Reporting zero there would be a false clean bill, so when the log
+    # says it found items the structured parse did not capture, say so.
+    WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+             "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+    stated = None
+    for m in re.finditer(r"(\d+|one|two|three|four|five|six|seven|eight|nine|ten)"
+                         r"\s+MUST-FIX", body, re.I):
+        stated = int(m.group(1)) if m.group(1).isdigit() else WORDS[m.group(1).lower()]
+    unparsed = bool(stated and stated > len(items))
+    return {"must_fix_items": len(items), "dedup_only": dedup_only,
+            "real_defects": len(items) - dedup_only, "items": items,
+            "findings_total": len(seen),
+            "findings_dedup_only": sum(1 for k, v in seen.items() if k[1]),
+            "findings_real": sum(1 for k, v in seen.items() if not k[1]),
+            "stated_by_qc": stated,
+            "incomplete": unparsed,
+            "note": ("QC reported its findings in prose and the structured parse "
+                     "captured fewer than it stated — treat the counts above as a "
+                     "lower bound and the prose figure as authoritative"
+                     if unparsed else
+                     "a finding filed under a freshness/dedup block is a replay "
+                     "artifact; every other block is a real defect")}
 
 
 def stage_scan(date, metrics):
@@ -900,13 +1088,20 @@ def stage_report(date, metrics):
 
     a_tok = (real_a or {}).get("tokens_total")
     qc_real = metrics.get("qc_real_defects")
+    qc_split = ((metrics.get("qc") or {}).get("B") or {}).get("defect_split") or {}
+    # A parse that captured fewer findings than QC stated is a LOWER BOUND, and
+    # a lower bound of zero must never be scored as "no real defects".
+    qc_parsed = not qc_split.get("incomplete")
     checks = [
         ("B has 0 seam/leak defects not also in A", b_only == 0,
          f"B {seam_b.get('defects')} vs A {seam_a.get('defects')} -> {b_only} B-only"),
         ("B gets no QC FAIL beyond dedup-replay items",
-         qc_b == "PASS" or (qc_real is not None and qc_real == 0),
+         qc_parsed and (qc_b == "PASS" or (qc_real is not None and qc_real == 0)),
          f"QC verdict {qc_b}"
-         + (f", {qc_real} real (non-dedup) MUST-FIX" if qc_real is not None else "")),
+         + (f", {qc_real} real (non-dedup) MUST-FIX" if qc_real is not None else "")
+         + ("" if qc_parsed else f" — UNPARSEABLE: QC stated "
+            f"{qc_split.get('stated_by_qc')} MUST-FIX, list captured "
+            f"{qc_split.get('must_fix_items')}")),
         ("B includes a Build Pitch of the Day", pitch_b,
          f"{pitch_eb.get('words', 0)}-word block, sources {pitch_eb.get('sources')}"
          if pitch_b else "no qualifying pitch block found"),
