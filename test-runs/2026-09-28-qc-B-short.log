@@ -1,0 +1,35 @@
+**QC report: variant B-short (3,168 words)**
+
+I did not edit the script. The day of week is correct (Monday), and the tags, dividers and speaker alternation are clean except for the one join listed below. The full findings are in `status.d/2026-09-28/220500-variant-b-short-qc-findings.md`.
+
+**MUST-FIX**
+1. **L61, private system on air.** "logged in the build-pitches folder… so Kyle can point an agent at it and greenlight the build" leaks the internal folder name and workflow. Agents B and C both flagged it.
+2. **L53–59, Build Pitch repeats 09-24.** The effort-default pitch already aired on 09-24 (ledger slug `build-pitch-opus55-effort-default-2026-09-24`). It comes back with no callback.
+3. **L87, Economist housing line repeats 09-24.** It re-airs the 09-24 housing segment (09-24 script L183). Agents A and C both flagged it.
+4. **L1, "half of AI Twitter is furious about it."** Nothing in the sources says this; Zvi's piece never does. Agents B and C both flagged it.
+5. **L97, German election.** "A German election has the chancellor calling the results a disaster" comes from a week-old blurb and is mischaracterized. Agents B and C both flagged it.
+6. **L67, Simmons/Cousin Sal.** The Raiders "undefeated" and "most preseason lists didn't see coming" claims, "bleakest 0-3 teams," Dallas as "a disaster," and "standings already strange" are all specifics on "(no transcript)" items.
+7. **L75, Call of the Wild.** "Public-domain title, rights conversation is easy… path of least resistance for the first wave" is speculation stated as fact. The Deadline blurb is truncated and says nothing about rights.
+8. **L77, Engram.** "Treats the model's breakage as a texture, which is how a lot of good instruments get invented" is not in the truncated blurb.
+9. **L15, Threads/Muse.** "Reality check… fair summary… fast adoption, unearned trust" is built from a title only; the brief has no post content.
+10. **L71 → L75, consecutive BROOKE blocks across a [TRANSITION].** Merge the pair, or flip L75 and L77.
+
+**ADVISORY**
+- **Manifest gap.** The Moonshots, Innermost Loop, Zvi Quest, full Odd Lots and deBoer texts are in `.tmp/used/` but not in `single-pass-sources.json`. Every quote I checked matched those files, so I did not count this as MUST-FIX. It means the manifest doesn't show the writer was given them.
+- **First-person pipeline talk** (L41, L43, L45, L47, L67), for example "For us… the same pipeline" and "the transcript we have," mildly leaks the setup.
+- **Innermost Loop recap.** L17 and L27 restate DNS "phoned a friend," the pause and the Hugging Face swarm from 09-22/24/26. Only the 80k payloads, the LOOT folder and the German wiki hijack are new.
+- **L47, "Prompting Claude Opus 5.5"** near-overlaps the 09-24 playbook coverage, and the script admits it hasn't read the text.
+- **Attribution and inference.**
+  - The intro overstates the Moonshots fight over "superintelligence."
+  - Panelist attributions are inferred, since the transcript has no speaker labels.
+  - The insurance-stocks fifteen percent applied to stocks including one the speaker chairs.
+  - "Seemed to like" comes from a URL slug.
+  - The Nvidia "bet behind" motive and the DNS/Hugging Face conflation are inference.
+  - The Swift "record" is unspecified.
+  - The closing thesis is the writer's own.
+- **Intro and callback.** The opening callback is supportable (sandbox-escape stories aired 09-20 through 09-27). The intro line differs slightly from the "The Killen Time Update for…" convention.
+
+**Verified clean.** Moonshots quotes, Zvi/Quest specifics, all Build Pitch figures, Cloudflare, DAWO, Citrix, Red Queen, Norris/Colapinto, The Assassin(s), deBoer and Odd Lots. The Moonshots, Zvi Quest, Muse and Norris fallout items are fresh against 09-22 through 09-27.
+
+QC VERDICT: FAIL
+

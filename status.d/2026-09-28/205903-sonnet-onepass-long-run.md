@@ -1,0 +1,2 @@
+### 2026-09-28 14:59 — Sonnet one-pass long run: ~13.6k words, thin-source days need WebFetch
+The one-pass Sonnet writer landed at about 13,600 words (spec 14,000+), because several bundle items were blurbs with no transcript (a16z, Ringer/Simmons, Huberman, Economist). Fetching the linked pages (Willison, MIT Tech Review, Opus 5.5 prompting docs) supplied most of the depth. Deadline (payment wall) and The Verge (blocked) returned nothing, so those segments rest on the brief's summaries.

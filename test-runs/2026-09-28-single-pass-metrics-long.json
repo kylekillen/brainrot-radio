@@ -1,0 +1,676 @@
+{
+ "date": "2026-09-28",
+ "stages": [
+  "judge",
+  "manifest",
+  "qc",
+  "report",
+  "scan",
+  "write"
+ ],
+ "writer": {
+  "lane": "claude:sonnet",
+  "band": "long",
+  "cwd": "/Users/kylekillen/.observer/agents/kt-podcast/worktrees/sonnet-onepass/test-runs/2026-09-28-sonnet-bundle",
+  "prompt_chars": 4513,
+  "context_window": 1000000,
+  "script": "test-runs/2026-09-28-sonnet-long.txt",
+  "ok": true,
+  "seconds": 348.0,
+  "input_tokens": 36,
+  "cache_creation_input_tokens": 200501,
+  "cache_read_input_tokens": 2503073,
+  "output_tokens": 40388,
+  "tokens_total": 2743998,
+  "tokens_basis": "MEASURED (claude CLI --output-format json usage)",
+  "cost_usd": 1.7856835999999996,
+  "session_id": "c4d724e5-df1d-4450-ba39-11b37adbd688",
+  "num_turns": 32,
+  "spoken_words": 13430
+ },
+ "seam": {
+  "A": {
+   "defects": 0,
+   "pattern_hits": 0,
+   "hits": [],
+   "repeated_blocks": [],
+   "speaker_collisions": 0,
+   "back_to_back_transitions": 0,
+   "invalid_tags": [],
+   "em_dash_dividers": 0
+  },
+  "B": {
+   "defects": 3,
+   "pattern_hits": 3,
+   "hits": [
+    {
+     "rule": "private_system",
+     "line": 223,
+     "match": "build-pitches folder",
+     "context": "setting matters more than the vendor. This is logged in the build-pitches folder for Kyle, so he can point an agent at it and greenlight the"
+    },
+    {
+     "rule": "private_system",
+     "line": 223,
+     "match": "point an agent at",
+     "context": "s is logged in the build-pitches folder for Kyle, so he can point an agent at it and greenlight the build if he likes it. [BASIL] And Ky"
+    },
+    {
+     "rule": "private_system",
+     "line": 223,
+     "match": "greenlight the build",
+     "context": "pitches folder for Kyle, so he can point an agent at it and greenlight the build if he likes it. [BASIL] And Kyle, if you're listening, the"
+    }
+   ],
+   "repeated_blocks": [],
+   "speaker_collisions": 0,
+   "back_to_back_transitions": 0,
+   "invalid_tags": [],
+   "em_dash_dividers": 0
+  }
+ },
+ "qc": {
+  "A": {
+   "verdict": "FAIL",
+   "defect_split": {
+    "must_fix_items": 0,
+    "dedup_only": 0,
+    "real_defects": 0,
+    "items": [],
+    "findings_total": 0,
+    "findings_dedup_only": 0,
+    "findings_real": 0,
+    "stated_by_qc": 2,
+    "incomplete": true,
+    "note": "QC reported its findings in prose and the structured parse captured fewer than it stated \u2014 treat the counts above as a lower bound and the prose figure as authoritative"
+   }
+  },
+  "B": {
+   "verdict": "FAIL",
+   "defect_split": {
+    "must_fix_items": 39,
+    "dedup_only": 3,
+    "real_defects": 36,
+    "items": [
+     {
+      "section": "Ungrounded Anthropic prompting-guide segment (lines 149\u2013185, 5, 105, 183, 367).",
+      "text": "Agents B and C both flagged this. It is also a repeat, per A.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Ungrounded Anthropic prompting-guide segment (lines 149\u2013185, 5, 105, 183, 367).",
+      "text": "The brief has only the URL and \"73 points / 63 comments\". Every quote and habit is unsourced: effort, the checklist and continuation cap, the four early-stop shapes, time signals, the progress reminder, the paste-tag IDs.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Ungrounded Anthropic prompting-guide segment (lines 149\u2013185, 5, 105, 183, 367).",
+      "text": "Line 149's \"I read the whole thing\" is false.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Ungrounded Anthropic prompting-guide segment (lines 149\u2013185, 5, 105, 183, 367).",
+      "text": "A adds that lines 153, 155\u2013161 and 181 repeat 09-24.",
+      "dedup_only": false,
+      "finding": 1
+     },
+     {
+      "section": "Unsourced Simon Willison keynote (lines 119\u2013139, 223).",
+      "text": "Only the brief's first sentence exists. The Claws, Mac Minis, pelican, token caps, GPT-6 Luna at $0.004 vs Fable at $3.30, Deep Blue, StrongDM and LeMond material is all unsourced. Line 223 reuses the Luna/Fable figures.",
+      "dedup_only": false,
+      "finding": 2
+     },
+     {
+      "section": "Unsourced Felix Rieseberg essay (lines 141\u2013145, 267).",
+      "text": "The bundle has only a title and HN counts. The Blender quote, the QA-threads quote, the Baudelaire line and \"Felix works on Claude's desktop tooling\" are all unsourced.",
+      "dedup_only": false,
+      "finding": 3
+     },
+     {
+      "section": "MIT Technology Review liability article (lines 79\u201391, 25, 83, 193).",
+      "text": "The bundle has only about 600 characters, and most specifics are unsourced. Line 79 is also stale background that already aired 09-20 through 09-27.",
+      "dedup_only": false,
+      "finding": 4
+     },
+     {
+      "section": "MIT Technology Review liability article (lines 79\u201391, 25, 83, 193).",
+      "text": "Unsourced: RubyGems, the four Claude exercises, the CA/NY/IL thresholds, the Arnold, Arbel and Weil quotes, Delangue's \"This is illegal\", the state AGs, Hawley, METR/Redwood, SB 1047/SB 53, and the CFAA intent point.",
+      "dedup_only": false,
+      "finding": 4
+     },
+     {
+      "section": "MIT Technology Review liability article (lines 79\u201391, 25, 83, 193).",
+      "text": "Lines 25, 83 and 193 assert dependent claims as fact.",
+      "dedup_only": false,
+      "finding": 4
+     },
+     {
+      "section": "Internal fleet state on air (GUARDRAILS.md, \"Never include internal fleet state\" plus the 09-24 private-system row).",
+      "text": "Line 223: \"logged in the build-pitches folder for Kyle\u2026 point an agent at it and greenlight the build\".",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "Internal fleet state on air (GUARDRAILS.md, \"Never include internal fleet state\" plus the 09-24 private-system row).",
+      "text": "Line 225: \"Kyle, if you're listening\".",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "Internal fleet state on air (GUARDRAILS.md, \"Never include internal fleet state\" plus the 09-24 private-system row).",
+      "text": "Lines 209 and 219: \"the verified pitch file\" and \"the pitch file is careful\".",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "Internal fleet state on air (GUARDRAILS.md, \"Never include internal fleet state\" plus the 09-24 private-system row).",
+      "text": "Line 131: \"a show that's run by an AI pipeline\".",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "Internal fleet state on air (GUARDRAILS.md, \"Never include internal fleet state\" plus the 09-24 private-system row).",
+      "text": "Line 143: \"three skeptics and a synthesizer\u2026 some shows use to check their own scripts\".",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "Internal fleet state on air (GUARDRAILS.md, \"Never include internal fleet state\" plus the 09-24 private-system row).",
+      "text": "Line 183: \"including us\".",
+      "dedup_only": false,
+      "finding": 5
+     },
+     {
+      "section": "Repeated content (A; C confirms parts).",
+      "text": "The Build Pitch (209\u2013225) repeats the 09-24 effort-dial pitch, including the Opus 5.5 pricing and the Artificial Analysis figures.",
+      "dedup_only": true,
+      "finding": 6
+     },
+     {
+      "section": "Repeated content (A; C confirms parts).",
+      "text": "Economist \"Intelligence\" items already aired 09-24: housing (317), Australia's social-media ban (319) and Fauda (291). Le Pen and the German elections in 319 are 5\u20137 days old, and the Lucas Museum in 291 is 6 days old.",
+      "dedup_only": true,
+      "finding": 6
+     },
+     {
+      "section": "Repeated content (A; C confirms parts).",
+      "text": "Innermost Loop items that aired 09-24: Muse on glasses and the $1,299 VR glasses (97), the Claude gene-editing discovery (99), the $10.3T build-out figure (313), and Gemini 4 (93).",
+      "dedup_only": true,
+      "finding": 6
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "The brief gives only titles and blurbs for the football and NBA items.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "Line 237: Geno on the Raiders and Purdy in the Cardinals game are inference.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "Line 239: \"where Cousin Sal sets and they guess\" and calling \"Bleakest 0-3\" a segment.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "Line 241: the 0-3 playoff rate and the \"fantasy people are punished for overreacting\" claims.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "Line 243: \"two independent shows\" (both are Ringer shows) and \"the Patriots game was a bad one for him\".",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "Line 247: \"a rebuilding team, a young roster\".",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "Line 249: the Nets' draft-pick history.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Sourcing rule: specifics attached to \"(no transcript)\" items (lines 237\u2013249).",
+      "text": "The title, score, blurb quotes and game list in 229\u2013235 and 239 are sourced.",
+      "dedup_only": false,
+      "finding": 7
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Nvidia (189): \"DPUs\", \"tracing\u2026 enforcing policy\", and \"more than a hundred partners including Anthropic, Microsoft, Mistral\". Line 191's below-the-agent reading is inference.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Cloudflare (199): \"reserved in the spec for decades\".",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Line 17: Alex's t-shirt remark is misattributed. In the transcript it is his own \"P doom less than zero\" slogan, not Jensen's line.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Line 47: \"Manus\" is not in the transcript, which renders it \"Monas\".",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Lines 91, 111 and 115: speaker attributions for unattributed text.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Line 321: the rail-and-postal quote is not the source wording.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Line 317: the \"financial engineering\u2026 carry isn't there\" link is forced.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "Line 221: \"most orchestration setups\u2026 never pass an effort level\" is a generalization of Kyle's own runner.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Other unsourced specifics and misquotes.",
+      "text": "C reports the developer's name in the source is \"Lazzari\", not \"Lasry\" (lines 293\u2013299). I did not check this myself.",
+      "dedup_only": false,
+      "finding": 8
+     },
+     {
+      "section": "Invented or wrong callbacks.",
+      "text": "Line 45, \"we covered the Muse launch itself back on Thursday\": C says only features and glasses aired on 09-24, not the launch. A calls it accurate. The two agents disagree, so it is a callback to soften.",
+      "dedup_only": false,
+      "finding": 9
+     },
+     {
+      "section": "Invented or wrong callbacks.",
+      "text": "Line 127, \"our honorable mentions\": no such section exists.",
+      "dedup_only": false,
+      "finding": 9
+     },
+     {
+      "section": "Invented or wrong callbacks.",
+      "text": "Line 191, \"two segments ago\": it was three.",
+      "dedup_only": false,
+      "finding": 9
+     },
+     {
+      "section": "Invented or wrong callbacks.",
+      "text": "Line 17, \"a week from now\": both models are on air in this same episode.",
+      "dedup_only": false,
+      "finding": 9
+     }
+    ],
+    "findings_total": 9,
+    "findings_dedup_only": 1,
+    "findings_real": 8,
+    "stated_by_qc": null,
+    "incomplete": false,
+    "note": "a finding filed under a freshness/dedup block is a replay artifact; every other block is a real defect"
+   }
+  }
+ },
+ "qc_real_defects": 36,
+ "dedup_only_defects": 3,
+ "dedup_note": "QC raised 9 findings \u2014 1 dedup-replay artifacts, 8 real (36 individual defects). Same rule applied to A.",
+ "judge": {
+  "ok": true,
+  "lanes": [
+   "space-bunny-free",
+   "opus"
+  ],
+  "by_lane": {
+   "space-bunny-free": {
+    "ok": true,
+    "seed": 911980333,
+    "reused_cached_dispatch": true,
+    "blind_order_XY": [
+     "B",
+     "A"
+    ],
+    "by_variant": {
+     "B": {
+      "SOURCING": 4,
+      "SUBSTANCE": 5,
+      "PITCH": 3,
+      "FLOW": 5
+     },
+     "A": {
+      "SOURCING": 5,
+      "SUBSTANCE": 4,
+      "PITCH": 5,
+      "FLOW": 5
+     }
+    },
+    "reason": "X is the longer, quote-dense script: nearly every number is attributed, it builds a real fire-department-to-harness through-line, and it hands builders six concrete habits from Anthropic's prompting guide, but it rides on a long tail of newsletter specifics it cannot cross-check and its Build Pitch breaks frame by pointing at Kyle's private pitch folder and asking him to greenlight a build. Y is the tighter and more disciplined script: it names its gaps up front (unlabelled Moonshots transcript, summary-only items), discloses Dave Blundin's conflict of interest, corrects its own source's arithmetic, and keeps the pitch purely general, at the cost of leaving the a16z, Willison, MIT Tech Review and Nvidia beats as one-line stubs.",
+    "prompt_tokens": 75397,
+    "completion_tokens": 9370
+   },
+   "opus": {
+    "ok": true,
+    "seed": 3272605552,
+    "reused_cached_dispatch": true,
+    "blind_order_XY": [
+     "A",
+     "B"
+    ],
+    "by_variant": {
+     "A": {
+      "SOURCING": 4,
+      "SUBSTANCE": 4,
+      "PITCH": 4,
+      "FLOW": 4
+     },
+     "B": {
+      "SOURCING": 3,
+      "SUBSTANCE": 5,
+      "PITCH": 2,
+      "FLOW": 4
+     }
+    },
+    "reason": "X hedges carefully and marks every summary-only source, but it relies on several callbacks to earlier episodes ('we flagged on the nineteenth', 'Thursday's episode', 'the Noah Smith and Ramez Naam argument we covered yesterday') that can't be checked against today's material, and its build pitch is concrete, sourced and kept general. Y goes deeper, especially on the MIT liability piece and Anthropic's prompting guide, and ties its threads together well, but it pads the sports section with inference and unsourced background, and its build pitch breaks the privacy rule by naming Kyle, the build-pitches folder and the show's own AI pipeline and QC setup.",
+    "prompt_tokens": null,
+    "completion_tokens": null
+   }
+  },
+  "disagreements": [
+   {
+    "axis": "SOURCING",
+    "variant": "A",
+    "space-bunny-free": 5,
+    "opus": 4
+   },
+   {
+    "axis": "SOURCING",
+    "variant": "B",
+    "space-bunny-free": 4,
+    "opus": 3
+   },
+   {
+    "axis": "PITCH",
+    "variant": "A",
+    "space-bunny-free": 5,
+    "opus": 4
+   },
+   {
+    "axis": "PITCH",
+    "variant": "B",
+    "space-bunny-free": 3,
+    "opus": 2
+   },
+   {
+    "axis": "FLOW",
+    "variant": "A",
+    "space-bunny-free": 5,
+    "opus": 4
+   },
+   {
+    "axis": "FLOW",
+    "variant": "B",
+    "space-bunny-free": 5,
+    "opus": 4
+   }
+  ]
+ },
+ "band": "long",
+ "verdict": "FAIL",
+ "generated_utc": "2026-09-28T22:03:41.872090+00:00",
+ "A": {
+  "script": "scripts/killen-time-2026-09-28.txt",
+  "spoken_words": 9596,
+  "writer": "claude sonnet, two agentic passes (production, as aired)",
+  "writer_tokens": 10907026,
+  "writer_tokens_basis": "MEASURED \u2014 summed from the 09-28 claude session transcripts' own per-message usage",
+  "writer_tokens_detail": {
+   "tokens_total": 10907026,
+   "input_tokens": 10777861,
+   "output_tokens": 129165,
+   "sessions": [
+    {
+     "session": "dd611efd-abe4-4470-a8a9-827400c61c65",
+     "pass": "pass 1",
+     "input_tokens": 6595518,
+     "output_tokens": 74300,
+     "total": 6669818
+    },
+    {
+     "session": "8839685c-8ac2-4cf8-8702-eec3184cde19",
+     "pass": "pass 2",
+     "input_tokens": 4182343,
+     "output_tokens": 54865,
+     "total": 4237208
+    }
+   ],
+   "source": "MEASURED \u2014 ~/.claude/projects session transcripts",
+   "note": "summed over the writer passes only; the build-pitch reporter and QC sessions are excluded"
+  },
+  "qc": "FAIL",
+  "seam_defects": 0,
+  "build_pitch": true,
+  "build_pitch_evidence": {
+   "words": 1210,
+   "terms": [
+    "low",
+    "max",
+    "price"
+   ],
+   "sources": [
+    "anthropic"
+   ],
+   "text": "AI and Technology. Start with Zvi's post, \"The Quest for Embedded Evaluators.\" Background: Dario Amodei's essay \"We Must Pace the Frontier\" committed Anthropic to embedded evaluators, outsiders placed inside the company with employee-level access, so they could provide an outside perspective and reports on what's happening. Zvi's opening line is the whole problem: \"There is only one problem. Who w"
+  }
+ },
+ "B": {
+  "script": "test-runs/2026-09-28-sonnet-long.txt",
+  "spoken_words": 13430,
+  "writer": "claude sonnet, ONE pass",
+  "writer_tokens": 2743998,
+  "writer_tokens_basis": "MEASURED (claude CLI --output-format json usage)",
+  "writer_detail": {
+   "lane": "claude:sonnet",
+   "band": "long",
+   "cwd": "/Users/kylekillen/.observer/agents/kt-podcast/worktrees/sonnet-onepass/test-runs/2026-09-28-sonnet-bundle",
+   "prompt_chars": 4513,
+   "context_window": 1000000,
+   "script": "test-runs/2026-09-28-sonnet-long.txt",
+   "ok": true,
+   "seconds": 348.0,
+   "input_tokens": 36,
+   "cache_creation_input_tokens": 200501,
+   "cache_read_input_tokens": 2503073,
+   "output_tokens": 40388,
+   "tokens_total": 2743998,
+   "tokens_basis": "MEASURED (claude CLI --output-format json usage)",
+   "cost_usd": 1.7856835999999996,
+   "session_id": "c4d724e5-df1d-4450-ba39-11b37adbd688",
+   "num_turns": 32,
+   "spoken_words": 13430,
+   "tool_use": {
+    "by_tool": {
+     "Bash": 9,
+     "Read": 11,
+     "ToolSearch": 1,
+     "WebFetch": 8,
+     "Write": 1
+    },
+    "web_fetches": 8
+   }
+  },
+  "qc": "FAIL",
+  "seam_defects": 3,
+  "b_only_seam_defects": 3,
+  "build_pitch": true,
+  "build_pitch_evidence": {
+   "words": 1627,
+   "terms": [
+    "effort",
+    "low",
+    "medium",
+    "max",
+    "escalat",
+    "budget"
+   ],
+   "sources": [
+    "opus 5.5",
+    "anthropic"
+   ],
+   "text": "Now the manual. The Hacker News item ranked high this morning, seventy-three points and sixty-three comments, is Anthropic's own documentation page, \"Prompting Claude Opus 5.5.\" I read the whole thing, and it's not a list of tricks so much as a set of operating habits for people whose agents run for hours. Let me give you the ones I'd steal. First, effort. Quote: \"Effort is the main control for ho"
+  }
+ },
+ "judges": {
+  "space-bunny-free": {
+   "ok": true,
+   "seed": 911980333,
+   "reused_cached_dispatch": true,
+   "blind_order_XY": [
+    "B",
+    "A"
+   ],
+   "by_variant": {
+    "B": {
+     "SOURCING": 4,
+     "SUBSTANCE": 5,
+     "PITCH": 3,
+     "FLOW": 5
+    },
+    "A": {
+     "SOURCING": 5,
+     "SUBSTANCE": 4,
+     "PITCH": 5,
+     "FLOW": 5
+    }
+   },
+   "reason": "X is the longer, quote-dense script: nearly every number is attributed, it builds a real fire-department-to-harness through-line, and it hands builders six concrete habits from Anthropic's prompting guide, but it rides on a long tail of newsletter specifics it cannot cross-check and its Build Pitch breaks frame by pointing at Kyle's private pitch folder and asking him to greenlight a build. Y is the tighter and more disciplined script: it names its gaps up front (unlabelled Moonshots transcript, summary-only items), discloses Dave Blundin's conflict of interest, corrects its own source's arithmetic, and keeps the pitch purely general, at the cost of leaving the a16z, Willison, MIT Tech Review and Nvidia beats as one-line stubs.",
+   "prompt_tokens": 75397,
+   "completion_tokens": 9370
+  },
+  "opus": {
+   "ok": true,
+   "seed": 3272605552,
+   "reused_cached_dispatch": true,
+   "blind_order_XY": [
+    "A",
+    "B"
+   ],
+   "by_variant": {
+    "A": {
+     "SOURCING": 4,
+     "SUBSTANCE": 4,
+     "PITCH": 4,
+     "FLOW": 4
+    },
+    "B": {
+     "SOURCING": 3,
+     "SUBSTANCE": 5,
+     "PITCH": 2,
+     "FLOW": 4
+    }
+   },
+   "reason": "X hedges carefully and marks every summary-only source, but it relies on several callbacks to earlier episodes ('we flagged on the nineteenth', 'Thursday's episode', 'the Noah Smith and Ramez Naam argument we covered yesterday') that can't be checked against today's material, and its build pitch is concrete, sourced and kept general. Y goes deeper, especially on the MIT liability piece and Anthropic's prompting guide, and ties its threads together well, but it pads the sports section with inference and unsourced background, and its build pitch breaks the privacy rule by naming Kyle, the build-pitches folder and the show's own AI pipeline and QC setup.",
+   "prompt_tokens": null,
+   "completion_tokens": null
+  }
+ },
+ "judge_disagreements": [
+  {
+   "axis": "SOURCING",
+   "variant": "A",
+   "space-bunny-free": 5,
+   "opus": 4
+  },
+  {
+   "axis": "SOURCING",
+   "variant": "B",
+   "space-bunny-free": 4,
+   "opus": 3
+  },
+  {
+   "axis": "PITCH",
+   "variant": "A",
+   "space-bunny-free": 5,
+   "opus": 4
+  },
+  {
+   "axis": "PITCH",
+   "variant": "B",
+   "space-bunny-free": 3,
+   "opus": 2
+  },
+  {
+   "axis": "FLOW",
+   "variant": "A",
+   "space-bunny-free": 5,
+   "opus": 4
+  },
+  {
+   "axis": "FLOW",
+   "variant": "B",
+   "space-bunny-free": 5,
+   "opus": 4
+  }
+ ],
+ "dedup_replay_note": "QC raised 9 findings \u2014 1 dedup-replay artifacts, 8 real (36 individual defects). Same rule applied to A.",
+ "checks": [
+  {
+   "criterion": "B has 0 seam/leak defects not also in A",
+   "pass": false,
+   "evidence": "B 3 vs A 0 -> 3 B-only"
+  },
+  {
+   "criterion": "B gets no QC FAIL beyond dedup-replay items",
+   "pass": false,
+   "evidence": "QC verdict FAIL, 36 real (non-dedup) MUST-FIX"
+  },
+  {
+   "criterion": "B includes a Build Pitch of the Day",
+   "pass": true,
+   "evidence": "1627-word block, sources ['opus 5.5', 'anthropic']"
+  },
+  {
+   "criterion": "B is within its length band (11,900-20,700 spoken words (spec 14,000-18,000 +/-15%))",
+   "pass": true,
+   "evidence": "13430 spoken words"
+  },
+  {
+   "criterion": "B writer tokens <= 60% of A's (both MEASURED)",
+   "pass": true,
+   "evidence": "B 2,743,998 vs A 10,907,026 = 25%"
+  },
+  {
+   "criterion": "BOTH judges score B >= A on SOURCING",
+   "pass": false,
+   "evidence": "space-bunny-free: B 4 / A 5; opus: B 3 / A 4"
+  },
+  {
+   "criterion": "BOTH judges score B >= A on SUBSTANCE",
+   "pass": true,
+   "evidence": "space-bunny-free: B 5 / A 4; opus: B 5 / A 4"
+  }
+ ]
+}

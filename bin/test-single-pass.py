@@ -267,6 +267,39 @@ Begin by reading CLAUDE.md, then .tmp/topic-brief.txt, then the previous episode
 """
 
 
+def _tool_use_counts(session_id):
+    """Which tools the writer reached for, counted from its own transcript.
+
+    This is not trivia. A one-pass writer handed a length its bundle cannot
+    source does not simply come up short — it goes and gets material, and the
+    show's evidence rules only count text it was given. B-long made 8 WebFetch
+    calls to fill a 16k-word target; B-short made none, and A's pass 1 made
+    none. The number is reported so that "the length target changed the
+    writer's behaviour" is a measurement, not an assertion.
+    """
+    if not session_id:
+        return None
+    # claude names a project dir by flattening the cwd: both "/" and "." become
+    # "-", so /Users/kylekillen/.observer/x -> -Users-kylekillen--observer-x
+    slug = str(BUNDLE or LIVE).replace("/", "-").replace(".", "-")
+    p = Path.home() / ".claude" / "projects" / slug / f"{session_id}.jsonl"
+    if not p.exists():
+        return None
+    counts = {}
+    for line in p.open(errors="replace"):
+        try:
+            o = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if o.get("type") != "assistant":
+            continue
+        for c in (o.get("message", {}).get("content") or []):
+            if isinstance(c, dict) and c.get("type") == "tool_use":
+                counts[c.get("name")] = counts.get(c.get("name"), 0) + 1
+    return {"by_tool": counts, "web_fetches": counts.get("WebFetch", 0)
+            + counts.get("WebSearch", 0)}
+
+
 def stage_write_sonnet(date, metrics):
     """One Sonnet pass, invoked exactly as generate-episode.sh invokes pass 1."""
     cwd = Path(BUNDLE) if BUNDLE else LIVE
@@ -328,6 +361,7 @@ def stage_write_sonnet(date, metrics):
         "session_id": blob.get("session_id"),
         "num_turns": blob.get("num_turns"),
         "spoken_words": spoken_words(body),
+        "tool_use": _tool_use_counts(blob.get("session_id")),
     })
     print(f"[write] {out} — {spoken_words(body):,} spoken words, "
           f"{inp + outp:,} tokens ({metrics['writer']['seconds']}s, "
@@ -731,9 +765,8 @@ def b_tok_total(metrics):
     return (w.get("prompt_tokens") or 0) + (w.get("completion_tokens") or 0)
 
 
-DEDUP_CUE = re.compile(r"\bdedup\b|already aired|re-?air|re-?covered|"
-                       r"listeners already heard|stale|duplicat|repeated content|"
-                       r"freshness", re.I)
+DEDUP_CUE = re.compile(r"\bdedup\b|already aired|re-?air|re-?covered|repeat|"
+                       r"listeners already heard|stale|duplicat|freshness", re.I)
 # QC files findings under skeptic-themed labels. A finding under any of these is
 # a real defect whatever the replay; only the dedup/freshness label is an
 # artifact of writing from a date that already aired.
@@ -1182,6 +1215,26 @@ def main():
     metrics = json.loads(mp.read_text()) if mp.exists() else {"date": date}
     metrics["stages"] = sorted(set(metrics.get("stages", [])) | {args.stage})
     mp.write_text(json.dumps(metrics, indent=1))
+
+    def flush():
+        """Persist metrics without dropping a sibling stage's results.
+
+        Two stages running at once (qc and judge, say) each read the file once
+        and wrote their own copy back, so whichever finished last silently
+        deleted the other's findings — a report with no judge scores reads as a
+        judge-lane error, which is not what happened. Re-read and merge on every
+        write, keyed by the stage that produced each section.
+        """
+        try:
+            on_disk = json.loads(mp.read_text()) if mp.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            on_disk = {}
+        for key in ("writer", "seam", "judge", "qc", "stages", "A", "B",
+                    "checks", "verdict", "qc_real_defects",
+                    "dedup_only_defects", "dedup_note", "band"):
+            if key not in metrics and key in on_disk:
+                metrics[key] = on_disk[key]
+        mp.write_text(json.dumps(metrics, indent=1))
     # The Sonnet path never touches or_writer: it invokes the claude CLI against
     # a frozen bundle, so the production source-gatherer is not needed.
     need_or_writer = WRITER != "sonnet" and args.stage in ("all", "write", "report")
@@ -1206,6 +1259,7 @@ def main():
             (TEST_DIR / f"{date}-single-pass-sources{SUFFIX}.json").write_text(json.dumps(
                 {"date": date, "root": BUNDLE or str(LIVE), "files": manifest}, indent=1))
             print(f"[manifest] {len(manifest)} source files fingerprinted")
+            flush()
         elif stage == "write":
             # KT_TEST_WRITER=sonnet takes the Sonnet one-pass path: the same
             # claude CLI invocation generate-episode.sh makes, the prompt changed
@@ -1214,15 +1268,19 @@ def main():
                 stage_write_sonnet(date, metrics)
             else:
                 stage_write(date, writer, metrics)
+            flush()
         elif stage == "qc":
             stage_qc(date, metrics)
+            flush()
         elif stage == "scan":
             stage_scan(date, metrics)
+            flush()
         elif stage == "judge":
             stage_judge(date, metrics)
+            flush()
         elif stage == "report":
             stage_report(date, metrics)
-        mp.write_text(json.dumps(metrics, indent=1))
+        flush()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,53 @@
+# QC report: variant A (byte-identical to the aired 09-28 script)
+
+The script is unedited. Three skeptics ran, and the findings are in `status.d/2026-09-28/223000-variant-a-qc-rerun-findings.md`. Both MUST-FIX items below already aired. Length is 9,596 spoken words, and the intro's promises match what airs.
+
+## MUST-FIX
+1. **Attia segment, ~line 167:** `"It's a stupid bad pharma trick," Attia says.`
+   - The transcript puts the line inside Klickstein's Acthar Gel story. Attia's turn starts at the "Yeah." right after it.
+   - Fix: attribute it to Klickstein, or drop the attribution.
+2. **Moonshots, ~line 49:** the "data centers are least reversible… once the ground is broken" line is pinned to Dave.
+   - That turn is unlabeled in the transcript, and Peter never calls on Dave.
+   - Fix: "one panelist."
+
+## ADVISORY
+**Dedup (Agent A)**
+- **Build Pitch (lines 109–115):** it re-treats Thursday's effort-default pitch, which line 109 admits. Only the "low first, re-run failures at high" ladder (97% at 17¢ vs 95.3% at 29¢) is new. It also repeats the Artificial Analysis data and the vendor-run caveat. This is the most serious advisory.
+- **Accenture (lines 1, 9):** the $1B over five years and the reaction were aired 09-19, and the lede frames them as fresh.
+- **Re-aired without a callback:**
+  - Sanders ban details (line 47): aired 09-14.
+  - Meta Muse "#1 app" claim (line 53): aired 09-19.
+  - Jensen dismissing AI fears (line 31): aired 09-15 and 09-21.
+  - Zvi's hacking tease (line 25): the OpenAI pause aired 09-26.
+  - Opus/Fable routing map (lines 79–81): aired 09-27.
+  - "Prod, not god" (line 101): aired 09-22.
+
+**Sourcing (Agent C)**
+- **Moonshots (line 39):** the liability line comes from an unlabeled turn. The DOJ guardrail phrase is inside the Trump-post quote, not Peter's own words.
+- **Zvi (line 23):** the top-ranked take is METR/"use preexisting org Y." "Founding a new org" is one tier below it.
+- **Forced connections:**
+  - Outro thesis (line 191): "the hard part is the permission, the measurement, or the trust."
+  - The J-space tie to the first story (line 105).
+  - Line 157's generalization about the guests, which isn't what McBride and Lazzari actually say.
+- **Speculation beyond the sources:** lines 97, 99, 103, 105, 125 and 183 add detail the briefs don't contain.
+- **Paraphrase as quote (line 79):** "in his words… spend on the bigger model" is the script's own gloss on Tharic (the caption spelling; the handle suggests Thariq).
+- **Closing gloss (line 177):** the deBoer line is a host inference.
+
+**Coherence (Agent B)**
+- **Process leak (line 103):** "Only the intro survived our pipeline."
+- **Unfulfilled promise:** the intro promises the AI Daily Brief limit will be addressed, and it never is.
+- **Line 73:** "Jev" in the CLM-8B line is a possible garble.
+- **Line 67:** "the Intelligence" is unintroduced.
+- **Line 1:** it says "28th" in the show name.
+
+## Clean
+- **Structure:** day of week (Monday), speaker tags, alternation across all 12 transitions, no back-to-back transitions and no `---`.
+- **Private-system leaks:** none.
+- **"(no transcript)" items:** every specific traces to the brief blurb.
+- **Callbacks:** all are real.
+- **Podcast guids:** none reused.
+
+Agent A read only the 09-27 script in full and searched 09-10 through 09-26 by keyword, so a dedup overlap sharing none of its search terms could have slipped through.
+
+QC VERDICT: FAIL
+

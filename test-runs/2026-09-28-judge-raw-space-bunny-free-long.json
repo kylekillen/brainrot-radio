@@ -1,0 +1,53 @@
+{
+ "role": "killen-time",
+ "model": "space-bunny-free",
+ "ok": true,
+ "reply": "{\"SOURCING\": {\"X\": 4, \"Y\": 5}, \"SUBSTANCE\": {\"X\": 5, \"Y\": 4}, \"PITCH\": {\"X\": 3, \"Y\": 5}, \"FLOW\": {\"X\": 5, \"Y\": 5}, \"REASON\": \"X is the longer, quote-dense script: nearly every number is attributed, it builds a real fire-department-to-harness through-line, and it hands builders six concrete habits from Anthropic's prompting guide, but it rides on a long tail of newsletter specifics it cannot cross-check and its Build Pitch breaks frame by pointing at Kyle's private pitch folder and asking him to greenlight a build. Y is the tighter and more disciplined script: it names its gaps up front (unlabelled Moonshots transcript, summary-only items), discloses Dave Blundin's conflict of interest, corrects its own source's arithmetic, and keeps the pitch purely general, at the cost of leaving the a16z, Willison, MIT Tech Review and Nvidia beats as one-line stubs.\"}",
+ "error": "",
+ "footer": "\ud83d\udcb8 $0.0000 this dispatch \u00b7 OpenCode Zen: $0.00 of $0 remaining",
+ "task_id": "dbee8f5756914178a1137e852bc40229",
+ "error_kind": "",
+ "receipts": {
+  "iterations": 2,
+  "tool_calls": [
+   {
+    "name": "turn_finalize",
+    "ok": true,
+    "chars": 457
+   }
+  ],
+  "output_item_types": [
+   "assistant",
+   "tool",
+   "assistant"
+  ],
+  "nudges": 0,
+  "ended_by": "final",
+  "context_window": 1048576,
+  "max_output_tokens": 524288,
+  "prompt_fit": {
+   "window": 1048576,
+   "reserve": 65536,
+   "input_budget": 951583,
+   "est_input_before": 45299,
+   "est_input": 45299,
+   "max_out_sent": 65536,
+   "actions": [],
+   "overflow_retries": 0,
+   "est_system": 1420,
+   "est_tool_schemas": 2095,
+   "est_history": 41650,
+   "est_tool_results": 134,
+   "est_total": 45299
+  },
+  "redaction": {
+   "total": 0,
+   "counts": {}
+  }
+ },
+ "reroutes": [],
+ "cost_usd": 0.0,
+ "prompt_tokens": 75397,
+ "completion_tokens": 9370,
+ "duration_ms": 123945
+}
