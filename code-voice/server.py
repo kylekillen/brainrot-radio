@@ -114,7 +114,7 @@ def summarize(text: str) -> str:
         "system": SUMMARY_SYSTEM,
         "prompt": text,
         "stream": False,
-        "keep_alive": "30m",  # keep summarizer resident through a work session
+        "keep_alive": "5m",  # cap: avoid evicting the 19 GB Glimmer on 11434
         "options": {"temperature": 0.2},
     }
     try:

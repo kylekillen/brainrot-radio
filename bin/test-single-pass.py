@@ -436,7 +436,7 @@ def stage_write(date, writer, metrics):
     payload = json.dumps({
         "model": WRITER, "prompt": prompt, "stream": False, "think": True,
         "options": {"num_ctx": ctx, "num_predict": 8000, "temperature": 0.7},
-        "keep_alive": "2h",
+        "keep_alive": "5m",
     })
     try:
         import urllib.request
