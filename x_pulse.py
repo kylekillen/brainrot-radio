@@ -71,15 +71,47 @@ PROVENANCE = re.compile(
     re.IGNORECASE,
 )
 
+# "Kyle" and "fleet" were bare words in META until 2026-09-29, and that
+# silently deleted real news: the corpus is a Following timeline carrying NFL
+# and entertainment accounts, and the episode's own second-half prompt tells
+# the writer to mine this section for "the day's big NFL, entertainment and
+# culture stories". Kyle Walker, Kyle Schmid and Kyle Chan are all real,
+# frequently-covered football players/journalists, and "fleet" is ordinary
+# English (a car fleet, a naval fleet). So both are anchored to the internal
+# forms they were actually standing in for. Trim THIS list, never the PRIVATE
+# net below — that one is the GUARDRAILS invariant (no internal repo, role or
+# path names in writer-facing or external-model-facing text) and it is why
+# the first review of #41 blocked.
+# Corpus-grounded: every "Kyle" in ~/.observer/reads/*x-feed-dispatch-*.md is
+# one of these forms or the news name "Kyle Chan".
+KYLE_INTERNAL = (
+    r"KYLE[-_ ]QUEUE|"                       # the queue marker
+    r"\bKyle['’]s (?:standing|note|feed|attention|purposes?|fleet|"
+    r"correction|approval|answer)\b|"         # "Kyle's standing note …"
+    r"\bKyle (?:ruled|rules|will have|asked|approved|corrected|noted)\b"
+)
+# Same: "the fleet's weekly burn cap", "the fleet was stood down" and "our
+# fleet has Jev in its own stack" are bookkeeping; "a fleet of ships", "the
+# rental fleet of taxis" and "a fleet-wide strike" are the news. "the fleet"
+# therefore needs a verb after it to be meta — the noun phrase on its own is
+# ordinary English. (Verified against all 69 dispatches in the corpus: the
+# only internal "fleet" forms are the possessive, "our/agent fleet", and
+# "the fleet" as a subject.)
+FLEET_INTERNAL = (
+    r"\bfleet['’]s\b|"                        # "the fleet's weekly burn cap"
+    r"\b(?:agent|agentic|our|this) fleet\b|"  # "our fleet has Jev in its own stack"
+    r"\bthe fleet (?:was|were|is|are|has|had|got|runs?|burned|stood)\b"
+)
+
 # Sentences in a dispatch that talk about how the report was produced (or
 # about the listener's private system) rather than the news itself. Removed at
 # sentence level: the same line often carries real news after a meta clause.
 META = re.compile(
-    r"dispatch|\bdesk\b|harvest|house (?:rule|memory)|KYLE[-_ ]QUEUE|\bKyle\b|"
+    r"dispatch|\bdesk\b|harvest|house (?:rule|memory)|" + KYLE_INTERNAL + r"|"
     r"killen[- ]time|model-router|model-landscape|x-feed-read|workspace pin|"
     r"this reading|this read\b|not pulled|not chased|not opened|unopened|"
     r"follow list|follow next|our own miss|in[- ]window|this window|pre-window|"
-    r"E1\d(?:/E1\d)?\b|tickler|fleet|"
+    r"E1\d(?:/E1\d)?\b|tickler|" + FLEET_INTERNAL + r"|"
     # the collection tool's own vocabulary: "five thread pulls, four web
     # searches, three page fetches", "35 scrolls", "Forwarded to model-router",
     # "Forwarded whole". Plain "carries it forward" / "move forward" stay.
