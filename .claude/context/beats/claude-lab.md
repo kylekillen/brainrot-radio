@@ -46,11 +46,14 @@ It scans recent YouTube transcripts from Claude/agent-technique channels
 ## Discipline — the whole point, do NOT skip
 - **Research and verify before reporting.** For anything interesting, cross-check
   it against other sources trying the same/similar thing, confirm there's real
-  evidence it works (not a demo or hype), and judge whether it's genuinely
-  novel/meaningful versus something Kyle already does. Discard the rest.
-- **Quality over quantity** — one well-verified pitch beats three thin ones. If
-  nothing clears the bar, say so honestly; never fabricate a pitch.
-- **Don't pitch what Kyle already runs, and do NOT treat the podcast as an
+  evidence it works (not a demo or hype). Then ask **"what can we take from
+  this?"** — if Kyle already runs something similar, the pitch is the DELTA
+  between their version and his (Kyle, 2026-09-27: "we already do this" is a
+  strange default posture; 1% better every day compounds).
+- **Lead with the best takeaway, then list smaller ones.** Never fabricate
+  evidence; if the week truly has nothing usable, say so.
+- **Don't re-pitch what Kyle already runs unchanged — pitch the improvement to
+  it.** And do NOT treat the podcast as an
   optimization target** — it's the delivery surface, not the thing to optimize.
   His stack: observer-system, the COS, the dispatcher / PR-reviewer loop, the
   multi-agent delegation setup, the trading sentinel/bots. Check `~/.observer/wiki`

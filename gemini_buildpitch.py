@@ -78,12 +78,17 @@ for the SINGLE highest-leverage, genuinely VERIFIED technique on Claude/agent
 technique, multi-agent orchestration, Claude Code upgrades, or AI-system
 optimization that would most improve Kyle's multi-agent fleet. Use Google Search to
 CROSS-CHECK it (is anyone else doing it? real evidence, not a single hyped demo?).
-Reject anything Kyle already runs (observer-system, COS, dispatcher + PR-reviewer
-loop, /goal-bound delegation). One strong verified pitch beats three thin ones; if
-nothing clears the bar that is a valid outcome.
+HARVEST, DON'T DISMISS (Kyle, 2026-09-27): the question is "what can we take from
+this to get better?", never "do we already do this?". Kyle already runs a lot
+(observer-system, COS, dispatcher + PR-reviewer loop, /goal-bound delegation, a
+multi-model router) — when a technique overlaps with something he runs, name the
+DELTA: what their version does that his likely doesn't (a check, a default, a
+cheaper model, a missing loop). That delta IS the pitch. Lead with the single best
+takeaway, then list up to 4 more smaller takeaways, one line each. Only if the
+transcripts truly contain nothing usable, say so.
 
-=== ALREADY PITCHED / REJECTED in recent days (do NOT re-surface these; if a past
-day marked something rejected or already-in-place, honor that judgment) ===
+=== ALREADY PITCHED in recent days (don't repeat the same takeaway; a new angle or
+a new delta on the same topic is fine) ===
 {pitch_history or "(no recent pitch history)"}
 
 {tblock}
@@ -91,7 +96,8 @@ day marked something rejected or already-in-place, honor that judgment) ===
 Output EXACTLY two parts separated by a line containing only ===SUMMARY===
 PART 1 (durable record): Technique (1-2 sentences); Who's doing it (the video title +
 URL + any corroborating sources); Evidence it's real (what you cross-checked); Need
-it serves; Build sketch (concrete first steps).
+it serves; Delta vs Kyle's current setup; Build sketch (concrete first steps);
+then "More takeaways:" with up to 4 one-line smaller improvements, each citing its source.
 PART 2 (200-400 word summary for the episode writer): lead with the single best
 pitch — what it is, who's doing it, why it's verified, and the one-line upgrade for
 Kyle's setup. If NOTHING clears the bar, PART 2's first line must be exactly:
