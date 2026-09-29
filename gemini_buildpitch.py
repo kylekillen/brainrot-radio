@@ -55,8 +55,18 @@ def main():
     bf = ROOT / ".claude" / "context" / "beats" / "claude-lab.md"
     if bf.exists():
         brief = bf.read_text()[:6000]
-    # History: what we've ALREADY pitched (and what was rejected) the last several
-    # days — so we don't re-surface it (the original reporter has this awareness).
+    # History: what we've ALREADY pitched the last several days — so we don't
+    # re-surface it (the original reporter has this awareness).
+    #
+    # PR #40 dropped the "if a past day marked something rejected or already-in-place,
+    # honor that judgment" clause from the header below, so dedup now keys on the
+    # takeaway rather than the topic. That is correct as things stand: 0 of the 59
+    # dated files in build-pitches/ carry a passed/rejected/approved/built marker
+    # (counted 2026-09-29), so the clause was honoring a marker that does not exist,
+    # and "already-in-place" is precisely the dismissal posture the same PR removed.
+    # IF such a marker is ever written into a pitch file, restore the clause in the
+    # ALREADY PITCHED header — the file text is already in the history block, so the
+    # only missing piece is the instruction to obey it.
     pitch_history = ""
     past = sorted((ROOT / "build-pitches").glob("[0-9]*.md"))[-6:]
     past = [p for p in past if p.stem != TODAY]

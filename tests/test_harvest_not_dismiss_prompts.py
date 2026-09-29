@@ -18,6 +18,12 @@ could keep the exact dismissive behavior the PR set out to remove.
 These tests assert the four copies agree: none may carry a discard-because-already
 instruction, all must carry the delta rule, and all must keep the verification bar
 so the conflict can't be "resolved" by deleting the bar instead.
+
+A FIFTH surface is covered too — build-pitches/README.md, the human-facing
+description of the beat. It is not read by the reporter, so it cannot change
+behaviour, but it drifted anyway: it kept describing the pre-#40 reject rule for
+two days after the merge, and the only reason anyone noticed was a human reading
+it. The same assertions are cheap to run against it.
 """
 import io
 import json
@@ -63,6 +69,9 @@ COPIES = {
     "generate-episode.sh:step1b": _step1b_prompt,
     ".claude/context/beats/claude-lab.md": lambda: _read(".claude/context/beats/claude-lab.md"),
     "gemini_buildpitch.py": lambda: _read("gemini_buildpitch.py"),
+    # Human-facing, never read by the reporter — guarded because it is the copy
+    # a person (or the next agent) actually reads when asking "what is this beat?".
+    "build-pitches/README.md": lambda: _read("build-pitches/README.md"),
 }
 IDS = sorted(COPIES)
 

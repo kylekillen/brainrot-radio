@@ -17,9 +17,15 @@ plus targeted keyword searches, looking for concrete techniques about:
 
 The reporter does **not** just summarize videos. For anything interesting it
 **researches and verifies** first — cross-checking against other sources trying
-the same or similar thing, confirming there's real evidence it works (not a demo
-or hype), and judging whether it's genuinely novel/meaningful versus something
-Kyle already does. Only survivors become pitches.
+the same or similar thing, and confirming there's real evidence it works (not a
+demo or hype). That evidence bar is the one thing that never relaxes.
+
+**Overlap is not a disqualifier.** "We already do this" is a strange default
+posture (Kyle, 2026-09-27) — 1% better every day compounds. When a technique
+overlaps something Kyle already runs, the pitch is the **delta**: the check, the
+default, the cheaper model, the missing loop their version has and his likely
+doesn't. A fresh delta on a topic he already covers is a new pitch, not a repeat.
+Only what clears the verification bar becomes a pitch.
 
 ## The loop (why this exists)
 
@@ -40,10 +46,13 @@ One file per day: `YYYY-MM-DD.md`. Each verified pitch contains:
 - **Technique** — what it is, in one or two sentences.
 - **Who's doing it** — the specific video(s) + any corroborating sources (links).
 - **Evidence it's real** — what was cross-checked and why it's believed to work.
-- **Why it matters for us** — how it maps onto Kyle's stack (observer-system, the
-  COS, the dispatcher / PR-reviewer loop, this podcast pipeline, the multi-agent
-  setup).
+- **Delta vs Kyle's current setup** — what their version does that his likely
+  doesn't. This is the pitch, not a comparison that can fail.
+- **Need it serves** — which fleet pain, and which of Kyle's priorities 1–3
+  (screenwriting / multi-agent business / resilience) it moves.
+- **Whole-fleet leverage** — one line the Fleet Optimizer can rank on.
 - **Build sketch** — concrete first steps an agent could take to implement it.
+- **More takeaways** — up to 4 smaller one-line improvements, each citing its source.
 - **Status** — `pitched` (on the show, awaiting Kyle) → `approved` / `passed` /
   `built`.
 
