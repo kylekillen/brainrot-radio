@@ -147,18 +147,31 @@ run_claude_step() {
 # (its own retry included), or when PODCAST_FORCE_OPENROUTER=1 forces it for a
 # manual quality test. The daily default path is 100% Claude (flat-rate Max pool,
 # $0 marginal). The offload provider is whatever ~/.config/personal-os/offload.env
-# configures — currently FREE Gemini Flash (so the fallback is also $0; only a
-# pay-per-token provider would cost). or_writer.py gathers the same inputs the
-# Claude pass would have read and writes/appends the script identically, so QC +
-# dedup downstream are unchanged. Args: pass_no (1|2)
+# configures — and or_complete._config() FALLS BACK to openrouter.ai + the legacy
+# openrouter.env key whenever that file carries no base/key, so "whatever
+# offload.env says" is NOT the same as "free". On 2026-09-29 05:26 this comment's
+# "$0" claim was logged and the very next call 402'd against an overdrawn
+# OpenRouter balance, with the same model name in the log as the real call. So the
+# provider is RESOLVED at log time by free_lane_diag.py (it calls
+# or_complete._config() the way the writer does) and the lines below print that
+# route — base, model, cost class, which file the key came from, never the key.
+# or_writer.py gathers the same inputs the Claude pass would have read and
+# writes/appends the script identically, so QC + dedup downstream are unchanged.
+# Args: pass_no (1|2)
+offload_route_log() {
+    python3 free_lane_diag.py offload 2>&1 \
+        || echo "UNRESOLVED — could not read or_complete._config(); do NOT assume this lane is free, read $RESULT_LOG"
+}
 run_kimi_pass() {
     local pass_no=$1
-    log "⚠️  FALLBACK: routing write-pass $pass_no to the configured offload provider (offload.env — currently free Gemini Flash) because the Claude pass failed (or was force-overridden). Normal days run on Claude only."
+    local route
+    route=$(offload_route_log)
+    log "⚠️  FALLBACK: routing write-pass $pass_no to the offload lane because the Claude pass failed (or was force-overridden). Resolved right now: $route. Normal days run on Claude only; that route string, not a remembered provider name, is what will be called."
     if python3 or_writer.py --pass "$pass_no" --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
-        log "FALLBACK pass $pass_no via OpenRouter (Kimi) complete"
+        log "FALLBACK pass $pass_no complete — $route"
         return 0
     fi
-    log "FALLBACK pass $pass_no via OpenRouter (Kimi) FAILED"
+    log "FALLBACK pass $pass_no FAILED — $route"
     return 1
 }
 
@@ -382,7 +395,17 @@ elif [ "${PODCAST_ENGINE:-claude}" = "external" ]; then
     else
         log "External write failed (both passes' retries exhausted) — falling back to Claude so the episode still ships."
         if [ "$BURN_DEGRADED" = "1" ]; then
-            log "⚠️  BURN-DEGRADED run is falling back to CLAUDE writes while $BURN_PAUSE_FLAG stands — the free lane is broken, not the burn gate. Fix the free lane (external_writer.py DEFAULT_MODEL) before tomorrow's run."
+            # The remedy depends on WHICH limit ran out, so read it out of the error
+            # body instead of asserting one. This line used to always say "fix
+            # external_writer.py DEFAULT_MODEL" — the 2026-09-08 rotate-the-free-
+            # model fix misfiring on a failure it cannot touch: that 429 was
+            # limit_source=openrouter_free_tier_daily, a flat account-level daily
+            # bucket (X-RateLimit-Limit 1000, Remaining 0) that every :free slug on
+            # that key shares, so rotating the model changed nothing. Per-model
+            # quota / model-gone still is a DEFAULT_MODEL rotation; a 402 is a
+            # billing problem and no rotation fixes it.
+            log "⚠️  BURN-DEGRADED run is falling back to CLAUDE writes while $BURN_PAUSE_FLAG stands — the free lane is broken, not the burn gate."
+            log "   free lane: $(python3 free_lane_diag.py classify "$RESULT_LOG" 2>&1 || echo "could not classify — read $RESULT_LOG before changing external_writer.py DEFAULT_MODEL")"
         fi
     fi
 elif [ "$ROUTER_MODE" = "on" ] && [ -s "$ROUTER_CHOICE_FILE" ]; then
@@ -446,9 +469,9 @@ PROMPT_EOF
 
 if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
     # Manual escape hatch / quality test ONLY. Never set in the launchd default.
-    log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 1 and writing via OpenRouter (Kimi) directly."
+    log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 1 and writing via the offload lane directly: $(offload_route_log)"
     if ! run_kimi_pass 1; then
-        log "Forced OpenRouter pass 1 failed, aborting"
+        log "Forced offload pass 1 failed, aborting"
         exit 1
     fi
     WRITE_ENGINE_USED="claude-fallback:kimi(openrouter,forced)"
@@ -456,9 +479,9 @@ elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1";
     log "Pass 1 attempt 1 failed, retrying..."
     sleep 15
     if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1-retry"; then
-        log "Pass 1 Claude retry also failed — falling back to OpenRouter (Kimi) so the episode still ships."
+        log "Pass 1 Claude retry also failed — falling back to the offload lane so the episode still ships (run_kimi_pass logs the resolved route)."
         if ! run_kimi_pass 1; then
-            log "Pass 1 OpenRouter fallback also failed, aborting"
+            log "Pass 1 offload fallback also failed, aborting"
             exit 1
         fi
         WRITE_ENGINE_USED="claude-fallback:kimi(openrouter)"
@@ -531,14 +554,14 @@ PROMPT_EOF
 
 if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
     # Manual escape hatch / quality test ONLY. Never set in the launchd default.
-    log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 2 and writing via OpenRouter (Kimi) directly."
-    run_kimi_pass 2 || log "Forced OpenRouter pass 2 failed, proceeding with pass 1 only"
+    log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 2 and writing via the offload lane directly: $(offload_route_log)"
+    run_kimi_pass 2 || log "Forced offload pass 2 failed, proceeding with pass 1 only"
 elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2"; then
     log "Pass 2 attempt 1 failed, retrying..."
     sleep 15
     if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2-retry"; then
-        log "Pass 2 Claude retry also failed — falling back to OpenRouter (Kimi) so the back half still gets written."
-        run_kimi_pass 2 || log "Pass 2 OpenRouter fallback also failed, proceeding with pass 1 only"
+        log "Pass 2 Claude retry also failed — falling back to the offload lane so the back half still gets written (run_kimi_pass logs the resolved route)."
+        run_kimi_pass 2 || log "Pass 2 offload fallback also failed, proceeding with pass 1 only"
     fi
 fi
 
