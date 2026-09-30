@@ -429,7 +429,7 @@ Steps:
    - Show intro: cold open with the biggest story, show name + date
    - **AI & Technology segments (1-2 segments, ~2500-3500 words) — FOCUS ON HIGH-SIGNAL AI.** Anchor this block on the AI Daily Brief and Moonshots: lead with their framing and actual arguments/quotes whenever a fresh episode exists, and give each real airtime (not a passing mention). Use the RSS news headlines (Techmeme, TechCrunch, Ars) as context AROUND that podcast discussion, not as the spine. Then feature high-signal essays and technical breakthroughs getting discussion in circles Kyle follows. Skip generic news-summary filler.
    - **Agents & Building With AI segments (2-3 segments, ~3500-4500 words) — THIS IS THE FEATURED BEAT OF THE SHOW.** How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, and dev-loop optimization. Pull concrete, stealable practices from Claude Code releases, Latent Space, Simon Willison, One Useful Thing, AI and I, The Cognitive Revolution, No Priors, a16z, Dwarkesh, Karpathy. Frame every story through "what can WE learn for our own multi-agent setup" — Kyle is building a team of delegated AIs and wants to optimize that system. Be specific and practitioner-level; quote the actual techniques, not vibes.
-   - **BUILD PITCH OF THE DAY:** If .tmp/build-pitches.md exists AND its first line is not "NO_VERIFIED_PITCH", give the top verified pitch its own dedicated exchange inside the Agents & Building block (~400-700 words): what the technique is, who's doing it (name the source), the evidence it's real, and, in GENERAL terms, why it could matter to someone running agents. Keep the listener's private system out of the audio: do NOT name Kyle's repos (observer-system, brainrot-radio), roles, launchd jobs, launch-site counts, config keys, or any other internal statistic from .tmp/build-pitches.md — the pitch's "Evidence it's real" and "local check" sections are for Kyle and the Fleet Optimizer, not for airtime, and uncited counts get stale. Then have a host say plainly that it's logged in the build-pitches folder so Kyle can point an agent at it and greenlight the build if he likes it. If the file is missing or says NO_VERIFIED_PITCH, skip this — do NOT invent a pitch.
+   - **BUILD PITCH OF THE DAY:** If .tmp/build-pitches.md exists AND its first line is not "NO_VERIFIED_PITCH", give the top verified pitch its own dedicated exchange inside the Agents & Building block (~400-700 words): what the technique is, who's doing it (name the source), the evidence it's real, and, in GENERAL terms, why it could matter to someone running agents. Keep the listener's private system out of the audio: do NOT name Kyle's repos (observer-system, brainrot-radio), roles, launchd jobs, launch-site counts, config keys, or any other internal statistic from .tmp/build-pitches.md — the pitch's "Evidence it's real" and "local check" sections are for Kyle and the Fleet Optimizer, not for airtime, and uncited counts get stale. Then close the block by having a host say plainly that the pitch is WRITTEN UP AND LOGGED, so he can point an agent at it and greenlight the build if he likes it — in GENERAL terms only. Do NOT name the folder, the repo, the file, or anything that locates it on Kyle's machine; the whole point of the ban above is that the audio explains the technique and leaves his system to him. If you cannot say that sentence without naming where the pitch lives, LEAVE THE SENTENCE OUT — a missing sign-off beats a private-system leak. If the file is missing or says NO_VERIFIED_PITCH, skip this — do NOT invent a pitch.
    - End with a [TRANSITION] tag — do NOT write an outro
    - Use BASIL/BROOKE/TRANSITION format (speaker tags in square brackets)
    - Include specific quotes from podcast transcripts and Substack articles
@@ -565,6 +565,13 @@ if [ "${PODCAST_ENGINE:-claude}" != "gemini" ]; then
 # the MUST-FIX items, and prints `QC VERDICT: PASS`/`FAIL`. We read+follow the
 # file rather than rely on slash-command expansion so the daily run is robust.
 QC_DEDUP_FLAGS=$(python3 dedup_guard.py check "$NEW_SCRIPT" --today "$TODAY" 2>/dev/null || true)
+# Same treatment for script_guard.py: deterministic, evidence for the skeptics
+# rather than a gate. It flags same-speaker collisions, private-system markers
+# and analysis credited to a byline the brief only truncates. Handed to QC so the
+# Coherence (1) and Sourcing (3) skeptics start from hard hits.
+QC_GUARD_FLAGS=$(python3 script_guard.py check "$NEW_SCRIPT" \
+    --brief "$BRAINROT_DIR/.tmp/topic-brief.txt" \
+    --sources "$BRAINROT_DIR/.tmp/transcripts" "$BRAINROT_DIR/.tmp/articles" 2>/dev/null || true)
 QC_DEDUP_BLOCK=""
 if [ -n "$QC_DEDUP_FLAGS" ]; then
     log "DEDUP: draft blocks overlapping the last 7 days' broadcasts (handed to QC):"$'\n'"$QC_DEDUP_FLAGS"
@@ -573,6 +580,15 @@ Deterministic dedup check (5-word-phrase overlap with the last 7 days' broadcast
 flagged these blocks. Agent A must verify each against the named earlier episode; a real
 re-air is MUST-FIX (cut or replace with fresh material):
 ${QC_DEDUP_FLAGS}
+"
+fi
+if [ -n "$QC_GUARD_FLAGS" ]; then
+    log "SCRIPT GUARD: deterministic findings on the draft (handed to QC):"$'\n'"$QC_GUARD_FLAGS"
+    QC_GUARD_BLOCK="
+Deterministic script guard (script_guard.py) flagged these. Agent B (Coherence) owns
+the collision findings and Agent C (Sourcing) the byline ones; every hit is MUST-FIX —
+they are exact string/tag matches, not judgment calls:
+${QC_GUARD_FLAGS}
 "
 fi
 cat > "$BRAINROT_DIR/.tmp/step3-qc.txt" <<PROMPT_EOF
@@ -592,6 +608,7 @@ Sourcing rule for Agent C: any specific (number, quote, name, score, "the hosts 
 attached to a topic-brief item labelled "(no transcript)" — or whose text was never
 provided — is UNSOURCED and MUST-FIX (cut it back to the blurb). Also cut invented
 callbacks ("as we covered yesterday") that name a story absent from the last 7 days.
+${QC_GUARD_BLOCK}
 PROMPT_EOF
 
 # QC GATE. The QC command emits a literal `QC VERDICT: PASS`/`FAIL` (see
@@ -659,6 +676,21 @@ else
            exit 1;;
     esac
 fi   # end QC engine branch
+
+# ─── Step 3.5: Script guard (deterministic, post-QC, NON-FATAL) ──────────────
+# Re-run script_guard.py on the script QC just finished fixing. What survives here
+# reached the renderer, so it is logged loudly and written to a flag file next to
+# the qc-FAIL flags — but it does NOT abort. A heuristic must never be the reason
+# an episode doesn't ship (09-25, 09-27 and 09-29 were all lost to hard gates);
+# a visible flag is the right weight. Upstream is where these get fixed.
+POST_GUARD=$(python3 script_guard.py check "$NEW_SCRIPT" \
+    --brief "$BRAINROT_DIR/.tmp/topic-brief.txt" \
+    --sources "$BRAINROT_DIR/.tmp/transcripts" "$BRAINROT_DIR/.tmp/articles" 2>/dev/null || true)
+if [ -n "$POST_GUARD" ]; then
+    GUARD_FLAG="$BRAINROT_DIR/logs/guard-$RUN_ID.flag"
+    { echo "script_guard findings after QC VERDICT: $QC_VERDICT — script: $NEW_SCRIPT"; echo "$POST_GUARD"; } > "$GUARD_FLAG"
+    log "⚠️  SCRIPT GUARD: ${POST_GUARD%%$'\n'*} — full findings: $GUARD_FLAG (episode still ships)"
+fi
 
 # ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
 SCRIPT_BASENAME=$(basename "$NEW_SCRIPT" .txt)
