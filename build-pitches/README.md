@@ -53,8 +53,9 @@ One file per day: `YYYY-MM-DD.md`. Each verified pitch contains:
 - **Whole-fleet leverage** — one line the Fleet Optimizer can rank on.
 - **Build sketch** — concrete first steps an agent could take to implement it.
 - **More takeaways** — up to 4 smaller one-line improvements, each citing its source.
-- **Status** — `pitched` (on the show, awaiting Kyle) → `approved` / `passed` /
-  `built`.
+- **Status** — `pitched` (on the show, awaiting Kyle), or `money — discuss first`.
+  Once an agent takes a pitch up, its lifecycle belongs on the task board and in its
+  implementation PR; the dated pitch remains the original record.
 
 If nothing survives verification on a given day, the file says so explicitly. The
 reporter never fabricates a pitch.

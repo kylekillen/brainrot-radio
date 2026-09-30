@@ -61,8 +61,10 @@ def main():
     # PR #40 dropped the "if a past day marked something rejected or already-in-place,
     # honor that judgment" clause from the header below, so dedup now keys on the
     # takeaway rather than the topic. That is correct as things stand: 0 of the 59
-    # dated files in build-pitches/ carry a passed/rejected/approved/built marker
-    # (counted 2026-09-29), so the clause was honoring a marker that does not exist,
+    # dated files in build-pitches/ have a Status field whose value is
+    # passed/rejected/approved/built (counted 2026-09-29). Reproduce with:
+    # rg -l --glob '[0-9]*.md' '^\*\*Status:[[:space:]]*(passed|rejected|approved|built)\b' build-pitches
+    # (it returns no files). The clause was therefore honoring a marker that does not exist,
     # and "already-in-place" is precisely the dismissal posture the same PR removed.
     # IF such a marker is ever written into a pitch file, restore the clause in the
     # ALREADY PITCHED header — the file text is already in the history block, so the
@@ -106,8 +108,10 @@ a new delta on the same topic is fine) ===
 Output EXACTLY two parts separated by a line containing only ===SUMMARY===
 PART 1 (durable record): Technique (1-2 sentences); Who's doing it (the video title +
 URL + any corroborating sources); Evidence it's real (what you cross-checked); Need
-it serves; Delta vs Kyle's current setup; Build sketch (concrete first steps);
-then "More takeaways:" with up to 4 one-line smaller improvements, each citing its source.
+it serves; Delta vs Kyle's current setup; Whole-fleet leverage (one line the Fleet
+Optimizer can rank on); Build sketch (concrete first steps); More takeaways (up to 4
+one-line smaller improvements, each citing its source); Status: pitched (or money —
+discuss first for trading/money changes).
 PART 2 (200-400 word summary for the episode writer): lead with the single best
 pitch — what it is, who's doing it, why it's verified, and the one-line upgrade for
 Kyle's setup. If NOTHING clears the bar, PART 2's first line must be exactly:
