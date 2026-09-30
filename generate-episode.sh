@@ -162,10 +162,40 @@ offload_route_log() {
     python3 free_lane_diag.py offload 2>&1 \
         || echo "UNRESOLVED — could not read or_complete._config(); do NOT assume this lane is free, read $RESULT_LOG"
 }
+# COST CEILING (2026-09-30). The log above tells the truth about the route; this
+# decides whether we are ALLOWED to spend on it. The 2026-09-29 05:26 run is why:
+# BURN_DEGRADED=1 (the burn gate was up, which is the whole reason the external
+# free lane was in play), the Claude pass had just failed, and the fallback 402'd
+# against an overdrawn OpenRouter line — the lane spent the money the gate exists
+# to protect, in the one run where the gate was screaming.
+#
+# RULE: while the burn gate is up, this lane may not bill. If the resolved route
+# is not provably $0 (a :free/-free slug or a local endpoint), dispatch NOTHING
+# and fail loud, so the Claude path carries the episode — $0 on the Max pool.
+# A human running this by hand can override per-run with
+# PODCAST_OFFLOAD_ALLOW_BILLING=1; the launchd job never sets it, and it is not
+# read from offload.env, so it cannot be switched on by accident.
+#
+# The gate reads free_lane_diag's own cost_class — the same field the `offload`
+# log line above prints — so the ceiling and the log cannot disagree. If the
+# route cannot be resolved, the gate REFUSES (fail closed): "unknown" is not "$0",
+# and that conflation is the 2026-09-29 failure.
+offload_billing_allowed() {
+    local opt_in=0
+    [ -n "${PODCAST_OFFLOAD_ALLOW_BILLING:-}" ] && opt_in=1
+    python3 free_lane_diag.py offload-gate \
+        --burn-degraded "${BURN_DEGRADED:-0}" --opt-in "$opt_in"
+}
 run_kimi_pass() {
     local pass_no=$1
-    local route
+    local route decision rc=0
     route=$(offload_route_log)
+    decision=$(offload_billing_allowed) || rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log "🚫 COST CEILING: refusing write-pass $pass_no on the offload lane. $decision"
+        log "   Nothing was dispatched, so nothing was billed. The Claude path carries the episode instead — \$0 on the Max pool, which is what degrading (not skipping) means. Re-run by hand with PODCAST_OFFLOAD_ALLOW_BILLING=1 to override, or point offload.env at a :free slug / local endpoint."
+        return 1
+    fi
     log "⚠️  FALLBACK: routing write-pass $pass_no to the offload lane because the Claude pass failed (or was force-overridden). Resolved right now: $route. Normal days run on Claude only; that route string, not a remembered provider name, is what will be called."
     if python3 or_writer.py --pass "$pass_no" --script "$SCRIPT_FILE" --greeting "$GREETING_HINT" >> "$RESULT_LOG" 2>&1; then
         log "FALLBACK pass $pass_no complete — $route"
