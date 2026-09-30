@@ -89,6 +89,77 @@ def test_local_endpoint_is_free_under_the_gate(config):
     assert free_lane_diag.offload_spend_decision(burn_degraded=True)["allowed"] is True
 
 
+# ── the local-endpoint test is a money guard, so it must not be gameable ────
+# Code review (codex-cli, 2026-09-30) on this PR: _is_local() was a substring
+# test over the whole URL, so any remote host CONTAINING a local-looking string
+# read as free and walked straight past the ceiling. Every one of these is a
+# real remote host; all three were classified FREE before the fix.
+
+@pytest.mark.parametrize("base", [
+    "https://localhost.billing-provider.example/v1",  # reviewer-reported
+    "https://localhost.attacker.io/v1",
+    "http://notlocalhost.example.com/v1",
+    "https://evil-local.attacker.com/v1",
+    "http://127.0.0.1.attacker.example/v1",
+    "https://api.example.com/localhost/v1",          # the string was in the PATH
+    "https://example.com/v1?host=localhost",         # ...and in the query
+    "https://example.com/localhost",                 # ...and in the path alone
+])
+def test_remote_host_containing_a_local_looking_string_is_not_free(base):
+    assert free_lane_diag._is_local(base) is False
+
+
+@pytest.mark.parametrize("base", [
+    "http://localhost:11434/v1",
+    "http://127.0.0.1:1234/v1",
+    "http://127.0.0.53:1/v1",        # any address in 127.0.0.0/8 is loopback
+    "http://[::1]:8080/v1",          # IPv6 loopback
+    "localhost:11434/v1",            # no scheme — or_complete allows this form
+    "http://LOCALHOST:1234/v1",      # hostnames are case-insensitive
+    "http://localhost.:1234/v1",     # trailing root dot
+    "http://myserver.local:1234/v1", # mDNS link-local
+])
+def test_genuine_loopback_hosts_are_still_free(base):
+    assert free_lane_diag._is_local(base) is True
+
+
+@pytest.mark.parametrize("base", [
+    "",                        # unset
+    "not a url at all",
+    "https://openrouter.ai/api/v1",
+    "https://generativelanguage.googleapis.com/v1beta/openai",
+    "http://10.0.0.5:11434/v1",  # private LAN — routable, not loopback
+])
+def test_non_loopback_hosts_are_not_free(base):
+    assert free_lane_diag._is_local(base) is False
+
+
+def test_a_spoofed_local_base_is_refused_by_the_gate_not_just_mislogged(config):
+    """End to end: the bypass has to be closed at the DECISION, not only in the
+    cost label. A base that merely contains 'localhost' must not buy a dispatch
+    while the burn gate is up — that is the whole attack."""
+    offload, _ = config
+    offload.write_text("OFFLOAD_BASE_URL=https://localhost.billing-provider.example/v1\n"
+                       "OFFLOAD_API_KEY=k\nOFFLOAD_MODEL=gemini-flash-latest\n")
+    r = free_lane_diag.offload_route()
+    assert r["cost_class"] == free_lane_diag.COST_METERED
+    d = free_lane_diag.offload_spend_decision(burn_degraded=True)
+    assert d["allowed"] is False
+    assert "MAY BILL" in d["why"]
+
+
+def test_local_host_classification_is_shared_by_the_gate_and_the_log(config):
+    """The ceiling and the printed cost class must move together, or a spoofed
+    base gets one answer in the log and another at the gate."""
+    offload, _ = config
+    offload.write_text("OFFLOAD_BASE_URL=https://localhost.billing-provider.example/v1\n"
+                       "OFFLOAD_API_KEY=k\nOFFLOAD_MODEL=llama3\n")
+    out = free_lane_diag.describe_offload_route()
+    assert "FREE" not in out
+    assert "COSTS MONEY" in out
+    assert free_lane_diag.offload_spend_decision(True)["allowed"] is False
+
+
 def test_burn_gate_up_refuses_when_nothing_is_configured(config):
     """Unresolvable is not free. Nothing configured means DEFAULT_BASE, and the
     call cannot succeed anyway — refusing costs nothing and cannot be wrong."""

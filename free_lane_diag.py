@@ -38,11 +38,13 @@ Usage:
   python3 free_lane_diag.py classify logs/generate-20260929-051500.log
 """
 import argparse
+import ipaddress
 import os
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -54,7 +56,11 @@ import or_complete  # noqa: E402
 # ":free" suffix and the bare "-free" aliases the external lane passes
 # (nemotron-3-ultra-550b-free resolves to the ":free" slug provider-side).
 FREE_SLUG_SUFFIXES = (":free", "-free")
-LOCAL_HOST_MARKERS = ("localhost", "127.0.0.1", "0.0.0.0", "::1", ".local")
+
+# Hosts that are local BY EXACT NAME. Compared against the parsed hostname only —
+# never a substring of the URL, which is how a remote host like
+# https://localhost.billing-provider.example/v1 used to read as free.
+LOCAL_HOST_NAMES = frozenset({"localhost", "0.0.0.0", "::"})
 
 # Machine-readable cost classes. `describe_offload_route()` renders the prose and
 # offload_spend_decision() gates on these — one classification, two readers.
@@ -75,7 +81,46 @@ ERROR_LINE_MARKERS = (
 # ── offload lane ─────────────────────────────────────────────────────────────
 
 def _is_local(base: str) -> bool:
-    return any(m in (base or "").lower() for m in LOCAL_HOST_MARKERS)
+    """True only for a genuinely local endpoint — an EXACT loopback/local HOST.
+
+    This classification is what lets the offload lane dispatch while the burn gate
+    is up, so it must not be gameable by a URL that merely CONTAINS a local-looking
+    string. The first cut was a substring test over the whole URL, which read all of
+    these as free when every one of them is a remote, billable host:
+
+        https://localhost.billing-provider.example/v1   (substring in a subdomain)
+        https://api.example.com/localhost/v1            (substring in the PATH)
+        https://localhost.attacker.io/v1
+
+    A guard that a provider name can walk past is not a guard, so: parse the URL,
+    then compare the HOST alone. No host -> not local (fail closed: an unparseable
+    base is treated as metered, and is therefore refused under the burn gate).
+    """
+    raw = (base or "").strip()
+    if not raw:
+        return False
+    # urlsplit needs a scheme to populate netloc; or_complete allows a bare
+    # "localhost:11434/v1", so supply "//" when the caller omitted one.
+    if "//" not in raw:
+        raw = "//" + raw
+    try:
+        host = (urlsplit(raw).hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    if not host:
+        return False
+    if host in LOCAL_HOST_NAMES:          # exact: "localhost", "::1", "0.0.0.0"
+        return True
+    if host.endswith(".localhost"):       # RFC 6761: resolves to loopback
+        return True
+    if host.endswith(".local"):           # mDNS link-local name
+        return True
+    # An IP literal must be checked as an address, not as a string: the whole
+    # 127.0.0.0/8 block is loopback, and it is NOT spelled 127.0.0.1.
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 def _is_free_slug(model: str) -> bool:
