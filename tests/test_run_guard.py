@@ -23,6 +23,15 @@ def env(tmp_path):
     (bdir / "logs").mkdir()
     for f in ("run_guard.sh", "watch-episode.sh"):
         (bdir / f).write_text(open(os.path.join(ROOT, f)).read())
+    # watch-episode.sh no longer stands down on file existence alone — it asks
+    # audio_truth.py whether the MP3 has sound in it (2026-10-01). The fixtures
+    # below write 1-byte stand-in MP3s, which the real gate would (correctly)
+    # call EMPTY, so every test here would alarm. This sandbox has no ffmpeg and
+    # no real audio, so the gate is stubbed to pass: these tests are about the
+    # watcher's alarm/stand-down logic, and the gate's own behaviour is covered
+    # in tests/test_audio_truth.py, which steers the verdict both ways.
+    (bdir / "audio_truth.py").write_text(
+        "import sys\nprint('audio-truth: OK — sandbox stub')\nsys.exit(0)\n")
     alarms = tmp_path / "alarms.txt"
     fake = tmp_path / "raise-alarm.sh"
     fake.write_text(f'#!/bin/bash\necho "$@" >> "{alarms}"\necho "{tmp_path}/spooled.json"\n')

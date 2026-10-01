@@ -3,8 +3,12 @@
 # Run via launchd at multiple times throughout the morning.
 # If no episode exists and pipeline is hung or not running, trigger recovery.
 
-BRAINROT_DIR="/Users/kylekillen/brainrot-radio"
-TODAY=$(date '+%Y-%m-%d')
+# Env-overridable, like watch-episode.sh already is. With the path hardcoded,
+# running this script from a test wrote its verdict into the LIVE
+# logs/check-episode.log and its verdict about the LIVE output/ directory — i.e.
+# a test could report on, or act on, Kyle's real episode. Override in tests.
+BRAINROT_DIR="${BRAINROT_DIR:-/Users/kylekillen/brainrot-radio}"
+TODAY="${CHECK_TODAY:-$(date '+%Y-%m-%d')}"
 TODAY_COMPACT=${TODAY//-/}
 LOGFILE="$BRAINROT_DIR/logs/check-episode.log"
 
@@ -12,17 +16,32 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"
 }
 
-# Success: episode MP3 exists
+# Success: episode MP3 exists. Existing is NOT the same as audible — see below.
 OUTPUT_FILE="$BRAINROT_DIR/output/killen-time-${TODAY}.mp3"
 if [ -f "$OUTPUT_FILE" ]; then
     SCRIPT_FILE="$BRAINROT_DIR/scripts/killen-time-${TODAY}.txt"
     WORDS=$(wc -w < "$SCRIPT_FILE" 2>/dev/null | tr -d ' ')
-    log "OK: Episode published ($WORDS words)"
 
-    # Check build-pitch verdict status (non-fatal)
+    # An MP3 that exists but holds no audible audio is a failed episode, not a
+    # shipped one. This line used to be `OK: Episode published ($WORDS words)` on
+    # the strength of file existence alone — the word count came from the SCRIPT,
+    # so a silent render reported a healthy show. Verify the audio itself.
+    if AUDIO_VERDICT=$(cd "$BRAINROT_DIR" && python3 audio_truth.py "$OUTPUT_FILE" 2>&1); then
+        log "OK: Episode published ($WORDS words) — $AUDIO_VERDICT"
+        RC=0
+    else
+        # Loud, and the non-zero exit below means launchd sees a failed run.
+        # Deliberately NOT deleting the file: it is the evidence, and the MP3's
+        # existence is what makes generate-episode.sh stand down on a retry.
+        log "FAIL: Episode MP3 exists but has no audible audio — $AUDIO_VERDICT"
+        log "FAILURE DETAIL: $OUTPUT_FILE"
+        RC=1
+    fi
+
+    # Check build-pitch verdict status (non-fatal) — on both outcomes
     python3 "$BRAINROT_DIR/bin/verify-pitches.py" >> "$LOGFILE" 2>&1
 
-    exit 0
+    exit "$RC"
 fi
 
 # Check if a claude process is running and how long
