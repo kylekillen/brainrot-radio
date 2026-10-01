@@ -48,15 +48,30 @@ ROOT = Path(__file__).resolve().parent
 # system on air". Trimmed from the tuned set in bin/test-single-pass.py
 # (SEAM_PATTERNS) to the markers that describe Kyle's setup rather than the
 # show: the public name "the Killen Time Update" is allowed, the repo is not.
+#
+# Every token below is UNAMBIGUOUS — it names a repo, a path, a file or a fleet-
+# specific artifact, and there is no on-air conversation in which saying it is
+# innocent. That property is load-bearing here and not in the harness: SEAM_PATTERNS
+# only COUNTS defects, so a false positive there is one more number, but this module's
+# consumer edits MUST-FIX hits straight out of the script (generate-episode.sh:588).
+# A generic word promoted into this set is a sentence cut from a good episode.
+#
+# Removed 2026-10-01 after a review reproduced it against the aired archive:
+# `worktree` fired on killen-time-2026-09-24.txt:61, the Cline Desktop git-worktree
+# passage, inside the show's own "Agents & Building With AI" beat. `sweeper`,
+# `.venv` and `plist` are ordinary developer and packaging vocabulary; `the observer`
+# matches "the observer effect". Generic vocabulary belongs to QC's judgment, not to a
+# deterministic MUST-FIX. tests/test_script_guard.py replays the archive so none of
+# them can creep back in.
 LEAK_PATTERNS = (
     ("internal_name",
      r"observer-system|brainrot-radio|killen-time-podcast|\.observer/|status\.d\b|"
      r"handoff\.md|inbox\.md|calibration\.md|launchd|launchctl|LaunchAgent|"
-     r"\bplist\b|\.venv\b|\bsweeper\b|\bworktree\b|kt-podcast|fleet-optimizer|"
+     r"kt-podcast|fleet-optimizer|"
      r"model-router|\btickler\b|tasks?\.db\b"),
     ("internal_metric",
      r"\b(our|my) (agents|roles|daemons?|workers?|repos?|registry|ledger)\b|"
-     r"\bI (dispatched|queued|greenlighted)\b|\bthe observer\b"),
+     r"\bI (dispatched|queued|greenlighted)\b"),
     ("private_system",
      r"\bfleet budget\b|\bburn budget\b|\bcredit balance\b|\bfree lane\b|"
      r"\brouter lane\b|\bthe pause flag\b|\bdurable record\b|\bsignals folder\b|"
@@ -166,7 +181,11 @@ def unsourced_bylines(text, brief, extra_sources=()):
     for headline, body in items:
         if not _truncated(body):
             continue
-        names = [m.group(1) for m in _HEAD_BYLINE_RE.finditer(headline)]
+        # The headline form captures "Name / Outlet" as one group, so keep only
+        # the part before the slash — otherwise the surname resolved to the
+        # OUTLET's last word ("Asia"), the reporter's name never matched the
+        # script, and the headline-byline case silently reported nothing.
+        names = [m.group(1).split("/")[0].strip() for m in _HEAD_BYLINE_RE.finditer(headline)]
         names += [m.group(1) for m in _BODY_BYLINE_RE.finditer(body)]
         for name in names:
             surname = name.split()[-1]

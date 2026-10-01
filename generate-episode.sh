@@ -641,6 +641,7 @@ QC_GUARD_FLAGS=$(python3 script_guard.py check "$NEW_SCRIPT" \
     --brief "$BRAINROT_DIR/.tmp/topic-brief.txt" \
     --sources "$BRAINROT_DIR/.tmp/transcripts" "$BRAINROT_DIR/.tmp/articles" 2>/dev/null || true)
 QC_DEDUP_BLOCK=""
+QC_GUARD_BLOCK=""
 if [ -n "$QC_DEDUP_FLAGS" ]; then
     log "DEDUP: draft blocks overlapping the last 7 days' broadcasts (handed to QC):"$'\n'"$QC_DEDUP_FLAGS"
     QC_DEDUP_BLOCK="
@@ -654,8 +655,15 @@ if [ -n "$QC_GUARD_FLAGS" ]; then
     log "SCRIPT GUARD: deterministic findings on the draft (handed to QC):"$'\n'"$QC_GUARD_FLAGS"
     QC_GUARD_BLOCK="
 Deterministic script guard (script_guard.py) flagged these. Agent B (Coherence) owns
-the collision findings and Agent C (Sourcing) the byline ones; every hit is MUST-FIX —
-they are exact string/tag matches, not judgment calls:
+the collision findings and Agent C (Sourcing) the byline ones.
+MUST-FIX: speaker_collision and back_to_back_transition (exact tag matches — merge the
+blocks, do not flip the tag) and unsourced_byline (the named reporter exists nowhere
+but a truncated blurb).
+ADVISORY, read it before you cut: internal_name / internal_metric / private_system are
+substring matches against a short list of repo, path and file names. If the sentence is
+naming Kyle's private system it is MUST-FIX under the GUARDRAILS row below; if it is
+ordinary on-air vocabulary that merely contains the token, leave the sentence alone and
+say so. Do not edit a line just because a pattern matched it.
 ${QC_GUARD_FLAGS}
 "
 fi

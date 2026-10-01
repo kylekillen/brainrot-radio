@@ -27,9 +27,11 @@ def _read(rel):
 
 def _bullet(sh):
     """The BUILD PITCH OF THE DAY bullet, pass-1 prompt."""
-    line = next(l for l in sh.split("\n") if "**BUILD PITCH OF THE DAY:**" in l)
-    assert "pass-1" not in line or True  # bullet text is identical in both passes
-    return line
+    lines = [l for l in sh.split("\n") if "**BUILD PITCH OF THE DAY:**" in l]
+    assert len(lines) == 1, (
+        f"expected exactly one BUILD PITCH OF THE DAY bullet, found {len(lines)}: "
+        "a second copy in another pass can drift from this one untested")
+    return lines[0]
 
 
 def test_prompt_no_longer_orders_the_folder_locator():
