@@ -28,19 +28,20 @@ if [ -f "$OUTPUT_FILE" ]; then
     # so a silent render reported a healthy show. Verify the audio itself.
     if AUDIO_VERDICT=$(cd "$BRAINROT_DIR" && python3 audio_truth.py "$OUTPUT_FILE" 2>&1); then
         log "OK: Episode published ($WORDS words) — $AUDIO_VERDICT"
-        exit 0
+        RC=0
     else
         # Loud, and the non-zero exit below means launchd sees a failed run.
         # Deliberately NOT deleting the file: it is the evidence, and the MP3's
         # existence is what makes generate-episode.sh stand down on a retry.
         log "FAIL: Episode MP3 exists but has no audible audio — $AUDIO_VERDICT"
         log "FAILURE DETAIL: $OUTPUT_FILE"
+        RC=1
     fi
 
-    # Check build-pitch verdict status (non-fatal)
+    # Check build-pitch verdict status (non-fatal) — on both outcomes
     python3 "$BRAINROT_DIR/bin/verify-pitches.py" >> "$LOGFILE" 2>&1
 
-    exit 1
+    exit "$RC"
 fi
 
 # Check if a claude process is running and how long

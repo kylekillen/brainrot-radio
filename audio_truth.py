@@ -25,15 +25,15 @@ Three independent failure modes, each of which has read as healthy until now:
   TRUNCATED — real audio, but far shorter than the script that produced it.
 
 CLI:  python3 audio_truth.py FILE.mp3   -> exit 0 healthy, 1 not, prints verdict.
-Kill switch: AUDIO_TRUTH_CHECK=0 makes `probe_ok()` pass, for the rare case
-where ffmpeg is missing on a box that is otherwise fine.
+Kill switch: AUDIO_TRUTH_CHECK=0 makes the CLI (and `probe_ok()`) pass without
+measuring, for the rare case where ffmpeg is missing on a box that is otherwise fine.
 """
 import os
 import re
 import subprocess
 import sys
 
-from config import FFMPEG, MIN_WORD_COUNT
+from config import FFMPEG
 
 FFPROBE = "/opt/homebrew/bin/ffprobe"
 
@@ -125,6 +125,9 @@ def main():
     if len(sys.argv) != 2:
         print("usage: audio_truth.py FILE.mp3", file=sys.stderr)
         return 2
+    if os.getenv("AUDIO_TRUTH_CHECK") == "0":
+        print("audio-truth: SKIPPED — AUDIO_TRUTH_CHECK=0, audio not measured")
+        return 0
     ok, reason, detail = probe(sys.argv[1])
     print(f"audio-truth: {reason} — {detail}")
     return 0 if ok else 1

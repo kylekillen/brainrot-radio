@@ -17,8 +17,6 @@ import os
 import subprocess
 import sys
 
-import pytest
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
@@ -95,6 +93,22 @@ def test_kill_switch_lets_a_box_without_ffmpeg_through(monkeypatch):
     assert audio_truth.probe_ok("/definitely/not/here.mp3") is True
 
 
+def test_kill_switch_is_honoured_by_the_cli_the_surfaces_actually_call(tmp_path):
+    env = dict(os.environ, AUDIO_TRUTH_CHECK="0")
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "audio_truth.py"),
+                        str(tmp_path / "nope.mp3")],
+                       capture_output=True, text=True, env=env, timeout=60)
+    assert r.returncode == 0 and "SKIPPED" in r.stdout
+
+
+def test_cli_without_kill_switch_still_fails_on_a_missing_file(tmp_path):
+    env = {k: v for k, v in os.environ.items() if k != "AUDIO_TRUTH_CHECK"}
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "audio_truth.py"),
+                        str(tmp_path / "nope.mp3")],
+                       capture_output=True, text=True, env=env, timeout=60)
+    assert r.returncode == 1 and "MISSING" in r.stdout
+
+
 # ── The surfaces: run the real shell files. ────────────────────────────────
 
 def _sandbox(tmp_path, stub_verdict, stub_rc):
@@ -104,7 +118,9 @@ def _sandbox(tmp_path, stub_verdict, stub_rc):
         (bdir / d).mkdir(parents=True, exist_ok=True)
     for f in ("run_guard.sh", "watch-episode.sh", "check-episode.sh", "audio_truth.py"):
         (bdir / f).write_text(open(os.path.join(ROOT, f)).read())
-    (bdir / "bin" / "verify-pitches.py").write_text("import sys\n")
+    # Records that it ran: verify-pitches must run on the healthy path too.
+    (bdir / "bin" / "verify-pitches.py").write_text(
+        f"open({str(tmp_path / 'verify_ran.txt')!r}, 'a').write('ran')\n")
     (bdir / "scripts" / f"killen-time-{TODAY}.txt").write_text(
         "[BASIL] hello\n[TRANSITION]\n[BROOKE] world\n")
     # The stub is what the surfaces actually invoke. Recording the call lets a
@@ -156,6 +172,8 @@ def test_check_episode_reports_ok_when_the_audio_is_audible(tmp_path):
     assert r.returncode == 0
     assert "OK: Episode published" in log
     assert calls.exists(), "check-episode.sh must actually consult audio_truth.py"
+    assert (tmp_path / "verify_ran.txt").exists(), \
+        "verify-pitches must still run on the healthy path (it did before the gate)"
 
 
 def test_check_episode_fails_loudly_on_a_silent_episode(tmp_path):
@@ -217,7 +235,6 @@ def test_generate_episode_refuses_to_publish_a_silent_mix():
         "OUTPUT_MP3=$2\n"
         + block
     )
-    tmp = os.path.dirname(ROOT) + "/__probe"
     import tempfile
     d = tempfile.mkdtemp()
     gate = os.path.join(d, "gate.sh")
