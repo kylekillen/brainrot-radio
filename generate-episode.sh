@@ -942,6 +942,17 @@ PY
         python3 "$SIGNALS_PY" emit --source brainrot-radio --category gap \
             --summary "Today's episode shipped FLAGGED sub-par by QC (logs/qc-FAIL-${RUN_ID}.flag)" \
             --tags podcast >> "$RESULT_LOG" 2>&1 && log "Signal: QC-gap emitted."
+    elif [ -f "logs/qc-ERROR-${RUN_ID}.flag" ]; then
+        # QC that ERRORED is a different state from QC that returned FAIL: nobody read
+        # this script at all. Before the two were split (2026-10-01) this episode arrived
+        # here as qc-FAIL-* and got the signal above; the split missed this branch for one
+        # revision, which made an UNREVIEWED broadcast strictly QUIETER than a
+        # reviewed-and-rejected one — the opposite of what the split was for. Its own
+        # category (flag, not gap) keeps the two states distinguishable in the signal
+        # stream as well as on disk. Guarded by test_qc_signal_emission_* below.
+        python3 "$SIGNALS_PY" emit --source brainrot-radio --category flag \
+            --summary "Today's episode shipped UNREVIEWED — QC errored, no skeptic read it (logs/qc-ERROR-${RUN_ID}.flag)" \
+            --tags podcast >> "$RESULT_LOG" 2>&1 && log "Signal: QC-errored (unreviewed) emitted."
     fi
 fi
 

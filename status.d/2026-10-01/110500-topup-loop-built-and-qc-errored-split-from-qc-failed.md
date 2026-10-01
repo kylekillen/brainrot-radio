@@ -34,6 +34,12 @@ voice.py's floor the run aborted and the day was lost.
    attempt actually produced a verdict; if none did, the gate takes a separate branch with
    its own flag file (`logs/qc-ERROR-<RUN_ID>.flag` vs `qc-FAIL-…`), its own log line
    ("QC NEVER RAN … UNREVIEWED") and its own knob `QC_ERROR_ACTION`.
+4. **Both states reach the fleet signal stream.** Code review caught that splitting the
+   flag file left the post-publish signals block emitting only for `qc-FAIL-*`, so the new
+   unreviewed ship was *quieter* than the reviewed-and-rejected ship it replaced — the
+   opposite of the point of the split. `qc-ERROR-*` now emits its own signal under its own
+   category (`flag`, not `gap`), and a test runs the real signals block for both names so
+   they cannot drift apart again.
 
 **Not changed, on purpose.** `config.MIN_WORD_COUNT` (6,000) and
 `external_writer.MIN_WORDS` (1,500) are both untouched. The per-pass floor looks like the

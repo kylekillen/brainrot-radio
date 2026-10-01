@@ -49,6 +49,14 @@ def _extract_qc_gate():
     return "\n".join(lines[start:end])
 
 
+def _extract_signal_block():
+    """The post-publish signals block — the only consumer of the qc-FAIL/qc-ERROR flags."""
+    lines = _shell_text().splitlines()
+    start = next(i for i, l in enumerate(lines) if l.startswith("SIGNALS_PY="))
+    end = next(i for i in range(start, len(lines)) if lines[i] == "fi")
+    return "\n".join(lines[start:end + 1])
+
+
 def _bash(body, cwd, env, tmp_path):
     driver = tmp_path / "driver.sh"
     driver.write_text("#!/bin/bash\n" + body)
@@ -216,3 +224,67 @@ echo "RC_VERDICT=$QC_VERDICT QC_RAN=$QC_RAN"
 def test_generate_episode_is_valid_bash():
     proc = subprocess.run(["bash", "-n", SHELL], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr
+
+
+class TestQcFlagEmitsASignal:
+    """The two flag names must stay wired to the fleet signal stream together.
+
+    Code review (2026-10-01): splitting "QC errored" from "QC failed" moved a flag
+    file that generate-episode.sh's signals block does not know about. The unreviewed
+    broadcast then emitted NO fleet signal where, before the split, it emitted one —
+    strictly quieter than the reviewed-and-rejected ship it replaced. These run the real
+    signals block so the two names cannot drift apart again.
+    """
+
+    def _run(self, tmp_path, flags):
+        (tmp_path / "logs").mkdir()
+        (tmp_path / "scripts").mkdir()
+        for name in flags:
+            (tmp_path / "logs" / name).write_text("flag\n")
+        home = tmp_path / "home"
+        stub = home / "observer-system" / "scripts" / "signals.py"
+        stub.parent.mkdir(parents=True)
+        emitted = tmp_path / "emitted.txt"
+        stub.write_text(
+            "import argparse\n"
+            "ap = argparse.ArgumentParser()\n"
+            "ap.add_argument('cmd')                       # signals.py emit ...\n"
+            "ap.add_argument('--source'); ap.add_argument('--category')\n"
+            "ap.add_argument('--summary'); ap.add_argument('--tags')\n"
+            "ap.add_argument('--linked'); ap.add_argument('--body')\n"
+            "a = ap.parse_args()\n"
+            f"open({str(emitted)!r}, 'a').write((a.category or '?') + '\\t' + "
+            "(a.summary or '') + '\\n')\n"
+        )
+        logs = tmp_path / "generate.log"
+        body = f"""
+HOME={home}
+RUN_ID={RUN_ID}
+RESULT_LOG={logs}
+SCRIPT_FILE=scripts/killen-time-2026-10-01.txt
+log() {{ echo "$1"; }}
+{_extract_signal_block()}
+"""
+        proc = _bash(body, tmp_path, dict(os.environ, HOME=home), tmp_path)
+        lines = emitted.read_text().splitlines() if emitted.exists() else []
+        return proc, lines
+
+    def test_qc_fail_still_emits_its_gap_signal(self, tmp_path):
+        _, lines = self._run(tmp_path, [f"qc-FAIL-{RUN_ID}.flag"])
+        assert any(l.startswith("gap\t") and "qc-FAIL-" in l for l in lines), lines
+
+    def test_qc_errored_emits_its_own_signal(self, tmp_path):
+        """The regression: this state used to emit nothing at all."""
+        _, lines = self._run(tmp_path, [f"qc-ERROR-{RUN_ID}.flag"])
+        assert any(l.startswith("flag\t") and "qc-ERROR-" in l for l in lines), lines
+        assert any("UNREVIEWED" in l for l in lines), lines
+
+    def test_the_two_names_are_never_silently_merged(self, tmp_path):
+        """Both flag names must appear in the signals block — the drift guard itself."""
+        block = _extract_signal_block()
+        assert "qc-FAIL-" in block
+        assert "qc-ERROR-" in block
+
+    def test_clean_episode_emits_no_qc_signal(self, tmp_path):
+        _, lines = self._run(tmp_path, [])
+        assert not any("qc-" in l for l in lines), lines
