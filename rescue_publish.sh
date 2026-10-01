@@ -63,10 +63,30 @@ if [ "$WORDS" -lt "$FLOOR" ]; then
   echo "RESCUE FAILED: ${WORDS} < ${FLOOR} — the floor stands, not shipping a stub"
   exit 1
 fi
-LEAKS=$(grep -aiEc 'observer-system|STATUS\.md|HANDOFF|INBOX|launchd|tickler|alarm-responder|\bfleet\b|\bdispatch\b|this script|word count|top-up' "$SCRIPT" || true)
-if [ "${LEAKS}" -gt 0 ]; then
-  echo "RESCUE FAILED: ${LEAKS} fleet-private term(s) in the script — refusing to air:"
-  grep -ainE 'observer-system|STATUS\.md|HANDOFF|INBOX|launchd|tickler|alarm-responder|\bfleet\b|\bdispatch\b|this script|word count|top-up' "$SCRIPT" | head -10
+# Two tiers on purpose. Tier 1 is fleet-internal identifiers that would be unmistakable
+# on air and is matched CASE-SENSITIVELY — an earlier version used grep -i and killed a
+# good 6,868-word episode on the phrase "arriving at inbox zero", because -i made INBOX
+# match INBOX.md. Tier 2 is ordinary English that only sometimes means a leak, so it is
+# logged loudly for a human and never blocks the show.
+HARD=$(grep -acE 'observer-system|STATUS\.md|HANDOFF|INBOX\.md|launchd|tickler|alarm-responder|observerctl|task-worker|status\.d' "$SCRIPT" || true)
+SOFT=$(grep -aoiE '\bfleet\b|dispatch[a-z]*|this script|word count|top-?up' "$SCRIPT" | sort | uniq -c | tr '\n' ';' || true)
+[ -n "$SOFT" ] && echo "NOTE: soft terms present (logged, not blocking): ${SOFT}"
+if [ "${HARD:-0}" -gt 0 ]; then
+  echo "RESCUE FAILED: ${HARD} fleet-internal identifier(s) in the script — refusing to air:"
+  grep -anE 'observer-system|STATUS\.md|HANDOFF|INBOX\.md|launchd|tickler|alarm-responder|observerctl|task-worker|status\.d' "$SCRIPT" | head -10
+  exit 1
+fi
+# Unresolved two-pass seams are a real defect (the 09-27 episode, and this one before
+# I fixed it, said "out of this half" in the outro). What makes a seam a seam is the
+# script referring to ITSELF as one half of a two-part show — not the phrase "first
+# half" in the ordinary sense. Two earlier versions of this gate killed good episodes:
+# -i "INBOX" matched "arriving at inbox zero", and a bare "in the first half" matched
+# "thirteen percent of overall TV viewership in the first half of this year". Match only
+# self-reference, and let ordinary English through.
+SEAM=$(grep -acE 'out of this half|in this first half|this second half|first half of the (show|episode)|second half of the (show|episode)' "$SCRIPT" || true)
+if [ "${SEAM:-0}" -gt 0 ]; then
+  echo "RESCUE FAILED: ${SEAM} unresolved two-pass seam(s) — refusing to air:"
+  grep -anE 'out of this half|in this first half|this second half|first half of the (show|episode)|second half of the (show|episode)' "$SCRIPT" | cut -c1-200 | head -5
   exit 1
 fi
 echo "leak scan clean"

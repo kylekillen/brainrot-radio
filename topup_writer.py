@@ -136,7 +136,10 @@ def main() -> int:
     base = spoken_words(original)
     sys.stderr.write(f"topup_writer: base script {script_path.name} = {base} spoken words\n")
     if base >= args.target:
-        sys.stderr.write("topup_writer: already at target, nothing to do\n")
+        # Still write --out: the caller (rescue_publish.sh) installs --out unconditionally,
+        # so a no-op round must be idempotent rather than depend on a stale /tmp file.
+        out_path.write_text(original)
+        sys.stderr.write(f"topup_writer: already at target, wrote {out_path} unchanged\n")
         return 0
 
     src = or_writer._gather_sources()
