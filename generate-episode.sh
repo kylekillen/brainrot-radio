@@ -797,6 +797,27 @@ if ! python3 mixer.py "${MIX_ARGS[@]}" >> "$RESULT_LOG" 2>&1; then
 fi
 log "Mix complete"
 
+# ─── Audio-truth gate: never publish a file that has no audio in it ───────────
+# mixer.py concatenates the rendered segments and can hand back a file that is
+# silent (a failed segment rendered to an empty file and the concat succeeded),
+# truncated (the concat was cut short), or empty. publish.py will happily upload
+# any of those and the feed will serve it to listeners. Historically the only
+# thing downstream that noticed was the process exit code, which the launchd-exit
+# alarm dedupes as "already reported" — so a silent episode read healthy on
+# check-episode.sh (`OK: Episode published`) and watch-episode.sh (`[ -f mp3 ]`).
+#
+# This asks the question those surfaces were really asking: is there audio a
+# listener can hear? Measured, not assumed. A failure here is fatal and loud,
+# and it does NOT delete the MP3 — a human wants the artifact to diagnose, and
+# the file's presence is what makes generate-episode.sh's own "already published"
+# guard skip tomorrow's retry.
+log "Verifying the mixed audio has actual sound in it..."
+if ! python3 audio_truth.py "$OUTPUT_MP3" >> "$RESULT_LOG" 2>&1; then
+    log "⚠️  AUDIO-TRUTH GATE FAILED — $(tail -n 1 "$RESULT_LOG" 2>/dev/null | cut -c1-200). NOT publishing: the feed would serve an episode with no audible content."
+    exit 1
+fi
+log "Audio-truth check passed ($(tail -n 1 "$RESULT_LOG" 2>/dev/null | cut -c1-160))"
+
 log "Publishing..."
 PUB_ARGS=("$OUTPUT_MP3" --title "Killen Time — ${TODAY}" --description "Today's Killen Time Update.")
 if [ -f "$ARTWORK_PATH" ]; then
