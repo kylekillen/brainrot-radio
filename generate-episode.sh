@@ -87,6 +87,10 @@ cd "$BRAINROT_DIR"
 source venv/bin/activate
 mkdir -p logs .tmp
 
+# voice.py's hard render floor, read from config.py (the single source of truth — the
+# same constant voice.py gates on at voice.py:218). The top-up loop targets this.
+MIN_RENDER_WORDS=$(python3 -c "from config import MIN_WORD_COUNT; print(MIN_WORD_COUNT)" 2>/dev/null || echo 6000)
+
 # Determine time-of-day greeting context for the episode script
 HOUR=$(date '+%H')
 if [ "$HOUR" -lt 12 ]; then
@@ -160,6 +164,58 @@ run_kimi_pass() {
     fi
     log "FALLBACK pass $pass_no via OpenRouter (Kimi) FAILED"
     return 1
+}
+
+# ─── Render-floor TOP-UP loop (the gap the Gemini engine closed in June) ───────────
+# voice.py refuses to render below MIN_WORD_COUNT. Until now, a script under that floor
+# simply killed the run — the external/claude engines wrote once, QC'd once, rendered,
+# and lost the day. That cost 09-25, 09-27 and 10-01 (three consecutive episodes) and was
+# logged four times since 09-25 without being built. The Gemini engine has had exactly
+# this verify → repair → re-verify loop since 06-18 (gemini_finalize.py); this is the same
+# loop for the other two engines, dispatching through the SAME lane that wrote the episode
+# (external_summon, $0, for the external engine; the Claude pool for the claude engine).
+#
+# Two things it deliberately does NOT do:
+#   · lower MIN_WORD_COUNT or raise external_writer's per-pass MIN_WORDS. Per-pass length
+#     doesn't predict the combined total — pass 2 supplies the rest — so 09-26 (pass1=2,047
+#     → 8,877 speech words), 09-09 (2,732) and 09-27 (2,328 / 2,874) all aired from a
+#     short pass 1. Raising the per-pass floor trades a lost episode for a lost episode.
+#   · dispatch through a new provider. It reuses external_writer._dispatch_with_retry so
+#     the external engine stays $0.
+# Set TOPUP_ENABLED=0 to disable (kill-switch); TOPUP_MAX_ATTEMPTS bounds the repair budget.
+TOPUP_ENABLED=${TOPUP_ENABLED:-1}
+TOPUP_MAX_ATTEMPTS=${TOPUP_MAX_ATTEMPTS:-2}
+run_topup_loop() {
+    local phase="$1"                       # e.g. "post-write" / "post-QC"
+    local mode="claude"
+    [ "${PODCAST_ENGINE:-claude}" = "external" ] && mode="external"
+    if [ "$TOPUP_ENABLED" != "1" ]; then
+        log "Top-up loop DISABLED (TOPUP_ENABLED=$TOPUP_ENABLED) — a short script will abort at the render floor as before."
+        return 0
+    fi
+    log "Checking render floor after $phase (top-up loop, max $TOPUP_MAX_ATTEMPTS attempt(s), mode=$mode)..."
+    # `|| rc=$?` rather than `local rc=$?` on the next line: `set -e` is active in this
+    # script, and an unguarded non-zero python exit would kill the run before we could log
+    # what the loop actually did.
+    local rc=0
+    RUN_ID="$RUN_ID" python3 episode_topup.py --script "$NEW_SCRIPT" --mode "$mode" \
+        --phase "$phase" --max-attempts "$TOPUP_MAX_ATTEMPTS" --min-words "$MIN_RENDER_WORDS" \
+        >> "$RESULT_LOG" 2>&1 || rc=$?
+    local words
+    words=$(python3 - "$NEW_SCRIPT" <<'PY'
+from voice import parse_script
+import sys
+segs = parse_script(sys.argv[1])
+print(sum(len(t.split()) for s, t in segs if s != "TRANSITION"))
+PY
+) || words=0
+    TOTAL_WORDS="$words"
+    if [ "$rc" -ne 0 ]; then
+        log "⚠️  TOP-UP LOOP EXHAUSTED after $phase: ${words} speech words vs ${MIN_RENDER_WORDS} floor. Flag: $BRAINROT_DIR/logs/topup-FAIL-${RUN_ID}.flag — NOT publishing a short stub."
+        return 1
+    fi
+    log "Top-up check after $phase: ${words} speech words (floor ${MIN_RENDER_WORDS})."
+    return 0
 }
 
 rg_start
@@ -549,6 +605,18 @@ NEW_SCRIPT="$BRAINROT_DIR/$SCRIPT_FILE"
 TOTAL_WORDS=$(wc -w < "$NEW_SCRIPT" | tr -d ' ')
 log "Combined script: $TOTAL_WORDS words"
 
+# ─── Step 2.5: Render-floor top-up (external/claude engines) ─────────────────
+# The writer can come in under voice.py's floor (10-01: 1,920 + 2,204 = 4,084 speech
+# words against a 6,000 floor). Rather than lose the day at the render step, run the
+# goal-seeking repair loop BEFORE QC so the top-up material gets reviewed by the skeptics
+# too — appending after QC would ship un-QC'd text.
+#
+# The Gemini engine is excluded: it has its own loop (gemini_finalize.py, below) and runs
+# this step on its own per-segment writer, not the two-pass path.
+if [ "${PODCAST_ENGINE:-claude}" != "gemini" ] && [ -f "$NEW_SCRIPT" ]; then
+    run_topup_loop "post-write" || exit 1
+fi
+
 # ─── Step 3: QC Review (independent outcome grader) ──────────────────────────
 # Claude engine: 3-skeptic adversarial QC (below). Gemini engine: gemini_qc.py —
 # a FRESH-context Gemini grader that sees ONLY the finished script + rubric (never
@@ -608,7 +676,18 @@ PROMPT_EOF
 # greppable verdict loop with no judge-model dependency or extra pool burn.
 QC_MAX_ATTEMPTS=${QC_MAX_ATTEMPTS:-3}
 QC_FAIL_ACTION=${QC_FAIL_ACTION:-publish}   # publish | abort
+# QC_ERROR_ACTION governs the OTHER failure state, which is NOT the same as a FAIL:
+# QC that ERRORED (cap, timeout, crash) means NO SKEPTIC EVER READ THE SCRIPT. On
+# 2026-10-01 that state produced QC_VERDICT=none, and QC_FAIL_ACTION=publish logged
+# "publishing anyway" — a 4,084-word episode no reviewer had seen was one floor check
+# away from airing (23 runs have taken the fail-then-publish path, 22 of them shipped).
+# Keeping them separate makes the state greppable and the policy a separate knob.
+# Default stays `publish` (a visible-but-flagged episode still beats a silent missing one,
+# and the top-up loop above now guarantees the episode is render-ready) — flipping it is
+# a deliberate call, not a side effect of a cap being hit.
+QC_ERROR_ACTION=${QC_ERROR_ACTION:-publish}  # publish | abort
 QC_VERDICT="none"
+QC_RAN=0            # 1 once any attempt actually produced a PASS/FAIL verdict
 for attempt in $(seq 1 "$QC_MAX_ATTEMPTS"); do
     log "QC review attempt $attempt/$QC_MAX_ATTEMPTS (3 skeptics + synthesis + fixes)..."
     before=$(wc -l < "$RESULT_LOG")
@@ -619,18 +698,32 @@ for attempt in $(seq 1 "$QC_MAX_ATTEMPTS"); do
     QC_VERDICT=$(tail -n +$((before + 1)) "$RESULT_LOG" \
         | grep -aoE "QC VERDICT: (PASS|FAIL)" | tail -1 | awk '{print $3}')
     QC_VERDICT=${QC_VERDICT:-none}
+    [ "$QC_VERDICT" != "none" ] && QC_RAN=1
     log "QC verdict (attempt $attempt): $QC_VERDICT"
     [ "$QC_VERDICT" = "PASS" ] && break
 done
 if [ "$QC_VERDICT" != "PASS" ]; then
-    QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
-    echo "QC did not reach PASS after $QC_MAX_ATTEMPTS attempts (last verdict: $QC_VERDICT) — script: $NEW_SCRIPT" > "$QC_FLAG"
-    log "⚠️  QC GATE FAILED after $QC_MAX_ATTEMPTS attempts (last verdict: $QC_VERDICT). Flag: $QC_FLAG"
-    if [ "$QC_FAIL_ACTION" = "abort" ]; then
-        log "QC_FAIL_ACTION=abort → NOT publishing today's episode. Investigate $NEW_SCRIPT."
-        exit 1
+    if [ "$QC_RAN" = "1" ]; then
+        # QC ran and returned FAIL: a reviewer read the script and rejected it.
+        QC_FLAG="$BRAINROT_DIR/logs/qc-FAIL-${RUN_ID}.flag"
+        echo "QC did not reach PASS after $QC_MAX_ATTEMPTS attempts (last verdict: $QC_VERDICT) — script: $NEW_SCRIPT" > "$QC_FLAG"
+        log "⚠️  QC GATE FAILED after $QC_MAX_ATTEMPTS attempts (last verdict: $QC_VERDICT). Flag: $QC_FLAG"
+        if [ "$QC_FAIL_ACTION" = "abort" ]; then
+            log "QC_FAIL_ACTION=abort → NOT publishing today's episode. Investigate $NEW_SCRIPT."
+            exit 1
+        fi
+        log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
+    else
+        # QC ERRORED — it never ran. Different state, different flag file, different knob.
+        QC_FLAG="$BRAINROT_DIR/logs/qc-ERROR-${RUN_ID}.flag"
+        echo "QC ERRORED on all $QC_MAX_ATTEMPTS attempts — NO REVIEWER READ THIS SCRIPT (as opposed to QC running and returning FAIL). Last verdict: $QC_VERDICT. Script: $NEW_SCRIPT" > "$QC_FLAG"
+        log "🚨  QC NEVER RAN (errored on all $QC_MAX_ATTEMPTS attempts, last verdict: $QC_VERDICT) — this episode is UNREVIEWED. Flag: $QC_FLAG"
+        if [ "$QC_ERROR_ACTION" = "abort" ]; then
+            log "QC_ERROR_ACTION=abort → NOT publishing an unreviewed episode. Investigate $NEW_SCRIPT."
+            exit 1
+        fi
+        log "QC_ERROR_ACTION=publish → publishing WITHOUT any QC review (see $QC_FLAG)."
     fi
-    log "QC_FAIL_ACTION=publish → publishing anyway, but this episode is FLAGGED sub-par (see $QC_FLAG)."
 fi
 else
     # Gemini engine: GOAL-SEEKING production loop (gemini_finalize.py). The GOAL is a
@@ -659,6 +752,21 @@ else
            exit 1;;
     esac
 fi   # end QC engine branch
+
+# ─── Step 3.5: Render-floor top-up, AGAIN, after QC ─────────────────────────
+# QC's own fixes CUT script. On 2026-09-25 QC's rewrite left 4,948 words against the
+# 6,000 floor and the day was lost even though the writer had produced enough — the same
+# gap as the pre-QC check above, hit from the other direction. So verify the floor once
+# more now that QC is done, and repair if it dropped. Re-running is cheap: the loop exits
+# immediately when the floor already holds (which is the normal case).
+#
+# Trade-off, stated plainly: material appended HERE was written after the skeptics ran, so
+# it is not QC-reviewed. It is appended with the same evidence rules and the same "do not
+# repeat what's already covered" openers list, and the QC gate above already decided the
+# episode's review status. The alternative — lose the episode — is what has been happening.
+if [ "${PODCAST_ENGINE:-claude}" != "gemini" ] && [ -f "$NEW_SCRIPT" ]; then
+    run_topup_loop "post-QC" || exit 1
+fi
 
 # ─── Step 4: Render + Artwork + Mix + Publish (direct, no Claude) ───────────
 SCRIPT_BASENAME=$(basename "$NEW_SCRIPT" .txt)
@@ -834,6 +942,17 @@ PY
         python3 "$SIGNALS_PY" emit --source brainrot-radio --category gap \
             --summary "Today's episode shipped FLAGGED sub-par by QC (logs/qc-FAIL-${RUN_ID}.flag)" \
             --tags podcast >> "$RESULT_LOG" 2>&1 && log "Signal: QC-gap emitted."
+    elif [ -f "logs/qc-ERROR-${RUN_ID}.flag" ]; then
+        # QC that ERRORED is a different state from QC that returned FAIL: nobody read
+        # this script at all. Before the two were split (2026-10-01) this episode arrived
+        # here as qc-FAIL-* and got the signal above; the split missed this branch for one
+        # revision, which made an UNREVIEWED broadcast strictly QUIETER than a
+        # reviewed-and-rejected one — the opposite of what the split was for. Its own
+        # category (flag, not gap) keeps the two states distinguishable in the signal
+        # stream as well as on disk. Guarded by test_qc_signal_emission_* below.
+        python3 "$SIGNALS_PY" emit --source brainrot-radio --category flag \
+            --summary "Today's episode shipped UNREVIEWED — QC errored, no skeptic read it (logs/qc-ERROR-${RUN_ID}.flag)" \
+            --tags podcast >> "$RESULT_LOG" 2>&1 && log "Signal: QC-errored (unreviewed) emitted."
     fi
 fi
 
