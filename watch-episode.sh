@@ -24,8 +24,16 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"; }
 
 # Outside the production window there is nothing to watch.
 [ "$HOUR" -ge 4 ] && [ "$HOUR" -lt 13 ] || exit 0
-# Published: done.
-[ -f "$BRAINROT_DIR/output/killen-time-${TODAY}.mp3" ] && exit 0
+
+# Published: done — but only if it is actually audible. The old test was
+# `[ -f output/killen-time-${TODAY}.mp3 ] && exit 0`, which stood the watcher down
+# on any file at that path, including one mixer.py left silent or truncated. That
+# is the same hole check-episode.sh had. An MP3 that exists but holds no audio is
+# a failed episode, so fall THROUGH and let the no-episode alarm below fire.
+if [ -f "$BRAINROT_DIR/output/killen-time-${TODAY}.mp3" ] \
+   && (cd "$BRAINROT_DIR" && python3 audio_truth.py "output/killen-time-${TODAY}.mp3" >/dev/null 2>&1); then
+    exit 0
+fi
 
 # once <key> <summary> <raw>: alarm at most once per (day, key).
 once() {
