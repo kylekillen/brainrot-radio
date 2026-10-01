@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""topup_writer.py — the render-floor TOP-UP loop for the external/claude engines.
+"""episode_topup.py — the render-floor TOP-UP loop for the external/claude engines.
+
+NOT to be confused with topup_writer.py, which landed on main at 11:07Z on 2026-10-01
+as the manual rescue for the lost 10-01 episode. That one is a hand-run tool
+(`--script … --out …`) that tops an ALREADY-SHORT script up after the fact, is what
+rescue_publish.sh drives, and is load-bearing — this file does not touch it. This file is
+the other half: the loop that runs INSIDE the daily pipeline, so the show never has to be
+rescued at all.
 
 The gap this closes (logged four times since 2026-09-25 and built on 2026-10-01): the
 Gemini engine has had a goal-seeking verify → repair → re-verify loop since 06-18
@@ -30,9 +37,11 @@ Three rules that are the difference between this working and not:
    the same primitive the external engine's own write passes use, so the external
    engine stays $0 and the Claude engine stays on its flat-rate pool.
 
-3. APPEND ONLY, NEVER SHRINK. Every candidate is longer than what it replaced or it is
-   discarded, so a "repair" can never make the script shorter (the 06-21 Gemini outage
-   was a repair that deleted below the floor).
+3. NEVER SHRINK, NEVER SHIP PADDING, NEVER KILL THE SIGN-OFF. A candidate that comes
+   back shorter is discarded (the 06-21 Gemini outage was a repair that deleted below
+   the floor); a candidate too small to be real material is discarded too; and new
+   segments are inserted BEFORE the episode's final block, so the show still ends on
+   its own outro rather than trailing off into a top-up.
 
 Do NOT be tempted to raise external_writer.MIN_WORDS as the fix. Per-pass length does not
 predict the combined total, because pass 2 supplies the rest — runs with pass 1 under
@@ -43,6 +52,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -66,6 +76,11 @@ MAX_TARGET_WORDS = 9000
 MAX_TOPUP_TRANSCRIPTS = 10
 MAX_TOPUP_ARTICLES = 5
 CLAUDE_TIMEOUT_SEC = 1500
+# A reply this short is not material, it is a stub. Accepting it would let the loop "succeed"
+# a few words at a time and burn its whole budget on padding — so it is discarded, same as
+# the rescue tool's MIN_SEGMENT_WORDS (see topup_writer.py, which shipped the 10-01
+# recovery and set this precedent).
+MIN_USEFUL_ADDITION = 400
 
 
 def speech_words(script_path) -> int:
@@ -79,6 +94,20 @@ def speech_words(script_path) -> int:
 
     segments = parse_script(str(script_path))
     return sum(len(text.split()) for speaker, text in segments if speaker != "TRANSITION")
+
+
+def speech_words_inline(text: str) -> int:
+    """The same count over raw text, without touching the file on disk."""
+    from voice import parse_script
+
+    fd, name = tempfile.mkstemp(suffix=".txt")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(text)
+        segments = parse_script(name)
+    finally:
+        Path(name).unlink(missing_ok=True)
+    return sum(len(t.split()) for s, t in segments if s != "TRANSITION")
 
 
 def _write_pass_sources() -> dict:
@@ -187,9 +216,15 @@ def _dispatch(prompt: str, mode: str, script_path: Path) -> str:
     return proc.stdout or ""
 
 
-def append_expansion(script_path: Path, body: str) -> int:
-    """Append an expansion block, joining on exactly one [TRANSITION] (the recurring
-    two-pass seam defect). Returns words appended."""
+def insert_expansion(script_path: Path, body: str) -> int:
+    """Insert an expansion block and return the words added.
+
+    Inserted BEFORE the episode's final block, not appended after it: the last block is
+    the outro/sign-off, and a top-up appended after it would leave the show ending on a
+    repair instead of on its own close. (Same call as the manual rescue tool, which is
+    what actually shipped the 10-01 recovery.) Joins on exactly one [TRANSITION] — the
+    recurring two-pass seam defect.
+    """
     body = or_writer._clean_script(body).strip()
     if not body:
         return 0
@@ -199,11 +234,23 @@ def append_expansion(script_path: Path, body: str) -> int:
     body = "\n".join(lines).strip()
     if not body:
         return 0
-    existing = script_path.read_text(errors="replace").rstrip()
-    join = "\n" if existing.endswith("[TRANSITION]") else "\n[TRANSITION]\n"
-    with open(script_path, "a") as f:
-        f.write(join + body + "\n")
-    return len(body.split())
+    added = speech_words_inline(body)
+    if added < MIN_USEFUL_ADDITION:
+        return 0
+
+    original = script_path.read_text(errors="replace").rstrip("\n")
+    src_lines = original.split("\n")
+    last_t = max((i for i, l in enumerate(src_lines) if l.strip() == "[TRANSITION]"),
+                 default=None)
+    if last_t is None:
+        merged = original + "\n\n[TRANSITION]\n\n" + body + "\n"
+    else:
+        merged = ("\n".join(src_lines[: last_t + 1]).rstrip()
+                  + "\n\n" + body + "\n\n"
+                  + "\n".join(src_lines[last_t + 1:]).lstrip("\n"))
+    with open(script_path, "w") as f:
+        f.write(merged.rstrip("\n") + "\n")
+    return added
 
 
 def top_up(script_path: Path, mode: str, phase: str, max_attempts: int,
@@ -258,7 +305,7 @@ def top_up(script_path: Path, mode: str, phase: str, max_attempts: int,
             continue
 
         if mode != "claude":
-            appended = append_expansion(script_path, reply)
+            appended = insert_expansion(script_path, reply)
             if appended == 0:
                 print(f"topup: attempt {attempt} returned nothing usable", file=sys.stderr)
         else:

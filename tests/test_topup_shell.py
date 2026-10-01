@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """generate-episode.sh — the two branches this ticket changed, run for real.
 
-The Python tests cover topup_writer.py's loop. These cover the two shell decisions the
+The Python tests cover episode_topup.py's loop. These cover the two shell decisions the
 loop hangs off, by extracting the actual function / gate out of generate-episode.sh and
 running them under bash with stubbed dependencies — so a refactor that quietly drops the
 floor check, or that folds "QC errored" back into "QC ran and said FAIL", fails here.
 
-  1. run_topup_loop: verifies with voice.py's own count, repairs via topup_writer.py, and
+  1. run_topup_loop: verifies with voice.py's own count, repairs via episode_topup.py, and
      returns non-zero when the repair budget is exhausted (so the run aborts loudly
      instead of dying at the render floor with no explanation).
   2. The QC gate: a QC step that ERRORED (never ran — the 10-01 weekly-cap case) must be
@@ -90,7 +90,7 @@ sys.exit(int(os.environ.get('STUB_TOPUP_RC', '0')))
 
 @pytest.fixture
 def topup_run(tmp_path):
-    """run_topup_loop from the real shell, with a stub topup_writer.py in the cwd.
+    """run_topup_loop from the real shell, with a stub episode_topup.py in the cwd.
 
     The stub measures with voice.py's parse_script (as the real one does), appends 60
     words when under the floor, and exits $STUB_TOPUP_RC — so a test can make the repair
@@ -99,7 +99,7 @@ def topup_run(tmp_path):
     """
     workdir = tmp_path / "wd"
     workdir.mkdir()
-    (workdir / "topup_writer.py").write_text(STUB_TOPUP_WRITER)
+    (workdir / "episode_topup.py").write_text(STUB_TOPUP_WRITER)
     (tmp_path / "logs").mkdir()
     logs = tmp_path / "generate.log"
     script = tmp_path / "episode.txt"

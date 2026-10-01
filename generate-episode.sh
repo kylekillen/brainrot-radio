@@ -198,7 +198,7 @@ run_topup_loop() {
     # script, and an unguarded non-zero python exit would kill the run before we could log
     # what the loop actually did.
     local rc=0
-    RUN_ID="$RUN_ID" python3 topup_writer.py --script "$NEW_SCRIPT" --mode "$mode" \
+    RUN_ID="$RUN_ID" python3 episode_topup.py --script "$NEW_SCRIPT" --mode "$mode" \
         --phase "$phase" --max-attempts "$TOPUP_MAX_ATTEMPTS" --min-words "$MIN_RENDER_WORDS" \
         >> "$RESULT_LOG" 2>&1 || rc=$?
     local words
