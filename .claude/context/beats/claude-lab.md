@@ -75,9 +75,12 @@ that's exactly what's supposed to happen.
 - `build-pitches/YYYY-MM-DD.md` — durable record. Per pitch: **Technique**,
   **Who's doing it** (titles + URLs + corroborating links), **Evidence it's
   real**, **Need it serves** (which fleet pain + which of Kyle's priorities 1–3),
-  **Whole-fleet leverage** (one line the Fleet Optimizer can rank on),
-  **Build sketch**, **Status: pitched** (or `money — discuss first`). If nothing
-  survived, write a short "No verified pitch today" note.
+  **Delta vs Kyle's current setup** (the check, default, cheaper model, or
+  missing loop their version has and his likely doesn't), **Whole-fleet leverage**
+  (one line the Fleet Optimizer can rank on), **Build sketch**, **More takeaways**
+  (up to four smaller one-line improvements, each citing its source), **Status:
+  pitched** (or `money — discuss first`). If nothing survived, write a short "No
+  verified pitch today" note.
 - `.tmp/build-pitches.md` — tight 200-400 word summary the episode writer folds
   in. Lead with the single best pitch. End with "Logged in
   build-pitches/YYYY-MM-DD.md for Kyle to greenlight." If no verified pitch,

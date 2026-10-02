@@ -130,3 +130,17 @@ def test_every_copy_keeps_the_verification_bar(copy):
         "%s lost the evidence bar (cross-check / real evidence, not a demo or hype) — "
         "the harvest rule must not become a licence to pitch hype" % copy
     )
+
+
+@pytest.mark.parametrize("surface", (
+    ".claude/context/beats/claude-lab.md",
+    "generate-episode.sh",
+    "beats.json",
+    "gemini_buildpitch.py",
+    "build-pitches/README.md",
+))
+def test_build_pitch_format_surfaces_pin_delta_and_more_takeaways(surface):
+    """The default and manual reporters must not leave these fields ad hoc."""
+    text = _read(surface).lower()
+    assert "delta vs kyle's current setup" in text, surface
+    assert "more takeaways" in text, surface
