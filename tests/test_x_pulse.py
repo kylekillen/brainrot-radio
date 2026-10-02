@@ -124,6 +124,51 @@ def test_generated_pulse_carries_no_private_system(tmp_path):
     assert x_pulse.PRIVATE.search(text) is None
 
 
+# 2026-09-29: META carried "Kyle" and "fleet" as bare words, which silently
+# deleted real news — the scrub is applied to a Following timeline carrying
+# NFL and entertainment accounts, and the episode's own second-half prompt
+# tells the writer to mine this section for "the day's big NFL, entertainment
+# and culture stories". Kyle Walker and Kyle Schmid are both real,
+# frequently-covered football players. These pin the news back in while the
+# internal forms the bare words were standing in for stay out.
+def test_person_named_kyle_is_not_scrubbed_as_meta():
+    for news in (
+        "- Kyle Walker was sent off in the second half.",
+        "- Kyle Schmid scored on a 40-yard run.",
+        "- Kyle Chan has been reporting on the MSS chief's AI-risk remarks.",
+        "Kyle Long signed with the Saints on Thursday.",
+        "- **Adam Schefter**: Kyle Walker's knee is the story out of Buffalo.",
+    ):
+        assert x_pulse.scrub_dispatch(news) == news, news
+
+
+def test_fleet_the_ordinary_english_word_is_not_scrubbed_as_meta():
+    for news in (
+        "The fleet of ships sailed past.",
+        "the rental fleet of taxis outside the stadium",
+        "the fleet of 400 taxis was parked outside the arena",
+        "a fleet-wide strike hit the pilots this week.",
+    ):
+        assert x_pulse.scrub_dispatch(news) == news, news
+
+
+def test_internal_kyle_and_fleet_forms_are_still_scrubbed():
+    # The bare words were standing in for these internal forms. Dropping the
+    # bare word must not drop them with it — that is the GUARDRAILS net, and
+    # weakening it is how #41's first review cycle blocked.
+    for meta in (
+        "Kyle ruled that podcast.pause never gated this pipeline.",
+        "Kyle's standing note on this desk is that the feed is a lead source.",
+        "the thing worth Kyle's attention is what is missing.",
+        "the 09-25 KYLE-QUEUE note about \"Muse spark 1.4\"; not pulled further.",
+        "written by the Killen Time editor on claude-sonnet-5 (workspace pin).",
+        "our fleet has Jev in its own stack, so this argument is about our routing.",
+        "the fleet was stood down, the 4-hour ticklers piled up unread.",
+        "the fleet's weekly burn cap hit 100% and stayed there for 55 hours.",
+    ):
+        assert x_pulse.scrub_dispatch(meta) == "", meta
+
+
 def test_header_names_no_internal_tool_or_path():
     # the header itself goes into the writer brief, which router-picked
     # external models read (GUARDRAILS 2026-09-24).
