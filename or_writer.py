@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""or_writer.py — OpenRouter (Kimi) FALLBACK writer for Killen Time episodes.
+"""or_writer.py — offload-provider FALLBACK writer for Killen Time episodes.
 
 This is a *fallback only*. The default daily path writes every episode with
-Claude (flat-rate Max pool, $0 marginal). OpenRouter is pay-per-token, so we
-reach for it ONLY when a Claude write pass has actually FAILED (e.g. the shared
-pool hit its cap) and we still want the episode to ship. See generate-episode.sh
-(Step 2a / Step 2b) for where this is invoked.
+Claude (flat-rate Max pool, $0 marginal). The offload provider is configured in
+~/.config/personal-os/offload.env and can be pay-per-token, so we reach for it
+ONLY when a Claude write pass has actually FAILED (e.g. the shared pool hit its
+cap) and we still want the episode to ship — and whether it is $0 is a config
+question, resolved per run by `free_lane_diag.py offload`, not a fact about this
+script. See generate-episode.sh (Step 2a / Step 2b) for where this is invoked.
 
 Unlike the Claude write passes — which are agentic `claude -p` runs that read the
-source files themselves — Kimi via or_complete.py is a single chat completion
+source files themselves — the offload call via or_complete.py is a single chat completion
 with no tool use. So this script does the file-gathering itself: it reads the
 same inputs the Claude prompt would have read (topic brief, transcripts,
 articles, recent scripts + covered-*.json for dedup, build-pitches), inlines them
@@ -40,9 +42,12 @@ TMP = ROOT / ".tmp"
 SCRIPTS_DIR = ROOT / "scripts"
 
 # Empty = use whatever OFFLOAD_MODEL is configured in
-# ~/.config/personal-os/offload.env (currently FREE Gemini Flash). Keeps the
-# fallback writer provider-agnostic — the offload provider is a config choice,
-# not hardcoded. Pass --model only to override for a one-off test.
+# ~/.config/personal-os/offload.env. Keeps the fallback writer provider-agnostic —
+# the offload provider is a config choice, not hardcoded, and it is a MOVING one
+# (this comment used to claim "currently FREE Gemini Flash", which the 2026-09-29
+# run disproved two lines after it printed the same claim). Resolve the real route
+# with `python3 free_lane_diag.py offload` — base, model, cost class, key source.
+# Pass --model only to override for a one-off test.
 DEFAULT_MODEL = ""
 
 # Per-source truncation caps (chars) so the prompt stays bounded on a pay-per-token
@@ -340,8 +345,19 @@ def main():
         existing = script_path.read_text(errors="replace")
         prompt = _pass2_prompt(src, args.greeting, existing)
 
+    # Name the route that will actually be called. It used to say "via OpenRouter
+    # model=<DEFAULT_MODEL>" — but DEFAULT_MODEL is "" by design and the base URL
+    # can fall back to OpenRouter even when offload.env names someone else, so
+    # 2026-09-29 logged "via OpenRouter model= (prompt …)" and then 402'd. The
+    # classification is reporting-only: if it can't answer, say so and carry on.
+    try:
+        import free_lane_diag
+        route = free_lane_diag.describe_offload_route()
+    except Exception as e:  # noqa: BLE001
+        route = f"route unresolved ({e}) — do NOT assume this lane is free"
     sys.stderr.write(
-        f"or_writer: FALLBACK pass {args.pass_no} via OpenRouter model={args.model} "
+        f"or_writer: FALLBACK pass {args.pass_no} via {route} "
+        f"model_override={args.model or '(none — offload.env decides)'} "
         f"(prompt ~{len(prompt)} chars)\n"
     )
     # Descending max-tokens ladder. OpenRouter reserves the FULL max_tokens cost
@@ -367,7 +383,7 @@ def main():
             last_err = e
             sys.stderr.write(f"or_writer: completion failed at max_tokens={mt}: {e}\n")
     if completion is None:
-        sys.stderr.write(f"or_writer: OpenRouter completion failed at all budgets: {last_err}\n")
+        sys.stderr.write(f"or_writer: offload completion failed at all budgets ({route}): {last_err}\n")
         sys.exit(1)
 
     covered = None
