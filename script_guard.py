@@ -210,9 +210,31 @@ def unsourced_bylines(text, brief, extra_sources=()):
     return out
 
 
+# Kyle 2026-10-22: "No more headlines only stories... Don't just say you saw a
+# headline and that's all you have." story_research.py researches or drops every
+# headline item before writing; this catches a writer that airs one anyway. The
+# 10-20..10-22 scripts said some form of this 5-12 times each.
+HEADLINE_ONLY_RE = re.compile(
+    r"\b(?:I|we)\s+only\s+have\s+the\s+(?:headline|blurb|description|title|teaser|summary)|"
+    r"\bonly\s+have\s+(?:a|the)\s+headline\b|"
+    r"\ball\s+(?:the|that)\s+(?:headline|blurb)\s+(?:gives|supports|says)\b|"
+    r"\bheadline[- ]level\b|\bheadline\s+only\b|"
+    r"\bthat'?s\s+(?:all|the\s+extent\s+of\s+what)\s+(?:we|I)\s+have\b|"
+    r"\bthat'?s\s+the\s+headline;\s+we\s+don'?t\s+have\b|"
+    r"\bwe\s+have\s+no\s+transcript\b|\bwe\s+only\s+have\s+the\s+(?:post|first\s+part)\b",
+    re.IGNORECASE)
+
+
+def headline_only(text):
+    return [{"rule": "headline_only", "line": text.count("\n", 0, m.start()) + 1,
+             "match": m.group(0),
+             "context": " ".join(text[max(0, m.start() - 80):m.end() + 40].split())}
+            for m in HEADLINE_ONLY_RE.finditer(text)]
+
+
 def check(script, brief=None, extra_sources=()):
     text = script.read_text(errors="replace")
-    findings = speaker_collisions(text) + leaks(text)
+    findings = speaker_collisions(text) + leaks(text) + headline_only(text)
     if brief is not None and brief.is_file():
         findings += unsourced_bylines(text, brief.read_text(errors="replace"),
                                      extra_sources)
@@ -234,6 +256,10 @@ def _fmt(findings):
             lines.append(f"  L{f['line']} unsourced_byline: {f['context']} — "
                          f"'{f['match']}' appears in the brief only as a byline on "
                          f"a truncated blurb. Cut the analysis back to the blurb.")
+        elif f["rule"] == "headline_only":
+            lines.append(f"  L{f['line']} headline_only: \"{f['match']}\" — a headline-only "
+                         f"story on air. Cut the whole beat, not just the disclaimer. "
+                         f"{f['context']}")
         else:
             lines.append(f"  L{f['line']} {f['rule']}: \"{f['match']}\" — "
                          f"private system on public air. {f['context']}")

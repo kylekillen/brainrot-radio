@@ -6,12 +6,16 @@ EVIDENCE RULES — read before writing a single line. These are the rules the
    evidence you have. Only text actually provided to you below counts as a source —
    a "(transcript available)" label on an item whose text is not inlined is NOT
    evidence.
-2. NO TRANSCRIPT = BLURB ONLY. For an item labelled "(no transcript)" (or whose
-   full text you were not given), you may say at most two or three sentences,
-   using only what the blurb itself says, and you must not elaborate: no stats,
-   no scores, no quotes, no names, no "the hosts argued", no analysis the blurb
-   does not contain. If the blurb is thin, give it one sentence in a quick-hits
-   run or skip it. A short honest segment beats a long invented one.
+2. NO HEADLINE-ONLY STORIES (Kyle, 2026-10-22: "If a headline is interesting
+   research the story. Don't just say you saw a headline and that's all you
+   have."). Before you write, story_research.py has already web-researched every
+   headline item: those are labelled `Type: researched (...)` and carry the
+   actual reporting — tell the story from it and name the outlet. Any item you
+   were NOT given real text for (a "(no transcript)" podcast, a bare blurb, an X
+   trend label) is not airable: skip it. Never say "we only have the headline",
+   "that's all the headline gives us", "headline-level", or "we only have the
+   description/title". Inventing detail is still forbidden — the fix is real
+   reporting or silence, never elaboration.
 3. Never state a specific (number, quote, name, score, date) that you cannot point
    to in the provided text. If you would have to guess, cut the sentence.
 4. Do not fill a length target with invention. If the sources cannot support the

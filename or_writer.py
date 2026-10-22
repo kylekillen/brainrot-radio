@@ -126,13 +126,15 @@ def _evidence_ledger(topic_brief: str) -> str:
         t = _TYPE_RE.search(topic_brief, m.end(), end)
         kind = t.group(1).strip() if t else "unknown"
         if "no transcript" in kind:
-            verdict = "NO TRANSCRIPT — blurb only, at most 2-3 sentences, no elaboration"
+            verdict = "NO TRANSCRIPT — do not air"
         elif "transcript available" in kind:
             verdict = "transcript exists — usable ONLY if its text is inlined below"
+        elif "researched" in kind:
+            verdict = "researched — real reporting inlined in the brief item; tell the story"
         elif "full text" in kind:
             verdict = "full article text available"
         else:
-            verdict = "headline/snippet only — treat as blurb"
+            verdict = "headline only — do not air"
         lines.append(f"- #{m.group(1)} {m.group(2)[:90]} — {verdict}")
     return "\n".join(lines)
 
@@ -180,9 +182,12 @@ SYSTEM = (
     "- Conversational, substantive, specific. Quote real details/arguments from the "
     "provided sources. Engage at a practitioner/insider level, not summary filler.\n"
     "- Do not invent sources, quotes, or a Build-Pitch. Use only what is provided.\n"
-    "- An item with no transcript text provided is BLURB ONLY: two or three sentences "
-    "from the blurb itself, never elaborated. Never state a number, quote, name or "
-    "score you cannot point to in the provided text."
+    "- NO HEADLINE-ONLY STORIES (Kyle, 2026-10-22). Items labelled 'researched' carry "
+    "real reporting — tell the story from it and name the outlet. An item with no "
+    "text provided is NOT airable: skip it entirely. Never say 'that's all the "
+    "headline gives us', 'we only have the headline/blurb/description/title', or "
+    "'headline-level'. Never state a number, quote, name or score you cannot point "
+    "to in the provided text."
 )
 
 

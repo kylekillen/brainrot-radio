@@ -163,12 +163,12 @@ Type: substack (full text (3944 words))
 """
 
 
-def test_evidence_ledger_marks_no_transcript_items_blurb_only():
+def test_evidence_ledger_marks_no_transcript_items_do_not_air():
     or_writer = pytest.importorskip("or_writer")
     ledger = or_writer._evidence_ledger(BRIEF)
     lines = ledger.splitlines()
     assert "usable ONLY if its text is inlined" in lines[0]
-    assert "NO TRANSCRIPT" in lines[1] and "blurb only" in lines[1]
+    assert "NO TRANSCRIPT" in lines[1] and "do not air" in lines[1]  # Kyle 2026-10-22
     assert "full article text" in lines[2]
 
 
@@ -185,12 +185,12 @@ def test_pass_prompts_include_rules_ledger_and_digest():
         assert "AIRED IN THE LAST 7 DAYS" in p and "Thursday opener" in p
         assert "EVIDENCE LEDGER" in p
         assert "COVERED_JSON" not in p, "the writer no longer files the ledger"
-    assert "no transcript" in or_writer.SYSTEM.lower()
+    assert "no headline-only stories" in or_writer.SYSTEM.lower()
 
 
-def test_evidence_rules_file_states_the_blurb_rule():
+def test_evidence_rules_file_states_the_no_headline_only_rule():
     text = open(os.path.join(ROOT, ".claude", "context", "evidence-rules.md")).read()
-    assert "NO TRANSCRIPT = BLURB ONLY" in text
+    assert "NO HEADLINE-ONLY STORIES" in text
     assert "last 7 days" in text
 
 

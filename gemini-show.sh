@@ -13,6 +13,8 @@ log(){ echo "[$(date +%T)] $1" | tee -a "$RLOG"; }
 
 log "1/5 fresh ingest (free)…"
 $PY ingest.py --report -n 40 -o .tmp/topic-brief.txt >>"$RLOG" 2>&1
+# Research headline-only items or drop them (Kyle 2026-10-22). Non-fatal.
+~/observer-system/.venv/bin/python story_research.py --brief .tmp/topic-brief.txt >>"$RLOG" 2>&1 || true
 
 log "2/5 build-pitch reporter (Claude — the residual agentic step)…"
 $CLAUDE --dangerously-skip-permissions --model sonnet -p "Working dir /Users/kylekillen/brainrot-radio. Read .claude/context/beats/claude-lab.md and the claude_lab beat in beats.json, then run the Build-Pitch Reporter for today: find the single highest-leverage VERIFIED technique for Kyle's fleet from recent claude_lab sources, and write build-pitches/$TODAY.md (durable record) AND .tmp/build-pitches.md (200-400 word summary for the episode writer; first line exactly NO_VERIFIED_PITCH if nothing clears the bar). STOP after writing both files." >>"$RLOG" 2>&1 || log "build-pitch failed (non-fatal; segment will be omitted)"

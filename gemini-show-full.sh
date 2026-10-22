@@ -11,6 +11,8 @@ log(){ echo "[$(date +%T)] $1" | tee -a "$RLOG"; }
 
 log "1/5 fresh ingest (free; Python + local Whisper, no Claude)…"
 $PY ingest.py --report -n 40 -o .tmp/topic-brief.txt >>"$RLOG" 2>&1
+# Research headline-only items or drop them (Kyle 2026-10-22). Non-fatal.
+~/observer-system/.venv/bin/python story_research.py --brief .tmp/topic-brief.txt >>"$RLOG" 2>&1 || true
 
 log "2/5 build-pitch on GEMINI (Google Search grounding, no Claude)…"
 $PY gemini_buildpitch.py >>"$RLOG" 2>&1 || log "build-pitch failed (non-fatal)"

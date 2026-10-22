@@ -137,3 +137,19 @@ def test_a_full_credit_line_is_not_a_byline_claim():
 def test_plain_mention_of_a_name_is_not_flagged():
     assert script_guard.unsourced_bylines(
         "[BASIL] TSMC is building in Arizona.\n", BRIEF) == []
+
+
+# Kyle 2026-10-22: no headline-only stories on air.
+def test_headline_only_disclaimers_are_flagged():
+    for line in ("Reuters has it. That's all the headline gives us.",
+                 "I only have the headline, so I won't characterize the argument.",
+                 "Quick hits, all headline-level, one beat each.",
+                 "We only have the description, so we don't know what he said."):
+        assert [f["rule"] for f in script_guard.headline_only(line)] == ["headline_only"], line
+
+
+def test_ordinary_use_of_headline_is_not_flagged():
+    for line in ("The headline version said it did a year of PhD work in ten hours.",
+                 "His statistic is the headline.",
+                 "The roundup itself is more careful than the headline."):
+        assert script_guard.headline_only(line) == [], line

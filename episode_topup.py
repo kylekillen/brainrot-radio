@@ -170,8 +170,8 @@ def build_prompt(src: dict, current: int, shortfall: int, target: int,
         "- No intro, no outro, no sign-off: those already exist in the script.\n"
         "- Do not repeat any story, fact, quote or number already in the script, or "
         "anything that aired in the last 7 days (the digest above).\n"
-        "- EVIDENCE RULES: an item labelled '(no transcript)' is blurb-only — two or "
-        "three sentences from the blurb itself, never elaborated. Never state a number, "
+        "- EVIDENCE RULES: no headline-only stories — tell 'researched' items from their "
+        "inlined reporting and skip any item with no real text. Never state a number, "
         "quote, name or score you cannot point to in the provided text. If a source does "
         "not support more words, move to the NEXT source; never pad with invented detail.\n"
         "- Format (strict — TTS depends on it):\n" + or_writer.SYSTEM

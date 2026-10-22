@@ -291,6 +291,18 @@ else
     log "X pulse unavailable (non-fatal)"
 fi
 
+# ─── Step 1.06: Research headline-only stories (Kyle 2026-10-22) ─────────────
+# "No more headlines only stories. If a headline is interesting research the
+# story." Every numbered brief item with no full text/transcript is web-searched
+# and its articles fetched; the blurb is replaced by real reporting, or the item
+# is DROPPED. Uses the fleet's web tools, so it runs on observer-system's venv.
+# Non-fatal by design: on failure the brief is left as-is and the log says so.
+OBS_PY="$HOME/observer-system/.venv/bin/python"
+[ -x "$OBS_PY" ] || OBS_PY=python3
+"$OBS_PY" story_research.py --brief .tmp/topic-brief.txt >> "$RESULT_LOG" 2>&1 \
+    && log "Story research: $(python3 -c 'import json;r=json.load(open(".tmp/research-report.json"));print(len(r["researched"]),"researched,",len(r["dropped"]),"dropped")' 2>/dev/null || echo 'no report')" \
+    || log "Story research failed (non-fatal) — headline-only items may reach the writer"
+
 # ─── Step 1.1: Scratch retention sweep ───────────────────────────────────────
 # Ingest just downloaded source MP3s into .tmp/podcasts/ (Whisper path) whose
 # transcripts are now cached in .tmp/transcripts/. Delete media scratch older
@@ -388,7 +400,7 @@ AIRED IN THE LAST 7 DAYS — segment openers per broadcast script; do NOT re-air
 ${AIRED_DIGEST}
 
 ${EVIDENCE_RULES}
-Items the topic brief labels '(no transcript)' are BLURB ONLY: two or three sentences from the blurb, no elaboration."
+No headline-only stories: tell 'researched' items from their inlined reporting; skip any item you have no real text for. Never say 'we only have the headline'."
 
 SCRIPT_FILE="scripts/killen-time-${TODAY}.txt"
 
@@ -682,7 +694,10 @@ MUST-FIX issues directly in the script file, and end with the QC VERDICT line.
 ${QC_DEDUP_BLOCK}
 Sourcing rule for Agent C: any specific (number, quote, name, score, "the hosts argued")
 attached to a topic-brief item labelled "(no transcript)" — or whose text was never
-provided — is UNSOURCED and MUST-FIX (cut it back to the blurb). Also cut invented
+provided — is UNSOURCED and MUST-FIX (cut the item). Headline-only coverage is also
+MUST-FIX (Kyle 2026-10-22): cut any beat that says "we only have the headline",
+"that's all the headline gives us", "headline-level", "we only have the
+description/title/blurb" — cut the whole beat, not just the disclaimer. Also cut invented
 callbacks ("as we covered yesterday") that name a story absent from the last 7 days.
 ${QC_GUARD_BLOCK}
 PROMPT_EOF

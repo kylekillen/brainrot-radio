@@ -99,9 +99,9 @@ NO_FABRICATION = (
     "ACCURACY OVER LENGTH (critical): cover ONLY stories and facts actually present in "
     "the SOURCE MATERIAL above. Do NOT invent specifics, quotes, numbers, company "
     "announcements, product or project names, trades, deaths, or events to fill the "
-    "word target. If a story is only a brief headline with no detail in the sources, "
-    "give it one or two sentences — never embellish a thin source into a fabricated "
-    "deep-dive. Reach length by covering MORE distinct real stories from the brief, NOT "
+    "word target. If a story is only a headline with no detail in the sources, "
+    "SKIP it — never air a headline-only item and never say 'that's all the headline "
+    "gives us'; never embellish a thin source into a fabricated deep-dive. Reach length by covering MORE distinct real stories from the brief, NOT "
     "by padding or inventing. A shorter fully-sourced segment is required; a longer "
     "fabricated one is a failure.\n")
 
