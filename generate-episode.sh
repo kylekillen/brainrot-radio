@@ -46,6 +46,14 @@ TODAY=$(date '+%Y-%m-%d')
 export COVERED_DEFER=1
 rm -f "$BRAINROT_DIR/.tmp/covered-pending-${TODAY}.json"
 
+# Per-beat coverage ledger (beat_ledger.py): each beat reporter records ok|failed|empty,
+# and the QC gate fails the episode if any beat is neither ok nor explicitly marked
+# "[NOT COVERED: <beat> — reason]" in the script. Cleared every run so a yesterday-ok
+# can never cover a today-missing beat.
+export BEAT_LEDGER_DIR="$BRAINROT_DIR/.tmp/beats"
+python3 "$BRAINROT_DIR/beat_ledger.py" reset --today "$TODAY" >> "$RESULT_LOG" 2>&1 \
+    || true
+
 # Run guard: a run that exits without declaring ok|standdown raises an alarm (EXIT trap),
 # and watch-episode.sh covers SIGKILL/hang via the state file. See run_guard.sh.
 export RG_RUN_ID="$RUN_ID" RG_DIR="$BRAINROT_DIR/.tmp"
@@ -145,6 +153,31 @@ run_claude_step() {
 
     log "Step [$step_name] complete"
     return 0
+}
+
+# Wall-clock cap per beat reporter. One hung beat must not stall the 4am run:
+# the step is killed at the cap and every beat it owned is recorded as `failed`
+# in the coverage ledger (beat_ledger.py) instead of vanishing silently.
+BEAT_TIMEOUT=${BEAT_TIMEOUT:-1800}
+
+# Run a reporter step under the per-beat cap and record its beats' status.
+# Args: step_name prompt_file beat1 [beat2 ...]
+run_beat_step() {
+    local step_name=$1
+    local prompt_file=$2
+    shift 2
+    local beats=("$@")
+
+    if run_claude_step "$BEAT_TIMEOUT" "$prompt_file" "$step_name"; then
+        python3 beat_ledger.py mark --beats "${beats[@]}" --status ok \
+            --reason "$step_name complete (${BEAT_TIMEOUT}s cap)" --today "$TODAY" \
+            >> "$RESULT_LOG" 2>&1 || log "⚠️  beat ledger: could not record ok for ${beats[*]}"
+        return 0
+    fi
+    python3 beat_ledger.py mark --beats "${beats[@]}" --status failed \
+        --reason "$step_name failed or hit the ${BEAT_TIMEOUT}s wall-clock cap" --today "$TODAY" \
+        >> "$RESULT_LOG" 2>&1 || log "⚠️  beat ledger: could not record failure for ${beats[*]}"
+    return 1
 }
 
 # OFFLOAD FALLBACK writer — used ONLY when a Claude write pass has already failed
@@ -520,10 +553,12 @@ if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
         exit 1
     fi
     WRITE_ENGINE_USED="claude-fallback:kimi(openrouter,forced)"
-elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1"; then
+elif ! run_beat_step "write-pass1" "$BRAINROT_DIR/.tmp/step2a-pass1.txt" \
+        ai_tech agentic_systems claude_lab; then
     log "Pass 1 attempt 1 failed, retrying..."
     sleep 15
-    if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2a-pass1.txt" "write-pass1-retry"; then
+    if ! run_beat_step "write-pass1-retry" "$BRAINROT_DIR/.tmp/step2a-pass1.txt" \
+            ai_tech agentic_systems claude_lab; then
         log "Pass 1 Claude retry also failed — falling back to OpenRouter (Kimi) so the episode still ships."
         if ! run_kimi_pass 1; then
             log "Pass 1 OpenRouter fallback also failed, aborting"
@@ -601,10 +636,12 @@ if [ -n "${PODCAST_FORCE_OPENROUTER:-}" ]; then
     # Manual escape hatch / quality test ONLY. Never set in the launchd default.
     log "PODCAST_FORCE_OPENROUTER=1 — skipping Claude for pass 2 and writing via OpenRouter (Kimi) directly."
     run_kimi_pass 2 || log "Forced OpenRouter pass 2 failed, proceeding with pass 1 only"
-elif ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2"; then
+elif ! run_beat_step "write-pass2" "$BRAINROT_DIR/.tmp/step2b-pass2.txt" \
+        nba_sports entertainment economics_culture prediction_markets; then
     log "Pass 2 attempt 1 failed, retrying..."
     sleep 15
-    if ! run_claude_step 1800 "$BRAINROT_DIR/.tmp/step2b-pass2.txt" "write-pass2-retry"; then
+    if ! run_beat_step "write-pass2-retry" "$BRAINROT_DIR/.tmp/step2b-pass2.txt" \
+            nba_sports entertainment economics_culture prediction_markets; then
         log "Pass 2 Claude retry also failed — falling back to OpenRouter (Kimi) so the back half still gets written."
         run_kimi_pass 2 || log "Pass 2 OpenRouter fallback also failed, proceeding with pass 1 only"
     fi
@@ -679,6 +716,32 @@ say so. Do not edit a line just because a pattern matched it.
 ${QC_GUARD_FLAGS}
 "
 fi
+# Deterministic beat-coverage check. This is the "no silent gaps" contract: a beat
+# that never returned has to be either ok in .tmp/beats/ or spelled out in the script.
+# Runs on the assembled draft, is handed to QC as MUST-FIX, and is re-checked after
+# every QC attempt — QC can say PASS over a script that silently dropped a beat, and
+# the day the ledger exists is the day that stops being invisible.
+BEAT_COVERAGE_OK=0
+BEAT_COVERAGE_REPORT=$(python3 beat_ledger.py check "$NEW_SCRIPT" --today "$TODAY" 2>&1) \
+    && BEAT_COVERAGE_OK=1
+if [ "$BEAT_COVERAGE_OK" != "1" ]; then
+    log "BEAT COVERAGE: gaps in the assembled draft (handed to QC as MUST-FIX):"$'\n'"$BEAT_COVERAGE_REPORT"
+fi
+BEAT_COVERAGE_BLOCK=""
+if [ "$BEAT_COVERAGE_OK" != "1" ]; then
+    BEAT_COVERAGE_BLOCK="
+BEAT COVERAGE (deterministic, MUST-FIX): every beat in beats.json must either have
+written .tmp/beats/<beat>.status.json with status=ok, or be named by an explicit
+annotation line in the script:
+  [NOT COVERED: <beat> — reason]
+Current gaps:
+${BEAT_COVERAGE_REPORT}
+Fix it one of two ways: write the missing segment, or add the [NOT COVERED: <beat> — reason]
+annotation where that beat would have run. These annotations are stripped before render
+(voice.py skips them) — they are metadata, never audio. Do NOT invent coverage to clear
+this check; an honest not-covered line is the correct output.
+"
+fi
 cat > "$BRAINROT_DIR/.tmp/step3-qc.txt" <<PROMPT_EOF
 Read the file .claude/commands/qc-episode.md and follow its instructions exactly.
 Your working directory is /Users/kylekillen/brainrot-radio.
@@ -740,6 +803,12 @@ for attempt in $(seq 1 "$QC_MAX_ATTEMPTS"); do
     QC_VERDICT=${QC_VERDICT:-none}
     [ "$QC_VERDICT" != "none" ] && QC_RAN=1
     log "QC verdict (attempt $attempt): $QC_VERDICT"
+    # A PASS over an episode that silently dropped a beat is not a pass.
+    if [ "$QC_VERDICT" = "PASS" ] && ! python3 beat_ledger.py check "$NEW_SCRIPT" --today "$TODAY" >/dev/null 2>&1; then
+        BEAT_COVERAGE_REPORT=$(python3 beat_ledger.py check "$NEW_SCRIPT" --today "$TODAY" 2>&1)
+        QC_VERDICT="FAIL(beat-coverage)"
+        log "⚠️  QC said PASS but the beat-coverage ledger still has gaps — treating as FAIL:"$'\n'"$BEAT_COVERAGE_REPORT"
+    fi
     [ "$QC_VERDICT" = "PASS" ] && break
 done
 if [ "$QC_VERDICT" != "PASS" ]; then

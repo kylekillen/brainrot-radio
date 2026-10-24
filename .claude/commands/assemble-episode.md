@@ -13,7 +13,11 @@ Read `.claude/context/editorial-voice.md` for voice, length target, and
 connection discipline.
 
 ## Do this
-1. **Order segments** for best flow — strongest story first, varied pacing. Front
+1. **Read the beat ledger first.** `python3 beat_ledger.py show --today "$1"` lists
+   every beat reporter's status (`ok` | `failed` | `empty` + reason). A beat that
+   is not `ok` has no segments to assemble — do not paper over it, and do not
+   invent its coverage.
+2. **Order segments** for best flow — strongest story first, varied pacing. Front
    half is AI/Tech + Agents & Building (featured); back half is Sports →
    Entertainment → Economics/Culture → optional prediction-markets quick-hit.
 2. **Write the intro** — cold open with the biggest story, then the show name +

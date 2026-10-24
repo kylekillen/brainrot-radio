@@ -9,9 +9,11 @@ import datetime
 import os
 import pathlib
 import re
+import signal
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import beat_ledger              # noqa: E402
 import or_writer as ow          # noqa: E402
 import or_complete              # noqa: E402
 
@@ -105,6 +107,27 @@ NO_FABRICATION = (
     "by padding or inventing. A shorter fully-sourced segment is required; a longer "
     "fabricated one is a failure.\n")
 
+# Each segment is one beat reporter, so each gets a wall-clock cap and records its own
+# coverage status (.tmp/beats/<beat>.status.json). A hang here used to stall the whole
+# 4am run; now it is bounded and named. BEAT_TIMEOUT matches generate-episode.sh's knob.
+BEAT_TIMEOUT = int(os.getenv("BEAT_TIMEOUT", "1800"))
+BEAT_MAP = {
+    "intro+ai/tech": ["ai_tech"],
+    "agents+building": ["agentic_systems", "claude_lab"],
+    "sports": ["nba_sports"],
+    "entertainment+economics": ["entertainment", "economics_culture", "prediction_markets"],
+    "quick-hits+outro": [],
+}
+
+
+class BeatTimeout(Exception):
+    pass
+
+
+def _alarm(_signum, _frame):
+    raise BeatTimeout()
+
+
 parts = []
 for key, instr in SEGMENTS:
     episode_so_far = "\n\n".join(parts).strip()
@@ -116,14 +139,37 @@ for key, instr in SEGMENTS:
               "This is today's PRODUCTION episode — morning tone.\n"
               + DEDUP + (NO_REPEAT if episode_so_far else "") + NO_FABRICATION + instr)
     print(f"[gemini] generating segment: {key} ...", file=sys.stderr, flush=True)
+    # Wall-clock cap per beat: the provider call may hang, and one beat must not be
+    # able to eat the whole run.
+    previous = signal.signal(signal.SIGALRM, _alarm)
+    signal.alarm(BEAT_TIMEOUT)
     try:
         text = or_complete.complete(prompt, system=ow.SYSTEM, max_tokens=16000)
+    except BeatTimeout:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous)
+        for beat in BEAT_MAP.get(key, []):
+            beat_ledger.write(beat, "failed", f"segment {key} hit the {BEAT_TIMEOUT}s wall-clock cap")
+        print(f"FATAL: segment {key} TIMED OUT after {BEAT_TIMEOUT}s", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:  # noqa: BLE001
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous)
+        for beat in BEAT_MAP.get(key, []):
+            beat_ledger.write(beat, "failed", f"segment {key} raised: {e}")
         print(f"FATAL: segment {key} failed: {e}", file=sys.stderr)
         sys.exit(1)
+    signal.alarm(0)
+    signal.signal(signal.SIGALRM, previous)
     cleaned = ow._clean_script(text)
+    words = len(cleaned.split())
+    for beat in BEAT_MAP.get(key, []):
+        if words < 50:
+            beat_ledger.write(beat, "empty", f"segment {key} returned {words} words")
+        else:
+            beat_ledger.write(beat, "ok", f"segment {key} wrote {words} words")
     parts.append(cleaned)
-    print(f"  segment {key}: {len(cleaned.split())} words", file=sys.stderr, flush=True)
+    print(f"  segment {key}: {words} words", file=sys.stderr, flush=True)
 
 script = "\n\n".join(parts).strip() + "\n"
 

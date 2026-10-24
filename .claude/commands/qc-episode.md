@@ -18,6 +18,24 @@ Three independent agents each told to **attack and refute** the script from one
 narrow angle catch more, and a synthesizer keeps only what holds up. An issue two
 agents independently flag is real (MUST-FIX); a lone flag is ADVISORY.
 
+## Step 0 — beat coverage (deterministic, not a model call)
+Every beat in `beats.json` must be accounted for before the prose is judged. Run:
+
+    python3 beat_ledger.py check "$1" --today "$(date '+%Y-%m-%d')"
+
+- `BEAT COVERAGE: PASS` — every beat either wrote `.tmp/beats/<beat>.status.json`
+  with `status: ok`, or the script carries an explicit
+  `[NOT COVERED: <beat> — reason]` line. Continue.
+- `BEAT COVERAGE: FAIL` — one or more beat reporters never returned and the
+  episode says nothing about it. That is a **MUST-FIX** (it is the silent
+  partial success this gate exists for), and it makes the verdict FAIL even if
+  the three skeptics find the prose clean. Fix by writing the missing segment,
+  or by adding the annotation line where that beat would have run — never by
+  inventing coverage.
+
+The annotation lines are metadata: `voice.py` strips them before rendering, so
+they are never spoken. They are not a substitute for a beat that *did* return.
+
 ## Step 1 — launch 3 skeptics IN PARALLEL
 Spawn three `general-purpose` agents in a single message (concurrent). Give each
 the script path and tell it explicitly: **your job is to prove this script is

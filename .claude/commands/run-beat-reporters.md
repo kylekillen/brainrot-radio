@@ -27,10 +27,22 @@ in `beats.json`. Run them concurrently (multiple Agent calls in one message).
 - 1-3 written `[BASIL]`/`[BROOKE]` segments hitting its beat's word target.
 - At least one direct source quote per segment, with citations.
 - The story slugs + podcast GUIDs it used (for covered-story tracking later).
+- **Its status file.** Before it returns, every beat agent writes
+  `.tmp/beats/<beat-id>.status.json`:
 
-The **Build-Pitch of the Day** (from `.tmp/build-pitches.md`) slots inside the
-Agents & Building beat — see `.claude/context/beats/claude-lab.md` and
-`agents-building.md`.
+      {"beat": "<beat-id>", "status": "ok" | "failed" | "empty",
+       "reason": "<one line: what it produced, or why not>",
+       "date": "<YYYY-MM-DD>", "updated": "<ISO timestamp>"}
+
+  `ok` = real segments written for that beat. `empty` = ran fine, nothing
+  fresh today (not a failure). `failed` = it errored, or it hit its wall-clock
+  cap. Do not claim `ok` for a beat you skipped — a false `ok` is worse than a
+  named gap, because the gate exists to make gaps visible.
+
+Each beat agent gets a wall-clock cap (`BEAT_TIMEOUT`, default 1800s) so one
+hang cannot stall the daily run. A capped agent is a `failed` beat, and the
+episode must then either cover that beat anyway or carry an explicit
+`[NOT COVERED: <beat> — reason]` line (see `/assemble-episode`).
 
 Collect all beat outputs and hand them to `/assemble-episode`. STOP after the
 beat agents return — do not assemble or QC here.

@@ -34,6 +34,13 @@ def parse_script(script_path):
         for line in f:
             line = line.rstrip()
 
+            # Coverage-ledger annotations are metadata, never audio. Each beat is
+            # checked by beat_ledger.py; when a beat is deliberately skipped the
+            # script must say so explicitly with "[NOT COVERED: <beat> — reason]".
+            # Strip the line here so it can't be spoken.
+            if re.match(r"^\[NOT COVERED:", line.strip(), re.IGNORECASE):
+                continue
+
             # Match speaker tags: [BASIL], [BROOKE], [TRANSITION]
             match = re.match(r"^\[(\w+)\]\s*(.*)", line)
             if match:
