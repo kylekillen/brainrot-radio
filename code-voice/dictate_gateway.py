@@ -67,6 +67,9 @@ CLEAN_EXTRA_PER_CHUNK = 2.0  # long-form recordings get a little more per extra 
 MAX_UPLOAD = 200 * 1024 * 1024
 MIN_UPLOAD = 1024          # smaller than this is an empty/aborted recording, not audio
 
+from dictation_rules import guard, rule_clean  # noqa: E402
+LLM_POLISH = os.environ.get("DICTATE_LLM_POLISH", "0") == "1"
+
 CLEAN_SYSTEM = (
     "You clean up dictated speech into written text. Remove filler words (um, uh, "
     "like, you know, I mean) and false starts, fix punctuation, capitalization and "
@@ -157,6 +160,12 @@ def clean_text(raw: str, *, allow_cold: bool) -> tuple[str, str]:
     """(text, status). status: clean | raw-cold | raw-error | raw-empty."""
     if not raw.strip():
         return raw, "raw-empty"
+    # Rule-based cleanup is the default: instant, and speech can never be answered as a
+    # prompt (the 4B cleanup model did exactly that on "Fix the code for the third question").
+    # Set DICTATE_LLM_POLISH=1 to run the old model pass, guarded so it can only reword.
+    ruled = rule_clean(raw)
+    if not LLM_POLISH:
+        return ruled, "clean"
     if not allow_cold and not _model_loaded():
         threading.Thread(target=warm_model, daemon=True).start()
         return raw, "raw-cold"
@@ -176,10 +185,10 @@ def clean_text(raw: str, *, allow_cold: bool) -> tuple[str, str]:
             # A cleanup that shrinks the text by more than half has summarized, not cleaned.
             if not cleaned or len(cleaned.split()) < 0.5 * len(chunk.split()):
                 raise ValueError("cleanup dropped too much text")
-            out.append(cleaned)
+            out.append(guard(chunk, cleaned, rule_clean(chunk)))
         except Exception as e:  # noqa: BLE001
-            log(f"cleanup chunk failed ({e}); keeping raw")
-            out.append(chunk)
+            log(f"cleanup chunk failed ({e}); keeping rule-cleaned text")
+            out.append(rule_clean(chunk))
             failed += 1
     return "\n\n".join(out), ("clean" if not failed else "raw-error" if failed == len(out) else "partial")
 
