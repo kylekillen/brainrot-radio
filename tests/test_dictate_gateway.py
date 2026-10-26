@@ -18,6 +18,7 @@ def test_chunks_keep_every_word():
 
 
 def test_cold_model_returns_raw_and_never_blocks(monkeypatch):
+    monkeypatch.setattr(dg, "LLM_POLISH", True)
     monkeypatch.setattr(dg, "_model_loaded", lambda: False)
     monkeypatch.setattr(dg, "warm_model", lambda: None)
     text, status = dg.clean_text("um hello there", allow_cold=False)
@@ -25,14 +26,16 @@ def test_cold_model_returns_raw_and_never_blocks(monkeypatch):
 
 
 def test_cleanup_that_drops_text_is_rejected(monkeypatch):
+    monkeypatch.setattr(dg, "LLM_POLISH", True)
     monkeypatch.setattr(dg, "_model_loaded", lambda: True)
     monkeypatch.setattr(dg, "_chat", lambda *a, **k: "Summary.")
     raw = "so the second act needs a midpoint reversal where Dana finds out the letters were never real"
     text, status = dg.clean_text(raw, allow_cold=False)
-    assert text == raw and status == "raw-error"
+    assert text == dg.rule_clean(raw) and status == "raw-error"
 
 
 def test_cleanup_applied(monkeypatch):
+    monkeypatch.setattr(dg, "LLM_POLISH", True)
     monkeypatch.setattr(dg, "_model_loaded", lambda: True)
     monkeypatch.setattr(dg, "_chat", lambda *a, **k: "Send the draft to Alyssa on Friday.")
     text, status = dg.clean_text("um send the draft to Alyssa on Thursday no wait Friday", allow_cold=False)
@@ -53,6 +56,7 @@ def test_think_block_stripped(monkeypatch):
 
 
 def test_cleanup_budget_caps_wait_and_returns_raw(monkeypatch):
+    monkeypatch.setattr(dg, "LLM_POLISH", True)
     monkeypatch.setattr(dg, "_model_loaded", lambda: True)
     seen = {}
 
@@ -62,7 +66,7 @@ def test_cleanup_budget_caps_wait_and_returns_raw(monkeypatch):
 
     monkeypatch.setattr(dg, "_chat", slow)
     text, status = dg.clean_text("um hello there friend", allow_cold=True)
-    assert (text, status) == ("um hello there friend", "raw-error")
+    assert (text, status) == (dg.rule_clean("um hello there friend"), "raw-error")
     assert seen["timeout"] <= dg.CLEAN_BUDGET
 
 
@@ -83,3 +87,10 @@ def test_tiny_upload_is_rejected_with_400():
     h._json = lambda code, obj: got.update(code=code, obj=obj)
     h._transcribe()
     assert got["code"] == 400 and "too short" in got["obj"]["error"]
+
+
+def test_default_is_rule_based_and_never_calls_model(monkeypatch):
+    monkeypatch.setattr(dg, "LLM_POLISH", False)
+    monkeypatch.setattr(dg, "_chat", lambda *a, **k: (_ for _ in ()).throw(AssertionError("model called")))
+    text, status = dg.clean_text("um hello there", allow_cold=False)
+    assert status == "clean" and text == dg.rule_clean("um hello there")
