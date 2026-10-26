@@ -129,7 +129,9 @@ run_claude_step() {
 
     log "Step [$step_name] starting (timeout=${timeout}s)..."
 
-    $CLAUDE --dangerously-skip-permissions --model sonnet -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
+    # Web-reading step: run inside the Seatbelt box (bin/sandboxed-claude.sh), not bare.
+    # The permission bypass is safe only because of that box. Trifecta lane 1, 2026-10-26.
+    "$BRAINROT_DIR/bin/sandboxed-claude.sh" --dangerously-skip-permissions --model sonnet -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
     local pid=$!
     local elapsed=0
 

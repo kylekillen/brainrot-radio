@@ -208,7 +208,9 @@ def _dispatch(prompt: str, mode: str, script_path: Path) -> str:
         return reply
 
     proc = subprocess.run(
-        [CLAUDE_BIN, "--dangerously-skip-permissions", "--model", "sonnet", "-p", prompt],
+        # Web-reading step: Seatbelt box via bin/sandboxed-claude.sh (it execs CLAUDE_BIN).
+        [str(ROOT / "bin" / "sandboxed-claude.sh"),
+         "--dangerously-skip-permissions", "--model", "sonnet", "-p", prompt],
         cwd=str(ROOT), capture_output=True, text=True, timeout=CLAUDE_TIMEOUT_SEC,
     )
     if proc.returncode != 0:
