@@ -49,10 +49,14 @@ STT_URL = os.environ.get("DICTATE_STT_URL", "http://127.0.0.1:8766/v1/audio/tran
 OLLAMA = os.environ.get("DICTATE_OLLAMA", "http://127.0.0.1:11435")
 CLEAN_MODEL = os.environ.get("DICTATE_CLEAN_MODEL", "qwen3:4b-instruct-2507-q4_K_M")
 KEEP_ALIVE = os.environ.get("DICTATE_KEEP_ALIVE", "-1m")
-# The keyboard's optional "rewording" endpoint keeps the big model; it is not on the
-# dictation path, so its queueing only ever delays rewording.
-REWORD_OLLAMA = os.environ.get("DICTATE_REWORD_OLLAMA", "http://127.0.0.1:11434")
-REWORD_MODEL = os.environ.get("DICTATE_REWORD_MODEL", "qwen3.6:35b-a3b")
+# The keyboard's optional "rewording" endpoint uses the fleet's local LLM, Inkling 2 Mini
+# (Thinking Machines; own ollama on :11436, kept up by the inkling-keepalive Hermes cron).
+# It is not on the 3 s dictation path (Inkling needs ~6 s per cleanup chunk), so its
+# queueing only ever delays rewording. New env names on purpose: the loaded launchd job
+# still carries the old DICTATE_REWORD_MODEL/OLLAMA values and cannot be reloaded from
+# the agent session.
+REWORD_OLLAMA = os.environ.get("DICTATE_REWORD_BASE_URL", "http://127.0.0.1:11436")
+REWORD_MODEL = os.environ.get("DICTATE_REWORD_LLM", "inkling-2-mini")
 DATA = Path(os.environ.get("DICTATE_DATA", str(Path.home() / ".observer" / "dictation")))
 HISTORY = DATA / "history.jsonl"
 LOG = Path(__file__).resolve().parent / "dictate_gateway.log"
