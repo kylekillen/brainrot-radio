@@ -50,13 +50,14 @@ OLLAMA = os.environ.get("DICTATE_OLLAMA", "http://127.0.0.1:11435")
 CLEAN_MODEL = os.environ.get("DICTATE_CLEAN_MODEL", "qwen3:4b-instruct-2507-q4_K_M")
 KEEP_ALIVE = os.environ.get("DICTATE_KEEP_ALIVE", "-1m")
 # The keyboard's optional "rewording" endpoint uses the fleet's local LLM, Inkling 2 Mini
-# (Thinking Machines; own ollama on :11436, kept up by the inkling-keepalive Hermes cron).
+# (Thinking Machines; 4-bit MLX on mlx_vlm.server :8090 via the OpenAI-style API, kept up by the
+# inkling-keepalive Hermes cron).
 # It is not on the 3 s dictation path (Inkling needs ~6 s per cleanup chunk), so its
 # queueing only ever delays rewording. New env names on purpose: the loaded launchd job
 # still carries the old DICTATE_REWORD_MODEL/OLLAMA values and cannot be reloaded from
 # the agent session.
-REWORD_OLLAMA = os.environ.get("DICTATE_REWORD_BASE_URL", "http://127.0.0.1:11436")
-REWORD_MODEL = os.environ.get("DICTATE_REWORD_LLM", "inkling-2-mini")
+REWORD_OLLAMA = os.environ.get("DICTATE_REWORD_BASE_URL", "http://127.0.0.1:8090")
+REWORD_MODEL = os.environ.get("DICTATE_REWORD_LLM", str(Path.home() / "inkling-opt/mlx/models/4bit"))
 DATA = Path(os.environ.get("DICTATE_DATA", str(Path.home() / ".observer" / "dictation")))
 HISTORY = DATA / "history.jsonl"
 LOG = Path(__file__).resolve().parent / "dictate_gateway.log"
@@ -144,6 +145,16 @@ def _chat(messages: list[dict], timeout: float, temperature: float = 0.0,
         payload["think"] = think
     out = _post_json(f"{base or OLLAMA}/api/chat", payload, timeout)
     text = out.get("message", {}).get("content", "")
+    return _THINK.sub("", text).split("</think>")[-1].strip()
+
+
+def _chat_openai(messages: list[dict], timeout: float, temperature: float, *, base: str, model: str) -> str:
+    """One OpenAI-style chat call (mlx_vlm.server). Reasoning is switched off; the answer is
+    ``content`` (thinking comes back separately as ``reasoning_content``)."""
+    payload = {"model": model, "messages": messages, "stream": False, "temperature": temperature,
+               "max_tokens": 1024, "reasoning_effort": "none"}
+    out = _post_json(f"{base}/v1/chat/completions", payload, timeout)
+    text = (out.get("choices") or [{}])[0].get("message", {}).get("content") or ""
     return _THINK.sub("", text).split("</think>")[-1].strip()
 
 
@@ -344,9 +355,9 @@ class Handler(BaseHTTPRequestHandler):
                         "text": text})
                 log(f"keyboard-chat-audio: {len(raw.split())} words {status}")
             else:
-                text = _chat(req.get("messages", []), timeout=60,
-                             temperature=float(req.get("temperature", 0.2)),
-                             base=REWORD_OLLAMA, model=REWORD_MODEL, think=False)
+                text = _chat_openai(req.get("messages", []), timeout=60,
+                                    temperature=float(req.get("temperature", 0.2)),
+                                    base=REWORD_OLLAMA, model=REWORD_MODEL)
         except Exception as e:  # noqa: BLE001
             log(f"chat/completions failed: {e}")
             return self._json(502, {"error": {"message": f"local model failed: {e}"}})
