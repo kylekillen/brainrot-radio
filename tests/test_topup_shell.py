@@ -77,6 +77,10 @@ ap.add_argument('--max-attempts', type=int); ap.add_argument('--min-words', type
 a = ap.parse_args()
 segs = parse_script(a.script)
 n = sum(len(t.split()) for sp, t in segs if sp != 'TRANSITION')
+if os.environ.get('STUB_TOPUP_RC', '0') != '0' and a.mode == 'claude':
+    # The shell retries a failed external top-up in claude mode (2026-11-10); a truly
+    # exhausted budget fails that retry too.
+    sys.exit(int(os.environ['STUB_TOPUP_RC']))
 if os.environ.get('STUB_NOOP'):
     # Report failure WITHOUT repairing, so the caller logs the pre-repair count.
     sys.exit(1)

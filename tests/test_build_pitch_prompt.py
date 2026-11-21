@@ -27,7 +27,7 @@ def _read(rel):
 
 def _bullet(sh):
     """The BUILD PITCH OF THE DAY bullet, pass-1 prompt."""
-    lines = [l for l in sh.split("\n") if "**BUILD PITCH OF THE DAY:**" in l]
+    lines = [l for l in sh.split("\n") if "**BUILD PITCH OF THE DAY" in l]
     assert len(lines) == 1, (
         f"expected exactly one BUILD PITCH OF THE DAY bullet, found {len(lines)}: "
         "a second copy in another pass can drift from this one untested")
