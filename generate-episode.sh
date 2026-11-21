@@ -1,4 +1,6 @@
 #!/bin/bash
+# KYLE 2026-11-06: podcast STOPPED (burn). Remove this line + restore plists from ~/.observer/plist-backup-2026-11-06 to resume.
+[ -f "$HOME/.observer/podcast.STOP" ] && exit 0
 # Generate a Killen Time episode end-to-end.
 # Called by launchd daily at 5:30 AM, or manually.
 #
@@ -77,6 +79,21 @@ export CODE_VOICE_MUTE=1
 PODCAST_ENGINE="${PODCAST_ENGINE:-$(cat "$HOME/.observer/data/podcast-engine" 2>/dev/null || echo claude)}"
 export PODCAST_ENGINE
 
+# FREE STEPS (Kyle 2026-11-06, burn): when ~/.observer/data/podcast-free-steps exists, every agentic
+# `claude -p` step (beat research, build-pitch, QC, top-up) runs through Claude Code pointed at
+# OpenRouter's FREE nemotron-3-ultra instead of the Max pool. Uses a $0.05-capped key
+# (~/.config/personal-os/podcast-free.env) so a prompt-injected page can't spend real money.
+# Tested 2026-11-06: WebSearch tool use works. Disable: rm ~/.observer/data/podcast-free-steps
+STEP_MODEL=sonnet
+if [ -f "$HOME/.observer/data/podcast-free-steps" ] && [ -s "$HOME/.config/personal-os/podcast-free.env" ]; then
+    STEP_MODEL="$(cat "$HOME/.observer/data/podcast-free-steps" 2>/dev/null | head -1)"
+    case "$STEP_MODEL" in *:free) ;; *) STEP_MODEL="nvidia/nemotron-3-ultra-550b-a55b:free";; esac
+    export ANTHROPIC_BASE_URL="https://openrouter.ai/api"
+    export ANTHROPIC_AUTH_TOKEN="$(grep '^OPENROUTER_FREE_KEY=' "$HOME/.config/personal-os/podcast-free.env" | cut -d= -f2-)"
+    export ANTHROPIC_API_KEY=""
+    export ANTHROPIC_MODEL="$STEP_MODEL" ANTHROPIC_SMALL_FAST_MODEL="$STEP_MODEL"
+fi
+
 # Router pilot (model-router brief 07, ~/model-router/briefs/07-podcast-pilot.md):
 # the writer's model pick can be routed through observer.router.choose("podcast_segment")
 # instead of the hardcoded Claude default. Same config-file pattern as PODCAST_ENGINE above.
@@ -131,7 +148,7 @@ run_claude_step() {
 
     # Web-reading step: run inside the Seatbelt box (bin/sandboxed-claude.sh), not bare.
     # The permission bypass is safe only because of that box. Trifecta lane 1, 2026-10-26.
-    "$BRAINROT_DIR/bin/sandboxed-claude.sh" --dangerously-skip-permissions --model sonnet -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
+    "$BRAINROT_DIR/bin/sandboxed-claude.sh" --dangerously-skip-permissions --model "$STEP_MODEL" -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
     local pid=$!
     local elapsed=0
 
@@ -236,6 +253,16 @@ run_topup_loop() {
     RUN_ID="$RUN_ID" python3 episode_topup.py --script "$NEW_SCRIPT" --mode "$mode" \
         --phase "$phase" --max-attempts "$TOPUP_MAX_ATTEMPTS" --min-words "$MIN_RENDER_WORDS" \
         >> "$RESULT_LOG" 2>&1 || rc=$?
+    # 2026-11-10: external lane dead (pydantic_core crash + quota breaker) while the WRITE had
+    # already fallen back to Claude -> top-up kept using the dead lane and the day was lost at
+    # 5,683/6,000. Floor is unchanged; we just try the Claude top-up before giving up.
+    if [ "$rc" -ne 0 ] && [ "$mode" = "external" ]; then
+        log "Top-up (external) failed after $phase — retrying top-up in claude mode (floor unchanged)."
+        rc=0
+        RUN_ID="$RUN_ID" python3 episode_topup.py --script "$NEW_SCRIPT" --mode claude \
+            --phase "$phase" --max-attempts "$TOPUP_MAX_ATTEMPTS" --min-words "$MIN_RENDER_WORDS" \
+            >> "$RESULT_LOG" 2>&1 || rc=$?
+    fi
     local words
     words=$(python3 - "$NEW_SCRIPT" <<'PY'
 from voice import parse_script
@@ -360,7 +387,7 @@ You are the CLAUDE LAB Build-Pitch Reporter for the Killen Time podcast. Working
 
 Read .claude/context/beats/claude-lab.md and the "claude_lab" beat in beats.json for your full brief.
 
-MISSION: Your lens is Kyle's WHOLE SYSTEM, not this podcast. Answer, from a whole-fleet vantage: what is the single highest-leverage thing Kyle could build or adopt right now to improve his entire Agent OS / fleet? Find it in the latest techniques on (a) Claude technique/prompting/harness design, (b) running agents and multi-agent orchestration, (c) Claude/Claude Code system upgrades, and (d) optimization (dev-loop, evals, cost/latency, memory & state) — VERIFY before reporting, and turn the survivors into concrete BUILD PITCHES. The podcast is the delivery surface; build-pitches/ is also a feed the weekly Fleet Optimizer survey reads for its slate.
+NO REPEATS: read the last 7 files in build-pitches/ first. Do not pitch the same technique again unless there is a NEW verified delta since (say what is new); if nothing new is verified, write NO_VERIFIED_PITCH. ALSO scan the Hermes Agent and Claude Code release notes from the last 3 days for changes that matter to our fleet. MISSION: Your lens is Kyle's WHOLE SYSTEM, not this podcast. Answer, from a whole-fleet vantage: what is the single highest-leverage thing Kyle could build or adopt right now to improve his entire Agent OS / fleet? Find it in the latest techniques on (a) Claude technique/prompting/harness design, (b) running agents and multi-agent orchestration, (c) Claude/Claude Code system upgrades, and (d) optimization (dev-loop, evals, cost/latency, memory & state) — VERIFY before reporting, and turn the survivors into concrete BUILD PITCHES. The podcast is the delivery surface; build-pitches/ is also a feed the weekly Fleet Optimizer survey reads for its slate.
 
 LENS — need-first, NOT technique-first. Do this BEFORE scanning:
 1. Read the fleet's current biggest needs so your hunt is aimed at real pain: ~/fleet-optimizer/STATUS.md (the Fleet Optimizer's current slate + open problems), ~/.observer/wiki/agent-os/credit-resilience-plan.md (credit/SPOF/cost pain), ~/.observer/wiki/agent-os/ (system design, fragility, the multi-agent unlock), and recent breakage/alarm patterns.
@@ -379,7 +406,7 @@ DISCIPLINE — this is the whole point, do NOT skip it:
 
 OUTPUT — write BOTH files:
 A) ${PITCH_FILE} — the durable record. For each verified pitch include: **Technique** (1-2 sentences), **Who's doing it** (specific video titles + URLs + corroborating source links), **Evidence it's real** (what you cross-checked), **Need it serves** (which fleet pain + which of Kyle's priorities 1–3 it moves), **Delta vs Kyle's current setup** (the check, default, cheaper model, or missing loop their version has and his likely doesn't), **Whole-fleet leverage** (one line the Fleet Optimizer can rank on), **Build sketch** (concrete first steps an agent could take), **More takeaways** (up to 4 smaller one-line improvements, each citing its source), **Status: pitched** (or **money — discuss first** for trading/money changes). Start the file with a one-line date header. If nothing survived, write a short "No verified pitch today — here's what I looked at and why it didn't clear the bar" note instead.
-B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will fold into the show. Lead with the single best pitch: what it is, who's doing it, why it's verified/real, and the one-line "here's how it'd upgrade our setup." End with: "Logged in ${PITCH_FILE} for Kyle to greenlight." If there's no verified pitch, write exactly: "NO_VERIFIED_PITCH" on the first line, then a one-sentence reason.
+B) ${PITCH_SUMMARY} — a tight summary (200-400 words) the episode writer will fold into the show. Lead with the single best pitch: what it is, who's doing it, why it's verified/real, and the one-line "here's how it'd upgrade our setup." Do not end with an approval request: the Fleet Optimizer adopts pitches itself If there's no verified pitch, write exactly: "NO_VERIFIED_PITCH" on the first line, then a one-sentence reason.
 
 NEVER fabricate a pitch or overstate evidence. Honesty about a thin day is the correct behavior. STOP after writing both files.
 PROMPT_EOF
@@ -402,6 +429,9 @@ fi
 if [ -f "$BRAINROT_DIR/$PITCH_SUMMARY" ]; then
     log "Build-Pitch Reporter wrote summary ($(wc -w < "$BRAINROT_DIR/$PITCH_SUMMARY" | tr -d ' ') words)"
 fi
+
+# ─── What-we-improved feed (Kyle 2026-11-21: the fleet self-improves; the show reports it) ───
+python3 improvements_feed.py >> "$RESULT_LOG" 2>&1 || true
 
 # ─── Build dedup context (shared by both passes) ─────────────────────────────
 # Exclude TODAY's own script: it's written to scripts/killen-time-${TODAY}.txt BEFORE
@@ -525,14 +555,15 @@ Steps:
    - The X PULSE section at its end shows what is trending on X and leads from accounts Kyle follows. Use it to judge which stories are today's MAJOR ones and dig deeper on those; follow its attribution rules.
 2. Read up to 3 podcast transcripts from .tmp/transcripts/ — PRIORITIZE the two anchor AI shows when fresh episodes exist: the AI Daily Brief (Nathaniel Whittemore) and Moonshots (Peter Diamandis). After those, pick what's most relevant to how people build with / run AI agents.
 3. Read Substack full articles in .tmp/articles/ — focus on AI/tech and agent-building/practitioner articles.
-4. Read .tmp/build-pitches.md if it exists — this is the verified output of the Claude Lab Build-Pitch Reporter (see step 6 for how to use it).
+4. Read .tmp/improvements.md if it exists — improvements the team has ALREADY MADE; it opens the show (see step 6, WHAT WE IMPROVED). Also read .tmp/build-pitches.md if it exists — this is the verified output of the Claude Lab Build-Pitch Reporter (see step 6 for how to use it).
 5. Read ALL scripts/.covered-*.json files for dedup.
 6. Read recent episode scripts (see DEDUP CONTEXT below) for dedup.
 7. Write to ${SCRIPT_FILE}:
    - Show intro: cold open with the biggest story, show name + date
    - **AI & Technology segments (1-2 segments, ~2500-3500 words) — FOCUS ON HIGH-SIGNAL AI.** Anchor this block on the AI Daily Brief and Moonshots: lead with their framing and actual arguments/quotes whenever a fresh episode exists, and give each real airtime (not a passing mention). Use the RSS news headlines (Techmeme, TechCrunch, Ars) as context AROUND that podcast discussion, not as the spine. Then feature high-signal essays and technical breakthroughs getting discussion in circles Kyle follows. Skip generic news-summary filler.
    - **Agents & Building With AI segments (2-3 segments, ~3500-4500 words) — THIS IS THE FEATURED BEAT OF THE SHOW.** How people are actually running their agents: personalized harness structures, CLAUDE.md / context engineering, subagents and multi-agent orchestration, project organization, evals, MCP and tooling, and dev-loop optimization. Pull concrete, stealable practices from Claude Code releases, Latent Space, Simon Willison, One Useful Thing, AI and I, The Cognitive Revolution, No Priors, a16z, Dwarkesh, Karpathy. Frame every story through "what can WE learn for our own multi-agent setup" — Kyle is building a team of delegated AIs and wants to optimize that system. Be specific and practitioner-level; quote the actual techniques, not vibes.
-   - **BUILD PITCH OF THE DAY:** If .tmp/build-pitches.md exists AND its first line is not "NO_VERIFIED_PITCH", give the top verified pitch its own dedicated exchange inside the Agents & Building block (~400-700 words): what the technique is, who's doing it (name the source), the evidence it's real, and, in GENERAL terms, why it could matter to someone running agents. Keep the listener's private system out of the audio: do NOT name Kyle's repos (observer-system, brainrot-radio), roles, launchd jobs, launch-site counts, config keys, or any other internal statistic from .tmp/build-pitches.md — the pitch's "Evidence it's real" and "local check" sections are for Kyle and the Fleet Optimizer, not for airtime, and uncited counts get stale. Then close the block by having a host say plainly that the pitch is WRITTEN UP AND LOGGED, so he can point an agent at it and greenlight the build if he likes it — in GENERAL terms only. Do NOT name the folder, the repo, the file, or anything that locates it on Kyle's machine; the whole point of the ban above is that the audio explains the technique and leaves his system to him. If you cannot say that sentence without naming where the pitch lives, LEAVE THE SENTENCE OUT — a missing sign-off beats a private-system leak. If the file is missing or says NO_VERIFIED_PITCH, skip this — do NOT invent a pitch.
+   - **WHAT WE IMPROVED (OPEN THE SHOW WITH THIS, right after the greeting, ~300-600 words):** If .tmp/improvements.md exists, report each item as something already DONE — what changed, why it is better, the measured result — in general terms, no repo/file/job/role names. Never ask the listener to approve, greenlight or decide anything; the team improves itself and just reports it. If the file is missing, skip.
+   - **BUILD PITCH OF THE DAY (technique explainer only; NO greenlight ask, NO "logged for him"):** If .tmp/build-pitches.md exists AND its first line is not "NO_VERIFIED_PITCH", give the top verified pitch its own dedicated exchange inside the Agents & Building block (~400-700 words): what the technique is, who's doing it (name the source), the evidence it's real, and, in GENERAL terms, why it could matter to someone running agents. Keep the listener's private system out of the audio: do NOT name Kyle's repos (observer-system, brainrot-radio), roles, launchd jobs, launch-site counts, config keys, or any other internal statistic from .tmp/build-pitches.md — the pitch's "Evidence it's real" and "local check" sections are for Kyle and the Fleet Optimizer, not for airtime, and uncited counts get stale. Then close the block by having a host say plainly that the pitch is WRITTEN UP AND LOGGED, so he can point an agent at it and greenlight the build if he likes it — in GENERAL terms only. Do NOT name the folder, the repo, the file, or anything that locates it on Kyle's machine; the whole point of the ban above is that the audio explains the technique and leaves his system to him. If you cannot say that sentence without naming where the pitch lives, LEAVE THE SENTENCE OUT — a missing sign-off beats a private-system leak. If the file is missing or says NO_VERIFIED_PITCH, skip this — do NOT invent a pitch.
    - End with a [TRANSITION] tag — do NOT write an outro
    - Use BASIL/BROOKE/TRANSITION format (speaker tags in square brackets)
    - Include specific quotes from podcast transcripts and Substack articles
@@ -567,6 +598,16 @@ elif ! run_beat_step "write-pass1" "$BRAINROT_DIR/.tmp/step2a-pass1.txt" \
             exit 1
         fi
         WRITE_ENGINE_USED="claude-fallback:kimi(openrouter)"
+    fi
+fi
+
+# 2026-11-10 guard: a Claude step can exit 0 yet write no file (free-step nemotron emitted a
+# context-compaction summary instead of the script -> run 20261110-040028 aborted). Treat as failure
+# and fall back to the offload writer instead of aborting the day.
+if [ "$WRITE_WITH_CLAUDE" = "1" ] && [ ! -f "$BRAINROT_DIR/$SCRIPT_FILE" ]; then
+    log "Pass 1 Claude step exited 0 but wrote no $SCRIPT_FILE — falling back to offload writer."
+    if run_kimi_pass 1; then
+        WRITE_ENGINE_USED="claude-fallback:kimi(openrouter,nofile)"
     fi
 fi
 
@@ -887,6 +928,11 @@ fi
 # the qc-FAIL flags — but it does NOT abort. A heuristic must never be the reason
 # an episode doesn't ship (09-25, 09-27 and 09-29 were all lost to hard gates);
 # a visible flag is the right weight. Upstream is where these get fixed.
+# Deterministic auto-repair BEFORE the guard audits (2026-11-21: QC timed out on 7 of 8 episodes, so
+# leaks/collisions reached air). No model; refuses if it would cut >5% of words; never aborts.
+AUTOFIX_OUT=$(python3 script_autofix.py "$NEW_SCRIPT" 2>&1 || true)
+log "script_autofix: ${AUTOFIX_OUT}"
+
 POST_GUARD=$(python3 script_guard.py check "$NEW_SCRIPT" \
     --brief "$BRAINROT_DIR/.tmp/topic-brief.txt" \
     --sources "$BRAINROT_DIR/.tmp/transcripts" "$BRAINROT_DIR/.tmp/articles" 2>/dev/null || true)
