@@ -79,9 +79,12 @@ export CODE_VOICE_MUTE=1
 PODCAST_ENGINE="${PODCAST_ENGINE:-$(cat "$HOME/.observer/data/podcast-engine" 2>/dev/null || echo claude)}"
 export PODCAST_ENGINE
 
-# FREE STEPS (Kyle 2026-11-06, burn): when ~/.observer/data/podcast-free-steps exists, every agentic
-# `claude -p` step (beat research, build-pitch, QC, top-up) runs through Claude Code pointed at
-# OpenRouter's FREE nemotron-3-ultra instead of the Max pool. Uses a $0.05-capped key
+# FREE STEPS (Kyle 2026-11-06, burn): when ~/.observer/data/podcast-free-steps exists, the agentic
+# `claude -p` steps (beat research, build-pitch, top-up) run through Claude Code pointed at
+# OpenRouter's FREE nemotron-3-ultra instead of the Max pool. QC is EXEMPT (fleet-optimizer
+# 2026-11-23): it runs on real Claude via run_claude_step's force_claude arg because the free
+# reasoning models are too slow to finish the agentic 3-skeptic QC inside the step timeout, so
+# QC was timing out and episodes shipped unreviewed. Uses a $0.05-capped key
 # (~/.config/personal-os/podcast-free.env) so a prompt-injected page can't spend real money.
 # Tested 2026-11-06: WebSearch tool use works. Disable: rm ~/.observer/data/podcast-free-steps
 STEP_MODEL=sonnet
@@ -144,11 +147,31 @@ run_claude_step() {
     local prompt_file=$2
     local step_name=$3
 
+    local force_claude="${4:-}"
+
     log "Step [$step_name] starting (timeout=${timeout}s)..."
+
+    # QC EXEMPTION from free-steps (fleet-optimizer, 2026-11-23): a step passing
+    # `force_claude` as $4 runs on real Claude (claude.ai/Max + sonnet), NOT the free-steps
+    # OpenRouter model. Why: the free-steps switch (2026-11-06) routes every agentic
+    # `claude -p` step through a FREE OpenRouter model, but those are reasoning models that
+    # are too slow for the agentic 3-skeptic QC — it timed out at 1500s on EVERY run, so the
+    # QC gate never ran and episodes shipped UNREVIEWED for days (qc-ERROR flags 11-19..11-23;
+    # alarm 20261121T052933 diagnosed the same hang). QC gates fabrication on AIRED content,
+    # so it must complete; the lighter steps (beat research, build-pitch, top-up) still save
+    # burn on the free model. Unsetting the free-steps ANTHROPIC_* vars for just this step
+    # restores exactly the claude.ai auth the sandbox used before 2026-11-06. No-op when
+    # free-steps is inactive (the vars are already unset and STEP_MODEL is already sonnet).
+    local step_model="$STEP_MODEL"
+    local -a auth_prefix=()
+    if [ "$force_claude" = "force_claude" ]; then
+        step_model="sonnet"
+        auth_prefix=(env -u ANTHROPIC_BASE_URL -u ANTHROPIC_AUTH_TOKEN -u ANTHROPIC_API_KEY -u ANTHROPIC_MODEL -u ANTHROPIC_SMALL_FAST_MODEL)
+    fi
 
     # Web-reading step: run inside the Seatbelt box (bin/sandboxed-claude.sh), not bare.
     # The permission bypass is safe only because of that box. Trifecta lane 1, 2026-10-26.
-    "$BRAINROT_DIR/bin/sandboxed-claude.sh" --dangerously-skip-permissions --model "$STEP_MODEL" -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
+    "${auth_prefix[@]}" "$BRAINROT_DIR/bin/sandboxed-claude.sh" --dangerously-skip-permissions --model "$step_model" -p "$(cat "$prompt_file")" >> "$RESULT_LOG" 2>&1 &
     local pid=$!
     local elapsed=0
 
@@ -837,7 +860,7 @@ QC_RAN=0            # 1 once any attempt actually produced a PASS/FAIL verdict
 for attempt in $(seq 1 "$QC_MAX_ATTEMPTS"); do
     log "QC review attempt $attempt/$QC_MAX_ATTEMPTS (3 skeptics + synthesis + fixes)..."
     before=$(wc -l < "$RESULT_LOG")
-    run_claude_step 1500 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review-$attempt" \
+    run_claude_step 1500 "$BRAINROT_DIR/.tmp/step3-qc.txt" "qc-review-$attempt" force_claude \
         || log "QC review step errored on attempt $attempt (continuing to verdict check)"
     # Scope the verdict to THIS attempt's NEW log lines so a timed-out attempt that
     # emits nothing can't inherit a prior attempt's stale PASS/FAIL.
